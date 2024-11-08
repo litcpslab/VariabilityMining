@@ -9,7 +9,7 @@ public class DiffAndFilter {
 	
 	public static void main(String[] args) {
 		 
-		String directoryPath = "C:\\Users\\AK122272\\Desktop\\example_Notepad\\variants\\variants";
+		String directoryPath = "add path to directory containing variants here!";
 		
 		IVariabilityExtractor extractor = new JavaVariabilityExtractor();
 
