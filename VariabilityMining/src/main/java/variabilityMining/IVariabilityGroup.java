@@ -1,16 +1,19 @@
 package variabilityMining;
 
+import java.util.List;
 import java.util.Set;
+
 /*
-*Copyright (c) 2024 Johannes Kepler University Linz*
+*Copyright (c) 2024 Johannes Kepler University Linz
+*LIT Cyber-Physical Systems Lab
 *Contributors:
-*Alexander Stummer - initial API and implementation*
+*Alexander Stummer - initial API and implementation
 */
 public interface IVariabilityGroup {
 
 	abstract Set<? extends IVariant> getOccurrences();
 	
-	abstract Set<? extends Object> getElements();
+	abstract List<? extends IVariability> getElements();
 	
 	abstract String getAttributeName();
 	

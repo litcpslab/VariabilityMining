@@ -23,9 +23,10 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
 /*
-*Copyright (c) 2024 Johannes Kepler University Linz*
+*Copyright (c) 2024 Johannes Kepler University Linz
+*LIT Cyber-Physical Systems Lab
 *Contributors:
-*Alexander Stummer - initial API and implementation*
+*Alexander Stummer - initial API and implementation
 */
 public class RelevanceProcessor extends AbstractProcessor<CtElement>{
 

@@ -13,9 +13,10 @@ import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtType;
 
 /*
-*Copyright (c) 2024 Johannes Kepler University Linz*
+*Copyright (c) 2024 Johannes Kepler University Linz
+*LIT Cyber-Physical Systems Lab
 *Contributors:
-*Alexander Stummer - initial API and implementation*
+*Alexander Stummer - initial API and implementation
 */
 public class Variant implements IVariant{
 	

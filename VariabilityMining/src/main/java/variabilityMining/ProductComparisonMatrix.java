@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 /*
-*Copyright (c) 2024 Johannes Kepler University Linz*
+*Copyright (c) 2024 Johannes Kepler University Linz
+*LIT Cyber-Physical Systems Lab
 *Contributors:
-*Alexander Stummer - initial API and implementation*
+*Alexander Stummer - initial API and implementation
 */
 
 public class ProductComparisonMatrix {
@@ -18,7 +19,7 @@ public class ProductComparisonMatrix {
 	
 	private final List<IVariabilityGroup> variabilities;
 
-	public ProductComparisonMatrix(Set<? extends IVariant> variants, Set<? extends IVariabilityGroup> variabilities) {
+	public ProductComparisonMatrix(List<? extends IVariant> variants, List<? extends IVariabilityGroup> variabilities) {
 		this.variants = new ArrayList<>();
 		this.variants.addAll(variants);
 		this.variabilities = new ArrayList<>();
@@ -50,6 +51,7 @@ public class ProductComparisonMatrix {
 			sb.append(element.getAttributeName());
 			sb.append(";");
 		}
+		sb.deleteCharAt(sb.length() - 1);
 		sb.append("\n");
 		int index = 0;
         for (boolean[] row : occurrenceMatrix) {
@@ -58,7 +60,6 @@ public class ProductComparisonMatrix {
             index++;
         }
 
-         
-        return sb.toString().replaceAll("[\\[,\\]]", ";").replaceAll("true", "x").replaceAll("false", "");
+        return sb.toString().replaceAll("[\\[,]", ";").replaceAll("[\\]]", "").replaceAll("true", "x").replaceAll("false", "");
 	}
 }

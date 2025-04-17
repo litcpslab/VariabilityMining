@@ -1,22 +1,24 @@
 package variabilityMining;
 
+import java.util.List;
 import java.util.Set;
 
 /*
-*Copyright (c) 2024 Johannes Kepler University Linz*
+*Copyright (c) 2024 Johannes Kepler University Linz
+*LIT Cyber-Physical Systems Lab
 *Contributors:
-*Alexander Stummer - initial API and implementation*
+*Alexander Stummer - initial API and implementation
 */
 public class VariabilityGroup implements IVariabilityGroup {
 
 	
 	private Set<Variant> occurrences;
 	
-	private Set<IVariability> elements;
+	private List<IVariability> elements;
 	
 	private String attributeName;
 	
-	public VariabilityGroup(String attribute, Set<Variant> occurrences, Set<IVariability> elements) {
+	public VariabilityGroup(String attribute, Set<Variant> occurrences, List<IVariability> elements) {
 		this.attributeName = attribute;
 		this.occurrences = occurrences;
 		this.elements = elements;
@@ -26,7 +28,7 @@ public class VariabilityGroup implements IVariabilityGroup {
 		return attributeName;
 	}
 	
-	public Set<IVariability> getElements() {
+	public List<IVariability> getElements() {
 		return elements;
 	}
 	

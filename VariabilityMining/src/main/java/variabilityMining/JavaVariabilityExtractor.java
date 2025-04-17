@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,9 +19,10 @@ import gumtree.spoon.diff.operations.UpdateOperation;
 import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtElement;
 /*
-*Copyright (c) 2024 Johannes Kepler University Linz*
+*Copyright (c) 2024 Johannes Kepler University Linz
+*LIT Cyber-Physical Systems Lab
 *Contributors:
-*Alexander Stummer - initial API and implementation*
+*Alexander Stummer - initial API and implementation
 */
 
 public class JavaVariabilityExtractor implements IVariabilityExtractor {
@@ -158,7 +160,7 @@ public class JavaVariabilityExtractor implements IVariabilityExtractor {
 		
 		for(Set<Variant> information : occurrenceMap.keySet()) {
 			
-			Set<IVariability> elements = new HashSet<>();
+			List<IVariability> elements = new ArrayList<>();
 			
 			Set<Path> commonVariableFiles = new HashSet<>();
 			information.stream().map(info -> info.getVariablePaths()).forEach(paths -> commonVariableFiles.addAll(paths));
@@ -272,7 +274,7 @@ public class JavaVariabilityExtractor implements IVariabilityExtractor {
 
 	private ProductComparisonMatrix buildPCM(Set<VariabilityGroup> groups) {
 
-		ProductComparisonMatrix pcm = new ProductComparisonMatrix(variants, groups);
+		ProductComparisonMatrix pcm = new ProductComparisonMatrix(variants.stream().toList(), groups.stream().toList());
 		
 		for(IVariabilityGroup group : groups) {
 			pcm.setElementOccurrences(group);
