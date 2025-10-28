@@ -430,6 +430,7 @@ public class ConstraintsViewController {
 	private void initData() {
 		constraints = model.performFCA();
 		features = model.getFeatures();
+		currentBase = model.getBaseFeature();
 		initializeTreeView(constraints.stream().filter(c -> c instanceof Group).collect(Collectors.toList()));	
 		setUpFilterMenu();
 	}
