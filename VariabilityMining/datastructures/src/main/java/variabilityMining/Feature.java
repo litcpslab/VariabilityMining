@@ -1,0 +1,117 @@
+package variabilityMining;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+/*
+Copyright (c) 2025 Johannes Kepler University Linz
+LIT Cyber-Physical Systems Lab
+*Contributors:
+Alexander Stummer - Initial Implementation
+*/
+public class Feature {
+
+	private String name;
+	
+	private Feature parent;
+	
+	private List<Feature> children;
+	
+	private boolean orParent;
+	
+	private boolean alternativeParent;
+	
+	private boolean mandatory;
+	
+	public Feature(String name) {
+		this.name = name;
+	}
+	
+	public Feature(String name, Feature parent) {
+		this.name = name;
+		this.parent = parent;
+		mandatory = false;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	@Override
+	public String toString() {
+		return name;
+	}
+	
+	public void setAlternativeParent(boolean isAlternativeParent) {
+		this.alternativeParent = isAlternativeParent;
+	}
+	
+	public void setOrParent(boolean isOrParent) {
+		this.orParent = isOrParent;
+	}
+	
+	public boolean isAlternativeParent() {
+		return alternativeParent;
+	}
+	
+	public boolean isOrParent() {
+		return orParent;
+	}
+	
+	public boolean isMandatory() {
+		return mandatory;
+	}
+	
+	public void setMandatory(boolean isMandatory) {
+		this.mandatory = isMandatory;
+	}
+	
+	public void setChildren(List<Feature> children) {
+		this.children = children;
+	}
+	
+	public void setParent(Feature parent) {
+		this.parent = parent;
+	}
+	
+	public Feature getParent() {
+		return parent;
+	}
+	
+	public List<Feature> getChildren() {
+		return children;
+	}
+	
+	public void addChild(Feature child) {
+		if(children == null) {
+			children = new ArrayList<>();
+		}
+		children.add(child);
+	}
+	
+	public void addChildren(List<Feature> childList) {
+		if(children == null) {
+			children = new ArrayList<>();
+		}
+		children.addAll(childList);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Feature other = (Feature) obj;
+		return Objects.equals(name, other.name);
+	}
+	
+	
+}

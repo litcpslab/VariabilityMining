@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ The MIT License (MIT)
+
+ Copyright (c) 2025 Michael Schmidhammer
+-->
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.variabilityanalysisgui.controller.Controller">
+    <right>
+        <ScrollPane fx:id="detailScrollPane" fitToWidth="true" managed="false" prefWidth="350" visible="false">
+            <VBox fx:id="detailsPane" spacing="10" style="-fx-padding: 10;">
+                <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Details" />
+            <HBox fx:id="detailsNameHBox" prefHeight="30.0" prefWidth="200.0">
+               <children>
+                      <Label fx:id="detailGroupNameLabel" text="Name: " wrapText="true" />
+                  <TextField fx:id="detailGroupNameTextField" />
+               </children>
+            </HBox>
+            <Label fx:id="detailLocationLabel" style="-fx-font-weight: bold;" text="Location" />
+            <TextArea fx:id="detailLocationTextArea" prefHeight="50.0" prefWidth="200.0" />
+                <Label fx:id="detailOccurrenceLabel" style="-fx-font-weight: bold;" text="Occurrences" />
+                <ListView fx:id="detailOccurrencesListView" prefHeight="100.0" />
+            <Label fx:id="detailElementLabel" style="-fx-font-weight: bold;" text="Element" />
+            <TextArea fx:id="detailElementData" prefHeight="100.0" prefWidth="200.0" />
+                <Label fx:id="detailSubElementLabel" style="-fx-font-weight: bold;" text="Sublements" />
+                <ListView fx:id="detailSubElementListView" prefHeight="200" />
+                <Button fx:id="detailCloseButton" text="Close Details" />
+            </VBox>
+        </ScrollPane>
+    </right>
+   <center>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+              <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10;">
+                  <Button fx:id="filterButton" text="Filter" HBox.hgrow="NEVER">
+                      <tooltip>
+                     <Tooltip text="Filter Options (Not Implemented Yet)" />
+                  </tooltip>
+                  </Button>
+                  <TextField fx:id="searchTextField" promptText="Search..." HBox.hgrow="ALWAYS" />
+              </HBox>
+              <TreeView fx:id="featureTreeView" style="-fx-padding: 5;" VBox.vgrow="ALWAYS" />
+            <HBox fx:id="hierarchyButtonHBox" alignment="CENTER_LEFT" maxHeight="20.0" prefHeight="20.0" style="-fx-padding: 10;">
+               <padding>
+                  <Insets left="10.0" />
+               </padding></HBox>
+         </children>
+      </VBox>
+   </center>
+   <top>
+        <MenuBar BorderPane.alignment="CENTER">
+            <menus>
+                <Menu text="File">
+                    <items>
+                        <MenuItem onAction="#handleLoadAction" text="Load" />
+                        <MenuItem onAction="#handleSaveAction" text="Save" />
+                        <SeparatorMenuItem />
+                        <MenuItem onAction="#handleExit" text="Exit" />
+                    </items>
+                </Menu>
+            </menus>
+            <BorderPane.margin>
+                <Insets bottom="5.0" />
+            </BorderPane.margin>
+        </MenuBar>
+   </top>
+
+</BorderPane>

@@ -1,0 +1,80 @@
+/***
+ The MIT License (MIT)
+
+ Copyright (c) 2025 Michael Schmidhammer
+ */
+
+package at.variabilityanalysisgui.view;
+
+import guiModel.Difference;
+import guiModel.Element;
+import guiModel.ExtractionType;
+import guiModel.Group;
+
+public class FeatureTreeNode {
+
+    public enum DataType {
+        GROUP, CONTAINER, ELEMENT
+    }
+
+    private final Difference data;
+    private boolean directory;
+
+    public FeatureTreeNode(Difference data, boolean directory) {
+        this.data = data;
+        this.directory = directory;
+    }
+
+    public boolean isDirectory() {
+        return directory;
+    }
+
+    public void setDirectory(boolean directory) {
+        this.directory = directory;
+    }
+
+    public Difference getData() {
+        return data;
+    }
+
+    public String getTechnicalName() {
+        return data.getName().get();
+    }
+
+    public String getDisplayName() {
+        if (data instanceof Element) {
+            if (((Element) data).getExtractionType() == ExtractionType.JAVA) {
+                return getTechnicalName() + ": " + ((Element) data).getDescription().split("\n")[0] + "...";
+            }
+        } else if (data instanceof Group) {
+            return getTechnicalName();
+        }
+        return getTechnicalName();
+    }
+
+    public DataType getType() {
+        if (data instanceof Group) {
+            return DataType.GROUP;
+        } else if (data instanceof Element) {
+            return DataType.ELEMENT;
+        } else {
+            return DataType.CONTAINER;
+        }
+    }
+
+    public String getPath() {
+        if (data instanceof DifferenceDirectory) {
+            return ((DifferenceDirectory) data).getPath();
+        } else if (data instanceof Element) {
+            return ((Element) data).getLocation() + ((Element) data).getSeparateSymbol() + data.getName().get();
+        } else if (data instanceof Group) {
+            return data.getName().get();
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
+}

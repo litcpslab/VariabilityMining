@@ -1,0 +1,25 @@
+/***
+ The MIT License (MIT)
+
+ Copyright (c) 2025 Michael Schmidhammer
+ */
+
+package at.variabilityanalysisgui.view;
+
+import guiModel.Difference;
+import javafx.beans.property.SimpleStringProperty;
+
+public class DifferenceDirectory extends Difference {
+    String separator;
+    String path;
+
+    public DifferenceDirectory(String path, String separator) {
+        this.name = new SimpleStringProperty(path.split(separator)[path.split(separator).length - 1]);
+        this.path = path;
+        this.separator = separator;
+    }
+
+    public String getPath() {
+        return path;
+    }
+}

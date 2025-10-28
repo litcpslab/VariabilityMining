@@ -1,0 +1,54 @@
+/***
+ The MIT License (MIT)
+
+ Copyright (c) 2025 Michael Schmidhammer
+ */
+
+package at.variabilityanalysisgui.controller.Filter;
+
+import guiModel.Element;
+import guiModel.Group;
+
+public class SearchFilter extends Filter {
+    public boolean includeElements;
+
+    public SearchFilter(String name) {
+        super(name);
+        this.includeElements = true;
+    }
+
+    @Override
+    public Element filter(Element element) {
+        String lowerCaseFilter;
+        if (this.getValue() == null) {
+            lowerCaseFilter = "";
+        } else {
+            lowerCaseFilter = this.getValue().toLowerCase().trim();
+        }
+        if (lowerCaseFilter.isEmpty()) {
+            return element;
+        }
+        if(element.getName().get().toLowerCase().contains(lowerCaseFilter)
+                            || element.getDescription().toLowerCase().contains(lowerCaseFilter)
+                            || element.getLocation().toLowerCase().contains(lowerCaseFilter)) return element;
+        return null;
+    }
+
+    @Override
+    public Group filter(Group group) {
+        String lowerCaseFilter;
+        if (this.getValue() == null) {
+            lowerCaseFilter = "";
+        } else {
+            lowerCaseFilter = this.getValue().toLowerCase().trim();
+        }
+        if (lowerCaseFilter.isEmpty()) {
+            return group;
+        }
+        if (includeElements && !group.getElements().stream().filter(e -> filter(e) != null).toList().isEmpty()) {
+            return group;
+        }
+        if (group.getName().get().toLowerCase().contains(lowerCaseFilter)) return group;
+        return null;
+    }
+}
