@@ -27,6 +27,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -49,6 +50,7 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import variabilityMining.ConstraintFileIO;
 import variabilityMining.Feature;
 import variabilityMining.JSONConstraints;
@@ -88,6 +90,7 @@ public class ConstraintsViewController {
     @FXML private TreeView<Constraint> groupTreeView;
     
     //Menu Buttons
+    @FXML private Button extractionViewButton;
     @FXML private Button proceedButton;
     @FXML private Button addConstraintButton;
     @FXML private Button generateButton;
@@ -115,6 +118,23 @@ public class ConstraintsViewController {
     	});
     	unfilteredItems = new HashSet<>();
     	
+    	infoScrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+    		if(newScene != null) {
+    	        newScene.windowProperty().addListener((obs2, oldWin, newWin) -> {
+    	            if (newWin != null) {
+    	            	Stage stage = (Stage) infoScrollPane.getScene().getWindow();
+    	        		stage.setOnCloseRequest(new EventHandler<WindowEvent>(){
+
+    	    				@Override
+    	    				public void handle(WindowEvent event) {
+    	    					model.generateModel(currentBase, features, new ArrayList<>(constraints));
+    	    				}
+    	        			
+    	        		});
+    	            }
+    	        });
+    	    }
+    	});
     }
     
     /*
@@ -176,7 +196,7 @@ public class ConstraintsViewController {
 		Feature addFeature = featureComboBox.getValue();
 		
 		Constraint constraint = groupTreeView.getSelectionModel().getSelectedItem().getValue();
-		
+		boolean shouldBeAdded = true;
 		if(constraint instanceof Group) {
 			Group group = (Group) constraint;
 			
@@ -188,32 +208,37 @@ public class ConstraintsViewController {
 					Alert warningAlert = new Alert(AlertType.WARNING, "The feature you are trying to add is already part of another group. Should it be moved here? (It will be removed from its current group)", ButtonType.YES, buttonKeepConstraints, ButtonType.NO);
 					warningAlert.setHeaderText("Addition Warning");
 					
-					 Optional<ButtonType> result = warningAlert.showAndWait();
-				     if(result.isPresent() && result.get() == ButtonType.YES) {
-				    	 g.removeFeature(addFeature);
-				     } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
-				    	 if(group instanceof AlternativeGroup) {
+					Optional<ButtonType> result = warningAlert.showAndWait();
+				    if(result.isPresent() && result.get() == ButtonType.YES) {
+				    	g.removeFeature(addFeature);
+				    	
+				    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
+				    	if(group instanceof AlternativeGroup) {
 				    		 
-				    		 for(Feature f: g.getFeatures()) {
-				    			 if(f != addFeature) {
-				    				 constraints.add(new MutualExclusion(addFeature, f));
-				    			 }
-				    		 }
-				    	 }
+				    		for(Feature f: g.getFeatures()) {
+				    			if(f != addFeature) {
+				    				constraints.add(new MutualExclusion(addFeature, f));
+				    			}
+				    		}
+				    	}
 				    	 		
-				    	 constraints.add(new Implication(addFeature, g.getParent()));
-				    	 g.removeFeature(addFeature);
-				     }
+				    	constraints.add(new Implication(addFeature, g.getParent()));
+				    	g.removeFeature(addFeature);
+				    	 
+				    } else {
+				    	shouldBeAdded = false;
+				    }
 				     
 				}
 			}
-			
-			if(!group.getFeatures().contains(addFeature) && !group.getParent().equals(addFeature)) {
+			if(shouldBeAdded && !group.getFeatures().contains(addFeature) && !group.getParent().equals(addFeature)) {
 				group.getFeatures().add(addFeature);
 				featureComboBox.getItems().remove(addFeature);
+				groupFeatureListView.getItems().add(addFeature);
 			}
+			
 		} 
-		groupFeatureListView.getItems().add(addFeature);
+		
 		groupTreeView.refresh();
 		featureComboBox.setValue(null);
 		
@@ -275,6 +300,12 @@ public class ConstraintsViewController {
 	    }
 	}
 	
+	@FXML
+	public void switchToExtractionView(ActionEvent event) {
+    	Scene scene = ((Node)event.getSource()).getScene();
+    	scene.setRoot((Parent)SceneManager.getExtractionScene());
+	}
+	
     /*
      * Filter items based on the input string entered in the search field
      */
@@ -319,7 +350,7 @@ public class ConstraintsViewController {
 				Feature left = leftFeatureComboBox.getValue();
 				Feature right = rightFeatureComboBox.getValue();
 				if(left != right) {
-					SimpleConstraint constraint = null;
+					SimpleConstraint constraint = null;//new SimpleConstraint(left, right, type);
 					if(type.equals("Implication")) {
 						constraint = new Implication(left, right);
 					} else if(type.equals("Mutual Exclusion")) {
@@ -431,6 +462,7 @@ public class ConstraintsViewController {
 		constraints = model.performFCA();
 		features = model.getFeatures();
 		currentBase = model.getBaseFeature();
+		model.generateModel(currentBase, features, new ArrayList<>(constraints));
 		initializeTreeView(constraints.stream().filter(c -> c instanceof Group).collect(Collectors.toList()));	
 		setUpFilterMenu();
 	}
@@ -630,9 +662,12 @@ public class ConstraintsViewController {
 	 * Setup dynamic treeview size dependent on window size
 	 */
 	public void setupLayout() {
-		Scene scene = groupTreeView.getScene();
-    	groupTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
-		
+		groupTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
+			if(newScene != null) {
+				Scene scene = groupTreeView.getScene();
+	        	groupTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
+			}	
+	    });		
 	}	
 	
 	/*

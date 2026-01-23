@@ -77,6 +77,7 @@
                   <Insets left="10.0" />
                </padding>
                <children>
+                  <Button fx:id="extractionViewButton" mnemonicParsing="false" onAction="#switchToExtractionView" text="Features" />
                   <Button fx:id="proceedButton" mnemonicParsing="false" onAction="#handleProceedAction" text="Proceed" />
                   <Button fx:id="generateButton" mnemonicParsing="false" onAction="#handleGenerateAction" text="Generate Model" visible="false" />
                   <Button fx:id="addConstraintButton" mnemonicParsing="false" text="Add constraint" visible="false" />

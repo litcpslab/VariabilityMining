@@ -7,15 +7,12 @@ package at.variabilityanalysisgui.controller;
 
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 
 import java.io.BufferedWriter;
@@ -67,9 +64,6 @@ public class Controller {
     //TreeViewController
     @FXML public HBox hierarchyButtonHBox;
     @FXML private TreeView<FeatureTreeNode> featureTreeView;
-    
-    //SceneSwitchButton
-   // @FXML private Button constraintsViewButton;
 
     private final InputParser parser = new InputParser();
     private List<guiModel.Group> originalGroups;
@@ -105,7 +99,6 @@ public class Controller {
             try {
                 originalGroups = parser.parse(selectedFile.getAbsolutePath());
                 artifactType = parser.getType();
-                treeViewController.initializeHierarchyButtons();
                 treeViewController.populateTreeView(filterController.getFilteredGroups(), null); // Populate with parsed data
                 detailsController.hideDetailsPane();
                 filterController.setupFilterListener();
@@ -126,7 +119,6 @@ public class Controller {
         File selectedFile = fileChooser.showOpenDialog(getWindow());
 
         loadFile(selectedFile);
-
     }
 
     @FXML
@@ -259,18 +251,14 @@ public class Controller {
 		return artifactType;
 	}
     
-    public void changeScene(ActionEvent event) throws IOException {
-    	
+    public void changeScene(ActionEvent event) throws IOException {    	
     	model.computePCM(originalGroups.stream().filter(group -> !group.getElements().isEmpty()).toList());
-    	
-    	FXMLLoader loader = new FXMLLoader(getClass().getResource("/ConstraintsView.fxml"));
-    	Parent root = loader.load();
-    	
-    	ConstraintsViewController constraintController = loader.getController();
+
+    	ConstraintsViewController constraintController = SceneManager.getConstraintsLoader().getController();
     	constraintController.setModel(model);
     	
     	Scene scene = ((Node)event.getSource()).getScene();
-    	scene.setRoot(root);
+    	scene.setRoot((Parent)SceneManager.getConstraintScene());
     	
     	constraintController.setupLayout();
     }

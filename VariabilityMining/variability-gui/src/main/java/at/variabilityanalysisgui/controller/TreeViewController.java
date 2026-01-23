@@ -1,7 +1,6 @@
-/***
- The MIT License (MIT)
-
- Copyright (c) 2025 Michael Schmidhammer
+/**
+ * Modified from Variability Analyser GUI
+ * Original license: MIT License (c) 2025 Michael Schmidhammer
  */
 
 package at.variabilityanalysisgui.controller;
@@ -16,9 +15,12 @@ import guiModel.Group;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.util.*;
 
@@ -67,10 +69,12 @@ public class TreeViewController {
             }
         });
     		
-        Platform.runLater(() -> {
-        	Scene scene = featureTreeView.getScene();
-            featureTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
-        });
+        featureTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
+        	if(newScene != null) {
+        		Scene scene = featureTreeView.getScene();
+                featureTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
+        	}
+    	});
     }
 
     public void populateTreeView(List<Group> groups, List<Element> visibleElements) {
@@ -255,7 +259,6 @@ public class TreeViewController {
     }
 
     public void initializeHierarchyButtons() {
-        //hierarchyButtonHBox.getChildren().clear();
         ToggleButton hierarchyTreeButton = new ToggleButton("Tree");
         hierarchyButtonHBox.getChildren().add(hierarchyTreeButton);
         hierarchyTreeButton.setOnAction(event -> {
@@ -327,13 +330,15 @@ public class TreeViewController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == yesButton) {
             for(TreeItem<FeatureTreeNode> child: item.getChildren()) {
-                Element element = (Element) child.getValue().getData();
-                Group group = findGroupContainingElement(controller.getOriginalGroups(), element);
-                if (group != null) {
-                    group.getElements().remove(element);
-                }
-                deleteItem(item);
+            	if(child.getValue().getData() instanceof Element) {
+	                Element element = (Element) child.getValue().getData();
+	                Group group = findGroupContainingElement(controller.getOriginalGroups(), element);
+	                if (group != null) {
+	                    group.getElements().remove(element);
+	                }
+            	}   
             }
+            deleteItem(item);
             removeElementAndRefreshGroup(item);
 
         }
@@ -361,6 +366,9 @@ public class TreeViewController {
             TreeItem<FeatureTreeNode> parent = item.getParent();
             if (parent != null) {
                 parent.getChildren().remove(item);
+                if(item.getValue().getData() instanceof Group) {
+                	controller.getOriginalGroups().remove(item.getValue().getData());
+                }
                 System.out.println("Removed item: " + item.getValue().getDisplayName());
                 removeEmptyContainers(parent);
             }

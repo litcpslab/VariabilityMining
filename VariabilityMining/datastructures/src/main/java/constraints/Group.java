@@ -2,6 +2,8 @@ package constraints;
 
 import java.util.List;
 
+import com.google.gson.annotations.Expose;
+
 import variabilityMining.Feature;
 /*
 Copyright (c) 2025 Johannes Kepler University Linz
@@ -11,10 +13,13 @@ Alexander Stummer - Initial Implementation
 */
 public class Group implements Constraint {
 
+	@Expose
 	protected List<Feature> features;
 	
+	@Expose
 	protected Feature parentFeature;
 	
+	@Expose
 	protected String type;
 	
 	public Group(List<Feature> features, Feature parentFeature, String type) {

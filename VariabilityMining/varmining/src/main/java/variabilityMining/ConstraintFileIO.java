@@ -84,8 +84,8 @@ public class ConstraintFileIO {
 	
 	public static void writeConstraintsToFile(File selectedFile, Set<Constraint> constraints, List<Feature> features, Feature base) {
 		
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			
+		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
+		
 		List<Group> groupList = constraints.stream().filter(c -> c instanceof Group).map(c -> (Group) c).collect(Collectors.toList());
 		
 		List<Constraint> ctcs = constraints.stream().filter(c -> !(c instanceof Group)).collect(Collectors.toList());

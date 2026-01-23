@@ -12,6 +12,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 
+import at.variabilityanalysisgui.controller.SceneManager;
+
 
 public class MainApp extends Application {
 
@@ -24,8 +26,7 @@ public class MainApp extends Application {
             System.err.println("Cannot find FXML file.");
             return;
         }
-        FXMLLoader fxmlLoader = new FXMLLoader(fxmlLocation);
-        Scene scene = new Scene(fxmlLoader.load(), 900, 700);
+        Scene scene = new Scene(SceneManager.getExtractionScene(), 900, 700);
         
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Variability Analyser");

@@ -14,7 +14,7 @@ Alexander Stummer - Initial Implementation
 */
 public class UVLGenerator {
 	
-	private static final String PATH = "Enter your path here";
+	private static final String PATH = "C:/Users/AK122272/Desktop/FeatureIDE-workspace/VarflixResultProject/model.uvl";
 
 	public static void createUVLModel(Feature root, List<SimpleConstraint> ctcs) {
 		
@@ -42,7 +42,12 @@ public class UVLGenerator {
 			return;
 		}
 		
-		writer.write("\t".repeat(indentCount) + current.getName() + "\n");
+		if(current.getName().startsWith("ALT") || current.getName().startsWith("OR")) {
+			writer.write("\t".repeat(indentCount) + current.getName() + "  {abstract}\n");
+		} else {
+			writer.write("\t".repeat(indentCount) + current.getName() + "\n");
+		}
+		
 		
 		indentCount++;
 		

@@ -29,6 +29,8 @@ Alexander Stummer - Initial Implementation
 public class DataMapper1499 {
 	
 	private ModelMapper mapper = new ModelMapper();
+	
+	private TypeMap<Group, JSON1499VariabilityGroup> typeMap = this.mapper.createTypeMap(Group.class, JSON1499VariabilityGroup.class);
 
 	public List<Group> map1499VariabilityGroup(List<JSON1499VariabilityGroup> groupings){
 		
@@ -65,6 +67,12 @@ public class DataMapper1499 {
 		            if (indexOld != -1 && indexNew != -1) {
 		                location = connection[0].substring(0, indexOld);
 		                name = connection[0].substring(indexOld+1) + " -> " + connection[1].substring(indexNew+1);
+		            } else if(indexOld == -1 && indexNew != -1) {
+		            	location = connection[0].substring(0, connection[0].lastIndexOf('.'));
+		            	name = connection[0] + " -> " + connection[1].substring(indexNew+1);
+		            } else if(indexOld != -1 && indexNew == -1) {
+		            	location = connection[0].substring(0, indexOld);
+		            	name = connection[0].substring(indexOld+1) + " -> " + connection[1];
 		            }
 		        } else {
 		            int index = line.lastIndexOf(';');
@@ -109,8 +117,6 @@ public class DataMapper1499 {
 		List<JSON1499VariabilityGroup> mappedGroups = new ArrayList<>();
 		
 		configureMapper();
-		
-		TypeMap<Group, JSON1499VariabilityGroup> typeMap = this.mapper.createTypeMap(Group.class, JSON1499VariabilityGroup.class);
 		
 		Converter<Element, IEC61499Variability> variabilityConverter = new Converter<Element, IEC61499Variability>() {
 
@@ -163,8 +169,6 @@ public class DataMapper1499 {
 		mapper.addConverter(nameConverter);
 		
 		typeMap.addMappings(mapping -> mapping.using(occurrenceMapper).map(Group::getOccurrences, JSON1499VariabilityGroup::setOccurrences));
-		
-		
 		
 		typeMap.addMappings(mapping -> mapping.using(nameConverter).map(Group::getName, JSON1499VariabilityGroup::setAttributeName));
 		

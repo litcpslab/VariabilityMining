@@ -26,11 +26,13 @@ public class VarflixAPI {
 	
 	private FormalConceptAnalysis analysis;
 	
+	private VariabilityModelGenerator generator = new VariabilityModelGenerator();
+	
 	public List<Group> computeInitialGroups(){
 		
 		extractor = new IEC61499VariabilityExtractor();
 		
-		List<JSON1499VariabilityGroup> initialGroups = (List<JSON1499VariabilityGroup>) extractor.performAutomaticMining("Enter path to file with list of variants", "Enter path to file with 1499 diff results");
+		List<JSON1499VariabilityGroup> initialGroups = (List<JSON1499VariabilityGroup>) extractor.performAutomaticMining("<Provide a path to the variant file here>", "<Provide a path to the IEC61499 diff result here>");
 		
 		mapper = new DataMapper1499();
 		
@@ -62,8 +64,6 @@ public class VarflixAPI {
 	}
 	
 	public void generateModel(Feature base, List<Feature> features, List<Constraint> constraints) {
-		VariabilityModelGenerator generator = new VariabilityModelGenerator();
-		
 		generator.generateVariabilityModel(base, features, constraints);
 	}
 

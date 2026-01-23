@@ -40,7 +40,7 @@
                 <ListView fx:id="detailOccurrencesListView" prefHeight="100.0" />
             <Label fx:id="detailElementLabel" style="-fx-font-weight: bold;" text="Element" />
             <TextArea fx:id="detailElementData" prefHeight="100.0" prefWidth="200.0" />
-                <Label fx:id="detailSubElementLabel" style="-fx-font-weight: bold;" text="Sublements" />
+                <Label fx:id="detailSubElementLabel" style="-fx-font-weight: bold;" text="Subelements" />
                 <ListView fx:id="detailSubElementListView" prefHeight="200" />
                 <Button fx:id="detailCloseButton" text="Close Details" />
             </VBox>

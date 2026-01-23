@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.stream.Stream;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -42,11 +44,16 @@ public class IEC61499VariabilityExtractor implements IVariabilityExtractor {
 		
 		groupings = readData(inputPath);
 		
+		Set<String> groupNames = new HashSet<>();
+		
 		int count = 1;
 		for(JSON1499VariabilityGroup group: groupings) {
 			mapOccurrences(group, variants);	
-			if(group.getElements().size() == 1 && !(groupings.stream().anyMatch(g -> g.getAttributeName() != null && g.getAttributeName().equals(group.getElements().get(0).getElementName())))) {
-				group.setAttributeName(group.getElements().get(0).getElementName());
+			
+			if(group.getElements().size() == 1 && !groupNames.contains(group.getElements().get(0).getElementName())) {
+				String name = group.getElements().get(0).getElementName();
+				group.setAttributeName(name);
+				groupNames.add(name);
 			} else if(group.getOccurrences().size() == variants.size()){
 				group.setAttributeName("Core");
 			} else if(group.getElements().size() > 1 && group.getElements().size() <= 5){
@@ -57,9 +64,10 @@ public class IEC61499VariabilityExtractor implements IVariabilityExtractor {
 					}
 				}
 				
-				if(!groupName.isEmpty()) {
+				if(!groupName.isEmpty() && !groupNames.contains(groupName.substring(1))) {
 					groupName = groupName.substring(1);
 					group.setAttributeName(groupName);
+					groupNames.add(groupName);
 				} else {
 					group.setAttributeName("Group" + count);
 				}
@@ -98,7 +106,7 @@ public class IEC61499VariabilityExtractor implements IVariabilityExtractor {
 		
 		return groupings;
 	}
-
+	
 	private void mapOccurrences(JSON1499VariabilityGroup group, List<IEC61499Variant> variants) {
 		String label = group.getLabel();
 		
@@ -108,7 +116,7 @@ public class IEC61499VariabilityExtractor implements IVariabilityExtractor {
 			group.addOccurrence(variant);
 		} else {
 			for(IEC61499Variant current: variants) {
-				if(label.contains(current.getName())) {
+				if(label.contains(current.getName() + "_") || label.indexOf(current.getName()) + current.getName().length() == label.length()) {
 					group.addOccurrence(current);
 				}
 			}

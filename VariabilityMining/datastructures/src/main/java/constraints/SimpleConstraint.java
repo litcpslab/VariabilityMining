@@ -2,6 +2,8 @@ package constraints;
 
 import java.util.Objects;
 
+import com.google.gson.annotations.Expose;
+
 import variabilityMining.Feature;
 
 /*
@@ -12,10 +14,13 @@ Alexander Stummer - Initial Implementation
 */
 public class SimpleConstraint implements Constraint {
 
+	@Expose
 	protected Feature feature1;
 	
+	@Expose
 	protected Feature feature2;
 	
+	@Expose
 	protected String type;
 	
 	public SimpleConstraint(Feature feature1, Feature feature2, String type) {

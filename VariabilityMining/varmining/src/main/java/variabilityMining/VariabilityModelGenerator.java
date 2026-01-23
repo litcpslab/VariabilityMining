@@ -62,19 +62,27 @@ public class VariabilityModelGenerator {
 			
 		buildGroups(base, new ArrayList<>(constraints.stream().filter(c -> c instanceof Group).map(c -> (Group) c).toList()));
 			
-		List<Feature> uncoveredFeatures = features.stream().filter(f -> f.getParent() == null).toList();
+		List<Feature> uncoveredFeatures = features.stream().filter(f -> f.getParent() == null && !f.equals(root)).toList();
 			
 		List<SimpleConstraint> relevantConstraints = constraints.stream().filter(c -> c instanceof SimpleConstraint).map(c -> (SimpleConstraint) c)
 				.filter(f -> uncoveredFeatures.contains(f.getFeature1()) || uncoveredFeatures.contains(f.getFeature2())).toList();
-			
+		
 		buildOtherRelations(uncoveredFeatures, relevantConstraints);
+		
+		positionUncoveredFeatures(uncoveredFeatures.stream().filter(f -> f.getParent() == null).toList());
 			
 		List<SimpleConstraint> ctcs = constraints.stream().filter(c -> !coveredConstraints.contains(c) && c instanceof SimpleConstraint).map(c -> (SimpleConstraint) c).toList();
 			
 		UVLGenerator.createUVLModel(root, ctcs);		
 	}
 
-
+	private void positionUncoveredFeatures(List<Feature> uncoveredFeatures) {
+		for(Feature feature: uncoveredFeatures) {
+			root.addChild(feature);
+			feature.setParent(root);
+		}
+	}
+	
 
 	/*
 	 * Check the remaining constraints and determine which are CTCs and which can directly be integrated in the variability model
@@ -155,6 +163,7 @@ public class VariabilityModelGenerator {
 	private void buildGroups(Feature base, List<Group> groups) {
 		
 		int orCount = 0;
+		altCount = 0;
 		
 		List<Group> baseGroups = groups.stream().filter(g -> g.getParent().equals(base)).toList();
 		
@@ -178,9 +187,9 @@ public class VariabilityModelGenerator {
 					}
 					
 					root.addChild(orParent);
-					
+					orParent.setMandatory(true);
 					orParent.setOrParent(true);
-					groupChildren = group.getFeatures();//.stream().map(f -> fmFeatureMap.get(f.getName())).toList();
+					groupChildren = group.getFeatures();
 					groupChildren.stream().forEach(f -> f.setParent(orParent));
 					orParent.setChildren(groupChildren);
 					break;
@@ -195,9 +204,9 @@ public class VariabilityModelGenerator {
 						altParent.setParent(root);
 					}
 					root.addChild(altParent);
-					
+					altParent.setMandatory(true);
 					altParent.setAlternativeParent(true);
-					groupChildren = group.getFeatures();//.stream().map(f -> fmFeatureMap.get(f.getName())).toList();
+					groupChildren = group.getFeatures();
 					groupChildren.stream().forEach(f -> f.setParent(altParent));
 					altParent.setChildren(groupChildren);
 					break;
@@ -255,7 +264,6 @@ public class VariabilityModelGenerator {
 				}
 			}
 		}
-		
 	}
 		
 
@@ -273,7 +281,4 @@ public class VariabilityModelGenerator {
 			root.addChild(feature);
 		}
 	}
-
-	
-	
 }

@@ -47,10 +47,16 @@ public class InputParser {
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String fullLine;
             String line;
+            boolean prevLineIsEmpty = false;
             while ((fullLine = reader.readLine()) != null) {
                 line = fullLine.trim();
+                if(line.isBlank()) {
+                	prevLineIsEmpty = true;
+                	continue;
+                }                 
 
-                if (line.startsWith(GROUP_PREFIX) || line.startsWith(CORE_PREFIX)) { // New Group
+                if (line.startsWith(GROUP_PREFIX) || line.startsWith(CORE_PREFIX) || prevLineIsEmpty) { // New Group
+                	prevLineIsEmpty = false;
                     if (currentGroup != null && !codeSnippet.isEmpty()) {
                         // Assuming any leftover snippet must be a Java element
                         Element previousElement = parseJavaElement(codeSnippet.toString().trim());
@@ -85,7 +91,7 @@ public class InputParser {
                             if(this.type == ExtractionType.UNKNOWN) {
                                 if(JAVA_ELEMENT_PATTERN.matcher(line).matches()) this.type = ExtractionType.JAVA;
                                 else if (line.contains(";")) this.type = ExtractionType.IEC61499;
-                                else this.type = ExtractionType.UNKNOWN;
+                                else this.type = ExtractionType.IEC61499;
                             }
 
                             if(this.type == ExtractionType.JAVA) {

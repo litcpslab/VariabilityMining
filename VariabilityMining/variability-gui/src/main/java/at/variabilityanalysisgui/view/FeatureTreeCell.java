@@ -1,7 +1,6 @@
-/***
- The MIT License (MIT)
-
- Copyright (c) 2025 Michael Schmidhammer
+/**
+  Modified from Variability Analyser GUI
+  Original license: MIT License (c) 2025 Michael Schmidhammer
  */
 
 package at.variabilityanalysisgui.view;
@@ -20,7 +19,6 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
 
     private final HBox hbox;
     private final Label nameLabel = new Label();
-    private final Label pathLabel = new Label();
     private final Label typeLabel = new Label();
     private final Button deleteButton = new Button("X");
 
@@ -56,8 +54,6 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
             setGraphic(null);
         } else {
             nameLabel.setText(item.getDisplayName());
-            pathLabel.setText(item.getPath());
-            pathLabel.setStyle("-fx-text-fill: #A0A0A0; -fx-font-size: 10px;");
             if (item.getType() == FeatureTreeNode.DataType.ELEMENT) {
                 typeLabel.setText("E");
                 typeLabel.setStyle("-fx-text-fill: #00AA00;");
@@ -68,14 +64,13 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
                 typeLabel.setText("G");
                 typeLabel.setStyle("-fx-text-fill: #A0A0A0;");
             }
-            hbox.getChildren().setAll(nameLabel, typeLabel, pathLabel);
+            hbox.getChildren().setAll(nameLabel, typeLabel);
 
             if (item.getData() != null) {
                 Region spacer = new Region();
                 HBox.setHgrow(spacer, Priority.ALWAYS);
                 hbox.getChildren().add(spacer);
                 hbox.getChildren().add(deleteButton);
-                pathLabel.setMinWidth(0);
                 hbox.setMinWidth(0);
                 hbox.setPrefWidth(100);
             }

@@ -3,6 +3,8 @@ package variabilityMining;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import com.google.gson.annotations.Expose;
 /*
 Copyright (c) 2025 Johannes Kepler University Linz
 LIT Cyber-Physical Systems Lab
@@ -11,6 +13,7 @@ Alexander Stummer - Initial Implementation
 */
 public class Feature {
 
+	@Expose
 	private String name;
 	
 	private Feature parent;

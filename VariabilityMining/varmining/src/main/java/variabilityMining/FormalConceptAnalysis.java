@@ -141,12 +141,13 @@ public class FormalConceptAnalysis {
 				checkForRedundancy(potentialImplication, alternatives);
 			}
 		}
-				
-		checkForGroupRedundancy(alternatives);
 		
-		
+		checkForGroupRedundancy(alternatives);	
 	}
 
+	/*
+	 * Checks whether mutual exclusion constraints are already covered by another one or groups by substituting features from implications
+	 */
 	private void checkForRedundancy(Implication implication, List<AlternativeGroup> alternatives) {
 		Feature left = implication.getFeature1();
 
@@ -230,20 +231,17 @@ public class FormalConceptAnalysis {
 				for(MutualExclusion compareMutex: allMutex) {
 					if(compareMutex.getFeature1().equals(mutex.getFeature1()) && compareMutex.getFeature2().equals(mutex.getFeature2()) ||
 							(compareMutex.getFeature1().equals(mutex.getFeature2()) && compareMutex.getFeature2().equals(mutex.getFeature1()))){
-								removedMutex.add(compareMutex);
-								break;
-							}
+						removedMutex.add(compareMutex);
+						break;
+					}
 				}
 			}
 				
 		}
 		
-		
 		if(!removedMutex.isEmpty()) {
 			constraints.removeAll(removedMutex);
 		}
-		
-		
 	}
 
 	private void buildImplicationMap() {
@@ -276,26 +274,45 @@ public class FormalConceptAnalysis {
 				List<Feature> matchSet = new ArrayList<>();
 				matchSet.addAll(implicationMap.get(key));
 				matchSet.removeAll(usedFeatures);
-				if(matchSet.size() > 1 && checkCondition(key, matchSet)) {
-					OrRelation orRelation = new OrRelation(matchSet, key);
+				if(matchSet.size() > 1 && isParentFeatureCovered(key, matchSet)) {
+					List<MutualExclusion> mutExs = new ArrayList<>();
+					if(checkAlternativeConnection(matchSet)) {
+						AlternativeGroup alternative = new AlternativeGroup(matchSet, key);
+						constraints.add(alternative);	
+						mutExs = constraints.stream().filter(c -> c instanceof MutualExclusion).map(c -> (MutualExclusion)c).filter(mutex -> (matchSet.contains(mutex.getFeature1()) && matchSet.contains(mutex.getFeature2()))).collect(Collectors.toList());
+						//TODO check for potentially dead features when adding an alternative
+					} else {
+						OrRelation orRelation = new OrRelation(matchSet, key);
+						constraints.add(orRelation);
+					}
 						
 					usedFeatures.addAll(matchSet);
-					constraints.add(orRelation);
 					added = true;
 
 					if(added) {
 						Set<Constraint> removedConstraints = constraints.stream().filter(c -> c instanceof Implication).filter(c -> ((Implication) c).getFeature2().equals(key)).collect(Collectors.toSet());
-						
+
 						constraints.removeAll(removedConstraints);
-					}
-					
+						constraints.removeAll(mutExs);
+					}			
 				}
 			}
 		}
-		
 	}
 
-	private boolean checkCondition(Feature key, List<Feature> subFeatures) {
+	private boolean checkAlternativeConnection(List<Feature> matchSet) {	
+		for(Feature feature: matchSet) {
+			for(Feature other: matchSet) {
+				if(feature != other && !context.getExtent(context.getAttributeIndex(feature.getName())).newIntersect(context.getExtent(context.getAttributeIndex(other.getName()))).isEmpty()) {
+					return false;
+				}
+			}
+		}
+				
+		return true;
+	}
+
+	private boolean isParentFeatureCovered(Feature key, List<Feature> subFeatures) {
 		List<Integer> extents = context.getExtent(context.getAttributeIndex(key.getName())).toList();		
 		
 		Set<Integer> subExtents = new HashSet<>();
@@ -325,7 +342,6 @@ public class FormalConceptAnalysis {
 						
 						Feature currentFeature = getFeatureByName(context.getAttributeName(order.getConceptReducedIntent(key).first()));
 						Feature mutexFeature = getFeatureByName(context.getAttributeName(order.getConceptReducedIntent(key2).first()));
-						
 						
 						constraints.add(new MutualExclusion(currentFeature, mutexFeature));
 
@@ -388,19 +404,31 @@ public class FormalConceptAnalysis {
 			Set<Feature> values = mutexMap.get(key);
 			boolean isGroup = true;
 			
+			Set<Feature> invalidCandidates = new HashSet<>();
+			
 			for(Feature f1: values) {
 				for(Feature f2: values) {
-					if(f1 != f2 && isGroup) {
+					if(f1 != f2 && isGroup && !invalidCandidates.contains(f1) && !invalidCandidates.contains(f2)) {
 						MutualExclusion testCondition1 = new MutualExclusion(f1, f2);
 						MutualExclusion testCondition2 = new MutualExclusion(f2, f1);
 						
 						if(!mutualExclusions.contains(testCondition1) && !mutualExclusions.contains(testCondition2)) {
-							isGroup = false;
+							if(constraints.contains(new Implication(f1, f2))) {
+								invalidCandidates.add(f1);
+							} else if(constraints.contains(new Implication(f2, f1))) {
+								invalidCandidates.add(f2);
+							} else if(constraints.contains(new Equivalence(f1, f2))) {
+								invalidCandidates.add(f2);
+							} else {
+								isGroup = false;
+							}
 						}
 					}
 				}
 				
 			}
+			
+			values.removeAll(invalidCandidates);
 			
 			if(isGroup) {
 				boolean added = false;
@@ -429,14 +457,21 @@ public class FormalConceptAnalysis {
 					reducedValues.removeAll(usedFeatures);
 					
 					if(reducedValues.size() >= 2) {
-											
-						alternatives.add(new AlternativeGroup(reducedValues, findParent(reducedValues)));
-												
-						usedFeatures.addAll(reducedValues);
-					}
+								
+						Feature parent = findParent(reducedValues);
 
+						if(parent.equals(base)) {
+							if(isParentFeatureCovered(base, reducedValues)){
+								alternatives.add(new AlternativeGroup(reducedValues, base));
+								usedFeatures.addAll(reducedValues);
+							}
+						} else {
+							alternatives.add(new AlternativeGroup(reducedValues, findParent(reducedValues)));
+							usedFeatures.addAll(reducedValues);
+						}			
+					
+					}
 				}
-				
 			}
 		}
 		
@@ -454,8 +489,8 @@ public class FormalConceptAnalysis {
 		
 	}
 
+
 	private Feature findParent(List<Feature> reducedValues) {
-		
 		for(Feature key: implicationMap.keySet()) {
 			if(implicationMap.get(key).containsAll(reducedValues)) {
 				return key;
