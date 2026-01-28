@@ -5,6 +5,9 @@
 
 package at.variabilityanalysisgui.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import at.variabilityanalysisgui.controller.TreeViewController;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -21,7 +24,6 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
     private final Label nameLabel = new Label();
     private final Label typeLabel = new Label();
     private final Button deleteButton = new Button("X");
-
     private final TreeViewController controller;
 
     public FeatureTreeCell(TreeViewController controller) {
@@ -82,56 +84,61 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
 
     private void setupDragAndDrop() {
         setOnDragDetected(event -> {
-            if (getItem() != null && getItem().getType() == FeatureTreeNode.DataType.ELEMENT) {
+            if (getItem() != null && (getItem().getType() == FeatureTreeNode.DataType.ELEMENT || getItem().getType() == FeatureTreeNode.DataType.GROUP)) {
+            	List<TreeItem<FeatureTreeNode>> selectedItems = new ArrayList<>(controller.getFeatureTreeView().getSelectionModel().getSelectedItems());
                 Dragboard db = startDragAndDrop(TransferMode.MOVE);
                 ClipboardContent content = new ClipboardContent();
-                content.putString(getItem().getTechnicalName());
+                content.putString("DnD started");
                 db.setContent(content);
-                controller.setDraggedItem(getTreeItem());
+                controller.setDraggedItems(selectedItems);
                 event.consume();
             }
         });
 
         setOnDragOver(event -> {
             TreeItem<FeatureTreeNode> targetItem = getTreeItem();
-            TreeItem<FeatureTreeNode> sourceItem = controller.getDraggedItem();
-
+            List<TreeItem<FeatureTreeNode>> sourceItems = controller.getDraggedItems();
 
             boolean canDrop = false;
-            if (targetItem != null && targetItem.getValue() != null && sourceItem != null && sourceItem.getValue() != null) {
+            if (targetItem != null && targetItem.getValue() != null && sourceItems != null) { 
                 FeatureTreeNode targetNode = targetItem.getValue();
-                FeatureTreeNode sourceNode = sourceItem.getValue();
 
-                if (sourceNode.getType() == FeatureTreeNode.DataType.ELEMENT &&
-                        (targetNode.getType() == FeatureTreeNode.DataType.GROUP || targetNode.getType() == FeatureTreeNode.DataType.ELEMENT)) {
+                if((targetNode.getType() == FeatureTreeNode.DataType.GROUP || targetNode.getType() == FeatureTreeNode.DataType.ELEMENT) 
+                        && !sourceItems.contains(targetItem)) {
                     canDrop = true;
                 }
 
-                if (targetItem == sourceItem || targetItem == sourceItem.getParent() // Prevent dropping onto self or parent
-                        ||  sourceNode.getType() == FeatureTreeNode.DataType.ELEMENT && // Prevent dropping element into the same group it's already in (directly)
-                            targetNode.getType() == FeatureTreeNode.DataType.GROUP &&
-                            sourceItem.getParent() == targetItem) {
+                if(sourceItems.contains(targetItem) || sourceItems.contains(targetItem.getParent()) || targetIsSameGroup(sourceItems, targetItem)) {
                     canDrop = false;
                 }
             }
 
-            if (canDrop) {
+            if(canDrop) {
                 event.acceptTransferModes(TransferMode.MOVE);
             }
             event.consume();
         });
 
         setOnDragDropped(event -> {
-            if (controller.getDraggedItem() != null) {
-                TreeItem<FeatureTreeNode> sourceItem = controller.getDraggedItem();
+            if(controller.getDraggedItems() != null) {
+            	List<TreeItem<FeatureTreeNode>> sourceItems = controller.getDraggedItems();
                 TreeItem<FeatureTreeNode> targetItem = getTreeItem();
-                if (sourceItem.getValue().getType() == FeatureTreeNode.DataType.ELEMENT
-                        && (targetItem.getValue().getType() == FeatureTreeNode.DataType.GROUP || targetItem.getValue().getType() == FeatureTreeNode.DataType.ELEMENT)) {
-                    controller.moveElementToGroup(sourceItem, targetItem);
+                if((targetItem.getValue().getType() == FeatureTreeNode.DataType.GROUP || targetItem.getValue().getType() == FeatureTreeNode.DataType.ELEMENT)) {
+                	controller.moveElementsToGroup(sourceItems, targetItem);
                 }
+                
                 event.setDropCompleted(true);
                 event.consume();
             }
         });
     }
+
+	private boolean targetIsSameGroup(List<TreeItem<FeatureTreeNode>> sourceItems, TreeItem<FeatureTreeNode> targetItem) {
+		for(TreeItem<FeatureTreeNode> sourceItem: sourceItems) {
+			if(targetItem.getChildren().contains(sourceItem) || targetItem.getParent().equals(sourceItem.getParent())) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

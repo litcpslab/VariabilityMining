@@ -12,15 +12,11 @@ import guiModel.Difference;
 import guiModel.Element;
 import guiModel.ExtractionType;
 import guiModel.Group;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 import java.util.*;
 
@@ -42,7 +38,7 @@ public class TreeViewController {
 
     Controller controller;
 
-    private TreeItem<FeatureTreeNode> draggedItem = null;
+    private List<TreeItem<FeatureTreeNode>> draggedItems = new ArrayList<>();
 
     public TreeViewController(Controller controller, TreeView<FeatureTreeNode> featureTreeView, HBox hierarchyButtonHBox) {
         this.featureTreeView = featureTreeView;
@@ -68,6 +64,8 @@ public class TreeViewController {
                 controller.showDetailsPane(node.getData(), newValue);
             }
         });
+        
+        featureTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
     		
         featureTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
         	if(newScene != null) {
@@ -321,10 +319,10 @@ public class TreeViewController {
         ButtonType onlyDirectoryButton = new ButtonType("Keep Subelements");
         ButtonType noButton = new ButtonType("No");
         if (item.getValue().isDirectory() && item.getValue().getType() == FeatureTreeNode.DataType.ELEMENT) {
-            alert.setContentText("Are you sure you want to remove this item and all its subelements?");
+            alert.setContentText("Do you want to remove this item and all its subelements?");
             alert.getButtonTypes().setAll(yesButton, onlyDirectoryButton, noButton);
         } else {
-            alert.setContentText("Are you sure you want to remove this item from the view?");
+            alert.setContentText("Do you want to remove this item from the view?");
             alert.getButtonTypes().setAll(yesButton, noButton);
         }
         Optional<ButtonType> result = alert.showAndWait();
@@ -382,72 +380,94 @@ public class TreeViewController {
         }
     }
 
-    public TreeItem<FeatureTreeNode> getDraggedItem() {
-        return draggedItem;
+    public List<TreeItem<FeatureTreeNode>> getDraggedItems() {
+        return draggedItems;
     }
 
-    public void setDraggedItem(TreeItem<FeatureTreeNode> draggedItem) {
-        this.draggedItem = draggedItem;
+    public void setDraggedItems(List<TreeItem<FeatureTreeNode>> selectedItems) {
+    	this.draggedItems = selectedItems;
     }
 
-    public void moveElementToGroup(TreeItem<FeatureTreeNode> elementItem, TreeItem<FeatureTreeNode> targetGroupItem) {
-        if (elementItem == null || targetGroupItem == null ||
-                elementItem.getValue().getType() != FeatureTreeNode.DataType.ELEMENT ||
+    public void moveElementsToGroup(List<TreeItem<FeatureTreeNode>> elementItems, TreeItem<FeatureTreeNode> targetGroupItem) {
+        if(elementItems == null || targetGroupItem == null ||
                 targetGroupItem.getValue().isDirectory() && targetGroupItem.getValue().getType() != FeatureTreeNode.DataType.ELEMENT) {
             System.err.println("Invalid types for moveElementToGroup");
             return;
         }
 
-        // Open dialogue for recursive move of directory
-        if (elementItem.getValue().isDirectory()) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Move Directory");
-            alert.setHeaderText("Move Directory and all its subelements?");
-            alert.setContentText("Do you want to move the directory and all its subelements to the new group?");
-            ButtonType yesButton = new ButtonType("Yes");
-            ButtonType onlyDirectoryButton = new ButtonType("Keep Subelements");
-            ButtonType noButton = new ButtonType("No");
-            alert.getButtonTypes().setAll(yesButton, onlyDirectoryButton, noButton);
-            Optional<ButtonType> result = alert.showAndWait();
-            if (result.isPresent() && result.get() == noButton) {
-                return;
-            }
-            if (result.isPresent() && result.get() == yesButton) {
-                for(TreeItem<FeatureTreeNode> child: elementItem.getChildren()) {
-                    moveElementToGroup(child, targetGroupItem);
+        int index = rootNode.getChildren().indexOf(targetGroupItem);
+        for(TreeItem<FeatureTreeNode> elementItem: elementItems) {
+        	 // Open dialogue for recursive move of directory
+            if(elementItem.getValue().isDirectory()) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Move Directory");
+                alert.setHeaderText("Move Directory and all its subelements?");
+                alert.setContentText("Do you want to move the directory and all its subelements to the new group?");
+                ButtonType yesButton = new ButtonType("Yes");
+                ButtonType onlyDirectoryButton = new ButtonType("Keep Subelements");
+                ButtonType noButton = new ButtonType("No");
+                alert.getButtonTypes().setAll(yesButton, onlyDirectoryButton, noButton);
+                Optional<ButtonType> result = alert.showAndWait();
+                if(result.isPresent() && result.get() == noButton) {
+                    return;
+                }
+                if(result.isPresent() && result.get() == yesButton) {
+                	moveElementsToGroup(elementItem.getChildren(), targetGroupItem);
                 }
             }
-        }
 
 
-        while(targetGroupItem.getValue().getType() != FeatureTreeNode.DataType.GROUP) {
-            targetGroupItem = targetGroupItem.getParent();
-        }
-
-        Element element = (Element) elementItem.getValue().getData();
-        Group targetGroup = (Group) targetGroupItem.getValue().getData();
-
-        Group sourceGroup = findGroupContainingElement(controller.getOriginalGroups(), element);
-
-        // Remove from old group's element list
-        boolean removed = sourceGroup.getElements().remove(element);
-        if (!removed) {
-            System.err.println("Failed to remove element from source group's list in model.");
-        } else {
-            // Add to new group's element list
-            targetGroup.getElements().add(element);
-
-            //refresh old group TreeItem
-            TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, sourceGroup.getName().get());
-            if (sourceGroupItem != null) {
-                refreshGroup(sourceGroupItem);
+            while(targetGroupItem.getValue().getType() != FeatureTreeNode.DataType.GROUP) {
+                targetGroupItem = targetGroupItem.getParent();
             }
-            // Add new group TreeItem
-            refreshGroup(targetGroupItem);
-            // remove old group TreeItem
-            deleteItem(elementItem);
 
-            System.out.println("Moved element '" + element.getName().get());
+            if(elementItem.getValue().getData() instanceof Element) {
+            	
+    	        Element element = (Element) elementItem.getValue().getData();
+    	        Group targetGroup = (Group) targetGroupItem.getValue().getData();
+    	
+    	        Group sourceGroup = findGroupContainingElement(controller.getOriginalGroups(), element);
+    	
+    	        // Remove from old group's element list
+    	        boolean removed = sourceGroup.getElements().remove(element);
+    	        if (!removed) {
+    	            System.err.println("Failed to remove element from source group's list in model.");
+    	        } else {
+    	            // Add to new group's element list
+    	            targetGroup.getElements().add(element);
+    	
+    	            //refresh old group TreeItem
+    	            TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, sourceGroup.getName().get());
+    	            
+    	            if (sourceGroupItem != null) {
+    	            	refreshGroup(sourceGroupItem);
+    	            	if(sourceGroup.getElements().isEmpty()) {
+        	            	handleDeleteAction(sourceGroupItem);
+        	            } 
+    	            }
+    	            // Add new group TreeItem
+    	            refreshGroup(targetGroupItem);
+    	            targetGroupItem = rootNode.getChildren().get(index);
+    	            // remove old group TreeItem
+    	            deleteItem(elementItem);
+    	
+    	            System.out.println("Moved element " + element.getName().get());
+    	        }
+            } else if(elementItem.getValue().getData() instanceof Group) {
+            	Group element = (Group) elementItem.getValue().getData();
+     	        Group targetGroup = (Group) targetGroupItem.getValue().getData();
+     	        
+     	        targetGroup.getElements().addAll(element.getElements());
+     	        element.getElements().clear();
+
+     	        TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, element.getName().get());
+     	        refreshGroup(targetGroupItem);
+     	        refreshGroup(sourceGroupItem);
+     	        handleDeleteAction(sourceGroupItem);
+     	
+     	        System.out.println("Moved element " + element.getName().get());
+            }
         }
     }
+       
 }

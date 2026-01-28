@@ -259,8 +259,6 @@ public class Controller {
     	
     	Scene scene = ((Node)event.getSource()).getScene();
     	scene.setRoot((Parent)SceneManager.getConstraintScene());
-    	
-    	constraintController.setupLayout();
     }
 
 }

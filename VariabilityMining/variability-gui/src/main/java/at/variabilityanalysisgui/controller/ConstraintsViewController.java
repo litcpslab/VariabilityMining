@@ -43,8 +43,6 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -451,8 +449,10 @@ public class ConstraintsViewController {
 	}
 	
 	public void setModel(VarflixAPI model) {
+		//if(this.model == null) {
 		this.model = model;
 		initData();
+		//}
 	}
 
 	/*
@@ -465,6 +465,12 @@ public class ConstraintsViewController {
 		model.generateModel(currentBase, features, new ArrayList<>(constraints));
 		initializeTreeView(constraints.stream().filter(c -> c instanceof Group).collect(Collectors.toList()));	
 		setUpFilterMenu();
+		groupTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
+			if(newScene != null) {
+				Scene scene = groupTreeView.getScene();
+	        	groupTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
+			}	
+	    });	
 	}
 	
 	/*
@@ -477,7 +483,6 @@ public class ConstraintsViewController {
 		constraintFilterMenu.setMaxWidth(300);
 		constraintFilterMenu.setPrefWidth(300);
 		    
-		
 		featureCheckComboBox = new CheckComboBox<>();
 		featureCheckComboBox.getItems().addAll(features);
 		featureCheckComboBox.setMinWidth(150);
@@ -499,7 +504,6 @@ public class ConstraintsViewController {
 			
 			for(Feature feature: checkedItems) {
 				addItems.addAll(findRelevantItems(feature));	 
-            	
 			}
 			
 			groupTreeView.getRoot().getChildren().addAll(addItems);
@@ -516,7 +520,6 @@ public class ConstraintsViewController {
 	    typeSpacer.setMaxWidth(40);
 	    typeSpacer.setPrefWidth(40);
 	    
-		
 		typeCheckComboBox = new CheckComboBox<>();
 		typeCheckComboBox.getItems().addAll("Or Group", "Alternative");
 		typeCheckComboBox.setMinWidth(150);
@@ -657,18 +660,6 @@ public class ConstraintsViewController {
 			}
 		}
 	}
-	
-	/*
-	 * Setup dynamic treeview size dependent on window size
-	 */
-	public void setupLayout() {
-		groupTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
-			if(newScene != null) {
-				Scene scene = groupTreeView.getScene();
-	        	groupTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
-			}	
-	    });		
-	}	
 	
 	/*
 	 * Helper method to get the list of all features
