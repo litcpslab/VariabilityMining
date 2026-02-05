@@ -30,6 +30,10 @@ public class Element extends Difference {
         }
         this.description = description;
     }
+    
+    public Element() {
+    	
+    }
 
     public int getId() {
 		return id;

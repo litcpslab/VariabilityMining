@@ -10,13 +10,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Stream;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import guiModel.Group;
-import mappers.DataMapper1499;
 import varflixModel.IVariability;
 import varflixModel.IVariabilityGroup;
 import varflixModel.IVariant;
@@ -24,7 +21,6 @@ import varflixModel.IEC61499.IEC61499Variability;
 import varflixModel.IEC61499.IEC61499Variant;
 import varflixModel.IEC61499.JSON1499VariabilityGroup;
 import variabilityMining.IVariabilityExtractor;
-import variabilityMining.ProductComparisonMatrix;
 
 /*
 Copyright (c) 2025 Johannes Kepler University Linz
@@ -32,14 +28,15 @@ LIT Cyber-Physical Systems Lab
 *Contributors:
 Alexander Stummer - Initial Implementation
 */
-public class IEC61499VariabilityExtractor implements IVariabilityExtractor {
+public class IEC61499VariabilityExtractor implements IVariabilityExtractor<IEC61499Variant, IEC61499Variability> {
 	
 	private List<JSON1499VariabilityGroup> groupings;
 	
 	private List<IEC61499Variant> variants;
 
 	@Override
-	public List<JSON1499VariabilityGroup> performAutomaticMining(String variantPath, String inputPath){
+	public List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> performAutomaticMining(String variantPath, String inputPath){
+	//public List<JSON1499VariabilityGroup> performAutomaticMining(String variantPath, String inputPath){
 		variants = parseVariants(variantPath);
 		
 		groupings = readData(inputPath);
@@ -104,7 +101,7 @@ public class IEC61499VariabilityExtractor implements IVariabilityExtractor {
             e.printStackTrace();
         }
 		
-		return groupings;
+		return new ArrayList<>(groupings);
 	}
 	
 	private void mapOccurrences(JSON1499VariabilityGroup group, List<IEC61499Variant> variants) {
@@ -166,6 +163,16 @@ public class IEC61499VariabilityExtractor implements IVariabilityExtractor {
 	
 	public List<IEC61499Variant> getVariants() {
 		return variants;
+	}
+	
+	public List<IEC61499Variability> getElements(){
+		List<IEC61499Variability> elements = new ArrayList<>();
+		
+		for(JSON1499VariabilityGroup group: groupings) {
+			elements.addAll(group.getElements());
+		}
+		
+		return elements;
 	}
 		
 

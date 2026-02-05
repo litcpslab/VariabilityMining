@@ -54,6 +54,7 @@ public class Controller {
     @FXML private Label detailLocationLabel;
     @FXML private TextArea detailLocationTextArea;
     @FXML private TextField detailGroupNameTextField;
+    @FXML private Button detailChangeNameButton;
     @FXML private Label detailOccurrenceLabel;
     @FXML private ListView<String> detailOccurrencesListView;
     @FXML private Label detailElementLabel;
@@ -66,7 +67,7 @@ public class Controller {
     @FXML private TreeView<FeatureTreeNode> featureTreeView;
 
     private final InputParser parser = new InputParser();
-    private List<guiModel.Group> originalGroups;
+    private List<Group> originalGroups;
     private ExtractionType artifactType = ExtractionType.UNKNOWN;
     private VarflixAPI model = new VarflixAPI();
 
@@ -77,16 +78,15 @@ public class Controller {
 
     @FXML
     public void initialize() {
-
         this.treeViewController = new TreeViewController(this, featureTreeView, hierarchyButtonHBox);
         this.filterController = new FilterController(this, searchTextField, filterButton);
         this.detailsController = new DetailsController(this, detailSubElementListView, detailScrollPane, detailsNameHBox,
-                detailLocationLabel, detailLocationTextArea, detailGroupNameTextField,
+                detailLocationLabel, detailLocationTextArea, detailGroupNameTextField, detailChangeNameButton,
                 detailOccurrenceLabel, detailOccurrencesListView, detailElementLabel, detailElementData,
                 detailSubElementLabel, detailCloseButton);
         
         originalGroups = model.computeInitialGroups();
-        artifactType = ExtractionType.IEC61499;
+        artifactType = ExtractionType.IEC61499;		//TODO Change dynamically based on artifacts used
         treeViewController.initializeHierarchyButtons();
         treeViewController.populateTreeView(filterController.getFilteredGroups(), null); // Populate with parsed data
         detailsController.hideDetailsPane();
@@ -163,14 +163,14 @@ public class Controller {
                 writer.write(ELEMENTS_HEADER);
                 writer.newLine();
                 for (Element element : group.getElements()) {
-                    if (this.parser.getType() == ExtractionType.JAVA) {
+                	if(artifactType == ExtractionType.JAVA) {
                         writer.write("(" + element.getLocation() + ")");
                         writer.newLine();
 
                         writer.write(element.getDescription());
                         writer.newLine();
 
-                    } else if (this.parser.getType() == ExtractionType.IEC61499) {
+                    } else if(artifactType == ExtractionType.IEC61499) {
                         writer.write(element.getDescription());
                         writer.newLine();
                     }
@@ -184,7 +184,7 @@ public class Controller {
             e.printStackTrace();
         }
     }
-
+    
     @FXML
     private void handleExit() {
         Platform.exit();

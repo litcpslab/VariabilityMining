@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
+import varflixModel.IVariability;
 import varflixModel.IVariabilityGroup;
 import varflixModel.IVariant;
-import varflixModel.IEC61499.JSON1499VariabilityGroup;
 
 /*
 *Copyright (c) 2024 Johannes Kepler University Linz
@@ -16,14 +15,14 @@ import varflixModel.IEC61499.JSON1499VariabilityGroup;
 *Contributors:
 *Alexander Stummer - initial API and implementation
 */
-public interface IVariabilityExtractor {
+public interface IVariabilityExtractor<V extends IVariant, E extends IVariability> {
 
 
-	default ProductComparisonMatrix buildPCM(List<? extends IVariant> variants, List<? extends IVariabilityGroup> groups) {
+	default ProductComparisonMatrix buildPCM(List<V> variants, List<IVariabilityGroup<V, E>> groups) {
 				
 		ProductComparisonMatrix pcm = new ProductComparisonMatrix(variants, groups);
 		
-		for(IVariabilityGroup group : groups) {
+		for(IVariabilityGroup<V, E> group : groups) {
 			pcm.setElementOccurrences(group);
 		}
 		
@@ -37,8 +36,10 @@ public interface IVariabilityExtractor {
 		return pcm;
 	}
 	
-	List<? extends IVariabilityGroup> performAutomaticMining(String variantPath, String inputPath);
+	List<IVariabilityGroup<V, E>> performAutomaticMining(String variantPath, String inputPath);
 	
-	List<? extends IVariant> getVariants();
+	List<V> getVariants();
+
+	List<E> getElements();
 	
 }

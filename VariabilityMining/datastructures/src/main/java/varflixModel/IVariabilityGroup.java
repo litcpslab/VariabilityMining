@@ -9,12 +9,16 @@ import java.util.Set;
 *Contributors:
 *Alexander Stummer - initial API and implementation
 */
-public interface IVariabilityGroup {
+public interface IVariabilityGroup<V extends IVariant, E extends IVariability> {
 
-	abstract Set<? extends IVariant> getOccurrences();
+	abstract Set<V> getOccurrences();
 	
-	abstract List<? extends IVariability> getElements();
+	abstract List<E> getElements();
 	
 	abstract String getAttributeName();
+	
+	abstract void setOccurrences(Set<V> variants);
+	
+	abstract void setAttributeName(String name);
 	
 }

@@ -12,7 +12,7 @@ import varflixModel.IVariabilityGroup;
 *Contributors:
 *Alexander Stummer - initial API and implementation
 */
-public class VariabilityGroup implements IVariabilityGroup {
+public class VariabilityGroup implements IVariabilityGroup<Variant, IVariability> {
 
 	
 	private Set<Variant> occurrences;
@@ -37,6 +37,16 @@ public class VariabilityGroup implements IVariabilityGroup {
 	
 	public Set<Variant> getOccurrences() {
 		return occurrences;
+	}
+
+	@Override
+	public void setOccurrences(Set<Variant> variants) {
+		this.occurrences = variants;		
+	}
+
+	@Override
+	public void setAttributeName(String name) {
+		this.attributeName = name;		
 	}
 	
 }

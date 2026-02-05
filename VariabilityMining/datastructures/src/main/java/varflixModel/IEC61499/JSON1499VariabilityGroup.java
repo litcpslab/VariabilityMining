@@ -14,7 +14,7 @@ LIT Cyber-Physical Systems Lab
 *Contributors:
 Alexander Stummer - Initial Implementation
 */
-public class JSON1499VariabilityGroup implements IVariabilityGroup {
+public class JSON1499VariabilityGroup implements IVariabilityGroup<IEC61499Variant, IEC61499Variability> {
 	
 	private int id;
 	
@@ -37,7 +37,7 @@ public class JSON1499VariabilityGroup implements IVariabilityGroup {
 		
 	}
 	
-	public List<? extends IVariability> getElements() {
+	public List<IEC61499Variability> getElements() {
 		return elements;
 	}
 	
@@ -54,10 +54,11 @@ public class JSON1499VariabilityGroup implements IVariabilityGroup {
 	}
 
 	@Override
-	public Set<? extends IVariant> getOccurrences() {
+	public Set<IEC61499Variant> getOccurrences() {
 		return occurrences;
 	}
 	
+	@Override
 	public void setOccurrences(Set<IEC61499Variant> occurrences) {
 		this.occurrences = occurrences;
 	}
@@ -71,6 +72,7 @@ public class JSON1499VariabilityGroup implements IVariabilityGroup {
 		occurrences.add(variant);
 	}
 	
+	@Override
 	public void setAttributeName(String attributeName) {
 		this.attributeName = attributeName;
 	}

@@ -49,4 +49,10 @@ public class CtVariability implements IVariability {
 		return variability.getShortRepresentation();
 	}
 
+	//TODO Add an id
+	@Override
+	public int getId() {
+		return 0;
+	}
+
 }

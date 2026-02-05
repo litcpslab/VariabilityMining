@@ -7,6 +7,8 @@ package varflixModel;
 */
 public interface IVariability {
 	
+	int getId();
+	
 	String getLocation();
 
 	String getElementName();

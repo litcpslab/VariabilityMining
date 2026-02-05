@@ -27,6 +27,7 @@ import varflixModel.IVariability;
 */
 import varflixModel.IVariabilityGroup;
 import varflixModel.IVariant;
+import varflixModel.IEC61499.JSON1499VariabilityGroup;
 
 
 public class JavaVariabilityExtractor implements IVariabilityExtractor {
@@ -36,8 +37,8 @@ public class JavaVariabilityExtractor implements IVariabilityExtractor {
 	private Map<Variant, Set<CtVariability>> variabilityMap = new HashMap<>();	
 	
 	
-	
-	public ProductComparisonMatrix mineVariabilities(String variantPath) {
+	@Override
+	public List<? extends IVariabilityGroup> performAutomaticMining(String variantPath, String inputPath) {
 		File directory = new File(variantPath);
 		String[] directoryNames = new String[1];
 		
@@ -152,7 +153,7 @@ public class JavaVariabilityExtractor implements IVariabilityExtractor {
 		occurrenceMap.remove(variants);
 			
 		System.out.println("Building groups");
-		Set<VariabilityGroup> groups = new HashSet<>();
+		List<VariabilityGroup> groups = new ArrayList<>();
 		int i = 1;
 		File file = new File("groupMappings.txt");
 		file.delete();
@@ -199,8 +200,8 @@ public class JavaVariabilityExtractor implements IVariabilityExtractor {
 
 		}
 		
-		groups = feedbackLoop(groups);
-		
+		//groups = feedbackLoop(groups);
+		/*
 		File filteredFile = new File("reducedGroupMappings.txt");
 		filteredFile.delete();
 		try {
@@ -210,10 +211,11 @@ public class JavaVariabilityExtractor implements IVariabilityExtractor {
 		}
 		for(VariabilityGroup group : groups) {
 			writeGroupInformationFile(filteredFile, group.getOccurrences(), group);
-		}
+		}*/
+		return groups;
 		
 		
-		System.out.println("Building pcm!");
+	/*	System.out.println("Building pcm!");
 		ProductComparisonMatrix pcm = buildPCM(groups);
 		
 		File pcmFile = new File("pcm.csv");
@@ -226,7 +228,7 @@ public class JavaVariabilityExtractor implements IVariabilityExtractor {
 		
 		
 		
-		return pcm;
+		return pcm;*/
 	}
 
 	private void writeGroupInformationFile(File file, Set<Variant> information, VariabilityGroup group) {		
@@ -300,15 +302,20 @@ public class JavaVariabilityExtractor implements IVariabilityExtractor {
 		return null;
 	}
 
-	@Override
+	/*@Override
 	public List<? extends IVariabilityGroup> performAutomaticMining(String variantPath, String inputPath) {
 		// TODO Auto-generated method stub
 		return null;
-	}
+	}*/
 	
 	@Override
 	public List<? extends IVariant> getVariants() {
-		return null;
+		return (List<? extends IVariant>) variants;  //TODO not implemented
+	}
+
+	@Override
+	public List getElements() {
+		return null; //TODO not implemented
 	}
 	
 

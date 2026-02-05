@@ -39,7 +39,13 @@ public class IEC61499Variability implements IVariability {
 	
 	@Override
 	public String getLocation() {
-		return node_id.substring(0, node_id.lastIndexOf(".") - 1);
+		String formatted = toString();
+		if(toString().contains(".")) {
+			return toString().substring(0, formatted.lastIndexOf(".") - 1); 
+		} else {
+			return node_id;
+		}
+		
 	}
 	
 	@Override

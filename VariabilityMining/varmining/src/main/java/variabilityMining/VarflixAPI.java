@@ -1,13 +1,17 @@
 package variabilityMining;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import constraints.Constraint;
 import guiModel.Group;
 import iec61499Mining.IEC61499VariabilityExtractor;
+import mappers.DataMapper;
 import mappers.DataMapper1499;
+import varflixModel.IVariabilityGroup;
+import varflixModel.IEC61499.IEC61499Variability;
 import varflixModel.IEC61499.IEC61499Variant;
 import varflixModel.IEC61499.JSON1499VariabilityGroup;
 
@@ -19,30 +23,28 @@ Alexander Stummer - Initial Implementation
 */
 public class VarflixAPI {
 	
-	private IVariabilityExtractor extractor;
+	private IVariabilityExtractor<IEC61499Variant, IEC61499Variability> extractor;
 	
-	private DataMapper1499 mapper;
+	private DataMapper mapper;
 	
 	private FormalConceptAnalysis analysis;
 	
 	private VariabilityModelGenerator generator = new VariabilityModelGenerator();
 	
-	@SuppressWarnings("unchecked")
 	public List<Group> computeInitialGroups(){
 		
 		extractor = new IEC61499VariabilityExtractor();
 		
-		List<JSON1499VariabilityGroup> initialGroups = (List<JSON1499VariabilityGroup>) extractor.performAutomaticMining("<Enter path to file with list of variants here>", "<Enter path to file with 1499 diff results here>");
+		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("<Enter path to file with list of variants here>", "<Enter path to file with 1499 diff results here>");
 		
-		mapper = new DataMapper1499();
+		mapper = new DataMapper();
 		
-		return mapper.map1499VariabilityGroup(initialGroups);
+		return mapper.mapVariabilityGroup(initialGroups);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void computePCM(List<Group> editedGroups) {
 		
-		List<JSON1499VariabilityGroup> updatedGroups = mapper.mapGUIGroupTo1499Group(editedGroups, (List<IEC61499Variant>)extractor.getVariants());	
+		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> updatedGroups = mapper.mapGUIGroupTo1499VariabilityGroup(editedGroups, extractor.getVariants(), extractor.getElements());	
 		
 		extractor.buildPCM(extractor.getVariants(), updatedGroups);	
 	}
@@ -66,5 +68,4 @@ public class VarflixAPI {
 	public void generateModel(Feature base, List<Feature> features, List<Constraint> constraints) {
 		generator.generateVariabilityModel(base, features, constraints);
 	}
-
 }

@@ -43,5 +43,11 @@ public class FileVariability implements IVariability{
 	public String getElementName() {
 		return path;
 	}
+
+	//TODO Add an id
+	@Override
+	public int getId() {
+		return 0;
+	}
 	
 }

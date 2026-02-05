@@ -8,15 +8,21 @@ package at.variabilityanalysisgui.controller;
 
 import at.variabilityanalysisgui.view.DifferenceDirectory;
 import at.variabilityanalysisgui.view.FeatureTreeNode;
+import constraints.AlternativeGroup;
+import constraints.Implication;
+import constraints.MutualExclusion;
 import guiModel.Difference;
 import guiModel.Element;
 import guiModel.Group;
 import javafx.collections.FXCollections;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import variabilityMining.Feature;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DetailsController {
@@ -28,6 +34,7 @@ public class DetailsController {
     private final Label detailLocationLabel;
     private final TextArea detailLocationTextArea;
     private final TextField detailGroupNameTextField;
+    private final Button detailChangeNameButton;
     private final Label detailOccurrenceLabel;
     private final ListView<String> detailOccurrencesListView;
     private final Label detailElementLabel;
@@ -38,7 +45,7 @@ public class DetailsController {
 
     public DetailsController(Controller controller, ListView<Element> detailSubElementListView, ScrollPane detailScrollPane,
                              HBox detailsNameHBox, Label detailLocationLabel, TextArea detailLocationTextArea,
-                             TextField detailGroupNameTextField, Label detailOccurrenceLabel, ListView<String> detailOccurrencesListView,
+                             TextField detailGroupNameTextField, Button detailChangeNameButton, Label detailOccurrenceLabel, ListView<String> detailOccurrencesListView,
                              Label detailElementLabel, TextArea detailElementData, Label detailSubElementLabel, Button detailCloseButton) {
         this.controller = controller;
         this.detailSubElementListView = detailSubElementListView;
@@ -47,12 +54,15 @@ public class DetailsController {
         this.detailLocationLabel = detailLocationLabel;
         this.detailLocationTextArea = detailLocationTextArea;
         this.detailGroupNameTextField = detailGroupNameTextField;
+        this.detailChangeNameButton = detailChangeNameButton;
         this.detailOccurrenceLabel = detailOccurrenceLabel;
         this.detailOccurrencesListView = detailOccurrencesListView;
         this.detailElementLabel = detailElementLabel;
         this.detailElementData = detailElementData;
         this.detailSubElementLabel = detailSubElementLabel;
 
+        this.detailChangeNameButton.setOnAction(event -> updateGroupName());
+        this.detailGroupNameTextField.setOnAction(event -> updateGroupName());
         // Configure the optional detail elements list view display
         detailSubElementListView.setCellFactory(lv -> new ListCell<>() {
             @Override
@@ -79,7 +89,7 @@ public class DetailsController {
         detailCloseButton.setOnAction(event -> hideDetailsPane());
     }
 
-    // Detail Pane
+	// Detail Pane
     public void showDetailsPane(Difference diff, TreeItem<FeatureTreeNode> item) {
         currentDetailItem = item;
         if (diff instanceof Group) {
@@ -107,7 +117,7 @@ public class DetailsController {
 
     private void showDetailsPaneGroup(Group group) {
         detailGroupNameTextField.setText(group.getName().get());
-        group.getName().bind(detailGroupNameTextField.textProperty());
+        //group.getName().bind(detailGroupNameTextField.textProperty());
         detailSubElementListView.setItems(FXCollections.observableArrayList(group.getElements()));
         detailOccurrencesListView.setItems(FXCollections.observableArrayList(group.getOccurrences()));
 
@@ -151,4 +161,29 @@ public class DetailsController {
         detailOccurrencesListView.setItems(FXCollections.emptyObservableList());
         detailSubElementListView.setItems(FXCollections.emptyObservableList());
     }
+    
+    private void updateGroupName() {
+    	FeatureTreeNode currentTreeNode = currentDetailItem.getValue();
+    	String candidateName = detailGroupNameTextField.getText();
+		Group group = (Group) currentDetailItem.getValue().getData();
+		if(isValidName(candidateName)) {
+			group.getName().setValue(candidateName);
+			currentDetailItem.setValue(null);
+			currentDetailItem.setValue(currentTreeNode);
+		} else {
+			Alert errorAlert = new Alert(AlertType.ERROR, "Invalid name. Duplicate names are not allowed, as well as names starting with a number or containing whitespaces!", ButtonType.OK);
+			errorAlert.setHeaderText("Invalid Name Error");
+			
+			Optional<ButtonType> result = errorAlert.showAndWait();
+		}	
+   	}
+
+	private boolean isValidName(String candidateName) {
+		if(candidateName.isEmpty() || candidateName.contains(" ") || Character.isDigit(candidateName.charAt(0))) {
+			return false;
+		}
+		
+		return !controller.getOriginalGroups().stream().anyMatch(group -> group.getName().getValue().equals(candidateName));
+	}
+
 }
