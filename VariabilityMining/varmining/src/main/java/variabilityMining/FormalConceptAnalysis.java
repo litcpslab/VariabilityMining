@@ -181,6 +181,10 @@ public class FormalConceptAnalysis {
 		}		
 	}
 
+	private Set<MutualExclusion> checkingMutex = new HashSet<>();
+	
+	private Set<MutualExclusion> removedMutex = new HashSet<>();
+	
 	/*
 	 * Checks whether mutex conditions are already implicitly present through the groupings
 	 */
@@ -190,10 +194,6 @@ public class FormalConceptAnalysis {
 		
 		List<MutualExclusion> allMutex = constraints.stream().filter(c -> c instanceof MutualExclusion).map(c -> (MutualExclusion) c).collect(Collectors.toList());
 		
-		Set<MutualExclusion> checkingMutex = new HashSet<>();
-		
-		Set<MutualExclusion> removedMutex = new HashSet<>();
-		
 		for(MutualExclusion mutex: allMutex) {
 			for(Group group: groups) {
 				Feature left = mutex.getFeature1();
@@ -201,21 +201,21 @@ public class FormalConceptAnalysis {
 				MutualExclusion impliedConstraint = null;
 				if(group.getFeatures().contains(left)) {
 					impliedConstraint = new MutualExclusion(group.getParent(), right);
+					checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
+					Group other = groups.stream().filter(g -> g.getFeatures().contains(right)).findAny().orElseGet(() -> null);
+					if(other != null) {
+						impliedConstraint.setFeature2(other.getParent());
+						checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
+					}
 				} else if(group.getFeatures().contains(right)) {
 					impliedConstraint = new MutualExclusion(left, group.getParent());
+					checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
+					Group other = groups.stream().filter(g -> g.getFeatures().contains(left)).findAny().orElseGet(() -> null);
+					if(other != null) {
+						impliedConstraint.setFeature1(other.getParent());
+						checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
+					}
 				}
-				
-				if(impliedConstraint != null) {
-					for(AlternativeGroup a: alternatives) {
-						if(a.getFeatures().contains(impliedConstraint.getFeature1()) && a.getFeatures().contains(impliedConstraint.getFeature2())) {
-							removedMutex.add(mutex);
-						}
-					}
-					
-					if(!removedMutex.contains(mutex)) {
-						checkingMutex.add(impliedConstraint);
-					}
-				}	
 			}
 		}
 		
@@ -234,6 +234,20 @@ public class FormalConceptAnalysis {
 		
 		if(!removedMutex.isEmpty()) {
 			constraints.removeAll(removedMutex);
+		}
+	}
+
+	private void checkimpliedConstraint(List<AlternativeGroup> alternatives, MutualExclusion mutex, MutualExclusion impliedConstraint) {
+		if(impliedConstraint != null) {
+			for(AlternativeGroup a: alternatives) {
+				if(a.getFeatures().contains(impliedConstraint.getFeature1()) && a.getFeatures().contains(impliedConstraint.getFeature2())) {
+					removedMutex.add(mutex);
+				}
+			}
+			
+			if(!removedMutex.contains(mutex)) {
+				checkingMutex.add(impliedConstraint);
+			}
 		}
 	}
 

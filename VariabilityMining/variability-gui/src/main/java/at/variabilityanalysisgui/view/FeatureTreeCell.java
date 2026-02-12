@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.variabilityanalysisgui.controller.TreeViewController;
+import guiModel.Group;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
@@ -135,7 +136,8 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
 
 	private boolean targetIsSameGroup(List<TreeItem<FeatureTreeNode>> sourceItems, TreeItem<FeatureTreeNode> targetItem) {
 		for(TreeItem<FeatureTreeNode> sourceItem: sourceItems) {
-			if(targetItem.getChildren().contains(sourceItem) || targetItem.getParent().equals(sourceItem.getParent())) {
+			if(targetItem.getChildren().contains(sourceItem) || 
+					(targetItem.getParent().equals(sourceItem.getParent()) && !(targetItem.getValue().getData() instanceof Group && sourceItem.getValue().getData() instanceof Group))) {
 				return true;
 			}
 		}

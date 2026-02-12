@@ -395,7 +395,7 @@ public class TreeViewController {
             return;
         }
 
-        int index = rootNode.getChildren().indexOf(targetGroupItem);
+        int index = 0;
         for(TreeItem<FeatureTreeNode> elementItem: elementItems) {
         	 // Open dialogue for recursive move of directory
             if(elementItem.getValue().isDirectory()) {
@@ -427,7 +427,7 @@ public class TreeViewController {
     	        Group targetGroup = (Group) targetGroupItem.getValue().getData();
     	
     	        Group sourceGroup = findGroupContainingElement(controller.getOriginalGroups(), element);
-    	
+    	        
     	        // Remove from old group's element list
     	        boolean removed = sourceGroup.getElements().remove(element);
     	        if (!removed) {
@@ -438,14 +438,17 @@ public class TreeViewController {
     	
     	            //refresh old group TreeItem
     	            TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, sourceGroup.getName().get());
-    	            
+    	            int sourceIndex = rootNode.getChildren().indexOf(sourceGroupItem);
     	            if (sourceGroupItem != null) {
     	            	refreshGroup(sourceGroupItem);
+ 
     	            	if(sourceGroup.getElements().isEmpty()) {
+        	            	sourceGroupItem = rootNode.getChildren().get(sourceIndex);
         	            	handleDeleteAction(sourceGroupItem);
         	            } 
     	            }
     	            // Add new group TreeItem
+    	            index = rootNode.getChildren().indexOf(targetGroupItem);
     	            refreshGroup(targetGroupItem);
     	            targetGroupItem = rootNode.getChildren().get(index);
     	            // remove old group TreeItem
@@ -460,12 +463,20 @@ public class TreeViewController {
      	        targetGroup.getElements().addAll(element.getElements());
      	        element.getElements().clear();
 
-     	        TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, element.getName().get());
+     	        
+     	        index = rootNode.getChildren().indexOf(targetGroupItem);
      	        refreshGroup(targetGroupItem);
-     	        refreshGroup(sourceGroupItem);
-     	        handleDeleteAction(sourceGroupItem);
+     	        targetGroupItem = rootNode.getChildren().get(index);
+     	        
+     	       TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, element.getName().get());
+     	       int sourceIndex = rootNode.getChildren().indexOf(sourceGroupItem);
+	           if (sourceGroupItem != null) {
+	        	   refreshGroup(sourceGroupItem);
+	        	   sourceGroupItem = rootNode.getChildren().get(sourceIndex);
+	        	   handleDeleteAction(sourceGroupItem);
+   	           } 
      	
-     	        System.out.println("Moved element " + element.getName().get());
+     	       System.out.println("Moved element " + element.getName().get());
             }
         }
     }
