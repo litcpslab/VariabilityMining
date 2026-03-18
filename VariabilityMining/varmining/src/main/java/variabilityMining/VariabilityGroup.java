@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2024 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial API and Implementation
+********************************************************************************/
+
 package variabilityMining;
 
 import java.util.List;
@@ -6,12 +18,6 @@ import java.util.Set;
 import varflixModel.IVariability;
 import varflixModel.IVariabilityGroup;
 
-/*
-*Copyright (c) 2024 Johannes Kepler University Linz
-*LIT Cyber-Physical Systems Lab
-*Contributors:
-*Alexander Stummer - initial API and implementation
-*/
 public class VariabilityGroup implements IVariabilityGroup<Variant, IVariability> {
 
 	
@@ -47,6 +53,11 @@ public class VariabilityGroup implements IVariabilityGroup<Variant, IVariability
 	@Override
 	public void setAttributeName(String name) {
 		this.attributeName = name;		
+	}
+
+	@Override
+	public void setElements(List<IVariability> elements) {
+		this.elements = elements;		
 	}
 	
 }

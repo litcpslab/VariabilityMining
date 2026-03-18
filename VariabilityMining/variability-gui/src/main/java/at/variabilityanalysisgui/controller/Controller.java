@@ -1,7 +1,18 @@
-/**
-   Modified from Variability Analyser GUI
-   Original license: MIT License (c) 2025 Michael Schmidhammer
- */
+/***
+ 
+    This Source Code Form is subject to the terms of the Mozilla
+    Public License, v. 2.0. If a copy of the MPL was not distributed
+    with this file, You can obtain one at
+    https://mozilla.org/MPL/2.0/.*
+    Contributors:
+    Michael Schmidhammer
+    
+    Modifications: 
+    Copyright (c) 2025 Johannes Kepler University Linz
+  	LIT Cyber-Physical Systems Lab
+ 	Contributors:
+ 	Alexander Stummer - Added scene switching & adapted to integrate with Varflix backend
+**/
 
 package at.variabilityanalysisgui.controller;
 
@@ -23,6 +34,7 @@ import java.util.*;
 
 import at.variabilityanalysisgui.parser.InputParser;
 import at.variabilityanalysisgui.view.FeatureTreeNode;
+import constraints.Constraint;
 import guiModel.Difference;
 import guiModel.Element;
 import guiModel.ExtractionType;
@@ -31,6 +43,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Window;
+import variabilityMining.Feature;
 import variabilityMining.VarflixAPI;
 
 
@@ -91,7 +104,7 @@ public class Controller {
         treeViewController.populateTreeView(filterController.getFilteredGroups(), null); // Populate with parsed data
         detailsController.hideDetailsPane();
         filterController.setupFilterListener();
-        
+
     }
     
     private void loadFile(File selectedFile) {
@@ -193,6 +206,7 @@ public class Controller {
     // Main window
     private Window getWindow() {
         Node node = treeViewController.getFeatureTreeView().getScene().getRoot();
+        
         if (node != null) {
             return node.getScene().getWindow();
         }

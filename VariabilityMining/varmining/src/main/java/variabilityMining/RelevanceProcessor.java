@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2024 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial API and Implementation
+********************************************************************************/
+
 package variabilityMining;
 
 import spoon.processing.AbstractProcessor;
@@ -22,12 +34,7 @@ import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtMethod;
-/*
-*Copyright (c) 2024 Johannes Kepler University Linz
-*LIT Cyber-Physical Systems Lab
-*Contributors:
-*Alexander Stummer - initial API and implementation
-*/
+
 public class RelevanceProcessor extends AbstractProcessor<CtElement>{
 
 	@Override

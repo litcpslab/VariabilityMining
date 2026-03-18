@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+********************************************************************************/
+
 package variabilityMining;
 
 import java.util.ArrayList;
@@ -9,12 +21,7 @@ import UVL.UVLGenerator;
 import constraints.Constraint;
 import constraints.Group;
 import constraints.SimpleConstraint;
-/*
-Copyright (c) 2025 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
+
 public class VariabilityModelGenerator {
 	
 	private Feature root;
@@ -45,6 +52,15 @@ public class VariabilityModelGenerator {
 		
 		root = base == null? new Feature("Base"): base;
 		root.setMandatory(true);
+		
+		
+		List<Group> groupConstraints = new ArrayList<>();
+		
+		for(Constraint groupConstraint: constraints) {
+			if(groupConstraint instanceof Group) {
+				groupConstraints.add((Group)groupConstraint);
+			}
+		}
 			
 		this.coveredConstraints = new ArrayList<>();
 		
@@ -55,8 +71,9 @@ public class VariabilityModelGenerator {
 			
 		coveredConstraints.addAll(baseEquivalences);
 			
-		buildGroups(base, new ArrayList<>(constraints.stream().filter(c -> c instanceof Group).map(c -> (Group) c).toList()));
-			
+		//buildGroups(base, new ArrayList<>(constraints.stream().filter(c -> c instanceof Group).map(c -> (Group) c).toList()));
+		buildGroups(base, groupConstraints);	
+		
 		List<Feature> uncoveredFeatures = features.stream().filter(f -> f.getParent() == null && !f.equals(root)).toList();
 			
 		List<SimpleConstraint> relevantConstraints = constraints.stream().filter(c -> c instanceof SimpleConstraint).map(c -> (SimpleConstraint) c)

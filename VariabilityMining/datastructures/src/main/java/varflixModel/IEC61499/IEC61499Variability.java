@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+********************************************************************************/
+
 package varflixModel.IEC61499;
 
 import java.util.List;
@@ -5,13 +17,6 @@ import com.google.gson.annotations.SerializedName;
 
 import varflixModel.IVariability;
 
-
-/*
-Copyright (c) 2025 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
 public class IEC61499Variability implements IVariability {
 	
 	
@@ -19,6 +24,9 @@ public class IEC61499Variability implements IVariability {
 
 	@SerializedName("node_id")
 	private String node_id;
+	
+	@SerializedName("type")
+	private String type;
 	
 	@SerializedName("edge_source")
 	private String edge_source;
@@ -98,6 +106,14 @@ public class IEC61499Variability implements IVariability {
 	
 	public void setEdge_target(String edge_target) {
 		this.edge_target = edge_target;
+	}
+	
+	public String getType() {
+		return type;
+	}
+	
+	public void setType(String type) {
+		this.type = type;
 	}
 	
 	@Override

@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2024 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial API and Implementation
+********************************************************************************/
+
 package variabilityMining;
 
 import java.io.File;
@@ -19,16 +31,8 @@ import gumtree.spoon.diff.operations.UpdateOperation;
 import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtElement;
 import varflixModel.IVariability;
-/*
-*Copyright (c) 2024 Johannes Kepler University Linz
-*LIT Cyber-Physical Systems Lab
-*Contributors:
-*Alexander Stummer - initial API and implementation
-*/
 import varflixModel.IVariabilityGroup;
 import varflixModel.IVariant;
-import varflixModel.IEC61499.JSON1499VariabilityGroup;
-
 
 public class JavaVariabilityExtractor implements IVariabilityExtractor {
 

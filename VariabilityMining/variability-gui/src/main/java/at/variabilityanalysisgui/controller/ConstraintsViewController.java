@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+********************************************************************************/
+
 package at.variabilityanalysisgui.controller;
 
 import java.io.File;
@@ -42,6 +54,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -54,12 +67,6 @@ import variabilityMining.Feature;
 import variabilityMining.JSONConstraints;
 import variabilityMining.VarflixAPI;
 
-/*
-Copyright (c) 2025 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
 public class ConstraintsViewController {
 
 	private ConstraintInfoController infoController;
@@ -325,7 +332,11 @@ public class ConstraintsViewController {
         popupStage.initOwner((Stage)((Node) e.getSource()).getScene().getWindow()); 
         popupStage.initModality(Modality.NONE); 
         popupStage.setAlwaysOnTop(true); 
-        popupStage.setTitle("Add a constraint!");
+        popupStage.setTitle("Add a constraint");
+        
+        Label typeLabel = new Label("Constraint type:");
+        Label leftFeatureLabel = new Label("Left feature:");
+        Label rightFeatureLabel = new Label("Right feature:");
 		
 		ComboBox<String> constraintTypeComboBox = new ComboBox<>(FXCollections.observableArrayList("Implication", "Equivalence", "Mutual Exclusion"));
 		
@@ -338,6 +349,16 @@ public class ConstraintsViewController {
 		rightFeatureComboBox.setPromptText("Select right feature");
 		
 		Button addButton = new Button("Add");
+		
+		GridPane pane = new GridPane();
+		pane.setHgap(10);
+		pane.setVgap(10);
+		pane.add(typeLabel, 0, 0);
+		pane.add(constraintTypeComboBox, 1, 0);
+		pane.add(leftFeatureLabel, 0, 1);
+		pane.add(leftFeatureComboBox, 1, 1);
+		pane.add(rightFeatureLabel, 0, 2);
+		pane.add(rightFeatureComboBox, 1, 2);
 		
 		EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
 			
@@ -391,9 +412,15 @@ public class ConstraintsViewController {
 		
 		addButton.setOnAction(event);
 		
-		VBox layout = new VBox(10, constraintTypeComboBox, leftFeatureComboBox, rightFeatureComboBox, addButton);
+		constraintTypeComboBox.setPrefWidth(200);
+		leftFeatureComboBox.setPrefWidth(200);
+		rightFeatureComboBox.setPrefWidth(200);
 
-		popupStage.setScene(new Scene(layout, 250, 200));
+		addButton.setDefaultButton(true);
+		
+		VBox layout = new VBox(10, pane, addButton);
+
+		popupStage.setScene(new Scene(layout, 300, 150));
 	    popupStage.show();
 	}
 

@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2026 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+********************************************************************************/
+
 package mappers;
 
 import java.util.ArrayList;
@@ -22,12 +34,6 @@ import varflixModel.IVariabilityGroup;
 import varflixModel.IVariant;
 import varflixModel.IEC61499.JSON1499VariabilityGroup;
 
-/*
-Copyright (c) 2026 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
 public class DataMapper {
 	private ModelMapper mapper = new ModelMapper();
 
@@ -177,6 +183,8 @@ public class DataMapper {
 		destinationMap.addMappings(mapping -> mapping.using(occurrenceMapper).map(Group::getOccurrences, IVariabilityGroup<V, E>::setOccurrences));
 		
 		destinationMap.addMappings(mapping -> mapping.using(nameConverter).map(Group::getName, IVariabilityGroup<V, E>::setAttributeName));
+		
+		destinationMap.addMappings(mapping -> mapping.using(variabilityConverter).map(Group::getElements, IVariabilityGroup<V, E>::setElements));
 		
 		TypeToken<IVariabilityGroup<V, E>> token = TypeToken.of(new TypeToken<IVariabilityGroup<V, E>>() {}.getType());
 		

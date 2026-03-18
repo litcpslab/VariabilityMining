@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+********************************************************************************/
+
 package varflixModel.IEC61499;
 
 import java.util.HashSet;
@@ -8,12 +20,6 @@ import varflixModel.IVariability;
 import varflixModel.IVariabilityGroup;
 import varflixModel.IVariant;
 
-/*
-Copyright (c) 2025 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
 public class JSON1499VariabilityGroup implements IVariabilityGroup<IEC61499Variant, IEC61499Variability> {
 	
 	private int id;
@@ -84,6 +90,11 @@ public class JSON1499VariabilityGroup implements IVariabilityGroup<IEC61499Varia
 	
 	public int getId() {
 		return id;
+	}
+
+	@Override
+	public void setElements(List<IEC61499Variability> elements) {
+		this.elements = elements;		
 	}
 	
 

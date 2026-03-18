@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+********************************************************************************/
+
 package UVL;
 
 import java.io.FileWriter;
@@ -6,15 +18,10 @@ import java.util.List;
 
 import constraints.SimpleConstraint;
 import variabilityMining.Feature;
-/*
-Copyright (c) 2025 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
+
 public class UVLGenerator {
 	
-	private static final String PATH = "model.uvl";
+	private static final String PATH = "C:/Users/AK122272/Desktop/FeatureIDE-workspace/VarflixResultProject/model.uvl";
 
 	public static void createUVLModel(Feature root, List<SimpleConstraint> ctcs) {
 		

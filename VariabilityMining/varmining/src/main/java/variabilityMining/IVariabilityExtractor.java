@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2024 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial API and Implementation
+********************************************************************************/
+
 package variabilityMining;
 
 import java.io.File;
@@ -9,12 +21,7 @@ import varflixModel.IVariability;
 import varflixModel.IVariabilityGroup;
 import varflixModel.IVariant;
 
-/*
-*Copyright (c) 2024 Johannes Kepler University Linz
-*LIT Cyber-Physical Systems Lab
-*Contributors:
-*Alexander Stummer - initial API and implementation
-*/
+
 public interface IVariabilityExtractor<V extends IVariant, E extends IVariability> {
 
 

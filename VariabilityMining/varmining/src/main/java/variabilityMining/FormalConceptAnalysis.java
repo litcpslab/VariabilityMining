@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+********************************************************************************/
+
 package variabilityMining;
 
 import java.io.File;
@@ -25,12 +37,7 @@ import fr.lirmm.fca4j.core.ConceptOrder;
 import fr.lirmm.fca4j.core.IBinaryContext;
 import fr.lirmm.fca4j.iset.ISet;
 import fr.lirmm.fca4j.iset.std.ArrayListSetFactory;
-/*
-Copyright (c) 2025 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
+
 public class FormalConceptAnalysis {
 
 	private File source;
@@ -47,7 +54,7 @@ public class FormalConceptAnalysis {
 	
 	private List<Feature> features;
 	
-	Map<Feature, Set<Feature>> implicationMap = new HashMap<>();
+	private Map<Feature, Set<Feature>> implicationMap = new HashMap<>();
 	
 	private Feature base;
 	
@@ -89,7 +96,12 @@ public class FormalConceptAnalysis {
 				}
 			}
 			
-			base = features.stream().filter(f -> f.getName().equals(context.getAttributeName(order.getConceptIntent(order.getTop()).first()))).findAny().orElseGet(() -> null);
+			if(order.getMaximals().cardinality() > 1) {
+				base = new Feature("Root");
+				features.add(base);
+			} else {
+				base = features.stream().filter(f -> f.getName().equals(context.getAttributeName(order.getConceptIntent(order.getTop()).first()))).findAny().orElseGet(() -> null);
+			}
 			
 			findEquivalences();
 			
@@ -194,30 +206,48 @@ public class FormalConceptAnalysis {
 		
 		List<MutualExclusion> allMutex = constraints.stream().filter(c -> c instanceof MutualExclusion).map(c -> (MutualExclusion) c).collect(Collectors.toList());
 		
+		Map<Feature, Group> featureGroupMap = computeFeatureGroupMap(features, groups);
+		
 		for(MutualExclusion mutex: allMutex) {
-			for(Group group: groups) {
-				Feature left = mutex.getFeature1();
-				Feature right = mutex.getFeature2();
-				MutualExclusion impliedConstraint = null;
-				if(group.getFeatures().contains(left)) {
-					impliedConstraint = new MutualExclusion(group.getParent(), right);
+			Feature left = mutex.getFeature1();
+			Feature right = mutex.getFeature2();
+			MutualExclusion impliedConstraint = null;
+			Group group = featureGroupMap.get(left);
+			if(group != null) {
+				impliedConstraint = new MutualExclusion(group.getParent(), right);
+				checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
+				Group other = featureGroupMap.get(right);
+				if(other != null) {
+					impliedConstraint = new MutualExclusion(impliedConstraint.getFeature1(), other.getParent());
+					//impliedConstraint.setFeature2(other.getParent());
 					checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
-					Group other = groups.stream().filter(g -> g.getFeatures().contains(right)).findAny().orElseGet(() -> null);
-					if(other != null) {
-						impliedConstraint.setFeature2(other.getParent());
-						checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
-					}
-				} else if(group.getFeatures().contains(right)) {
-					impliedConstraint = new MutualExclusion(left, group.getParent());
+				}
+			} 
+			group = null;
+			group = featureGroupMap.get(right);
+			if(group != null) {
+				impliedConstraint = new MutualExclusion(left, group.getParent());
+				checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
+				Group other = featureGroupMap.get(left);
+				if(other != null) {
+					impliedConstraint = new MutualExclusion(other.getParent(), impliedConstraint.getFeature2());
+					//impliedConstraint.setFeature1(other.getParent());
 					checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
-					Group other = groups.stream().filter(g -> g.getFeatures().contains(left)).findAny().orElseGet(() -> null);
-					if(other != null) {
-						impliedConstraint.setFeature1(other.getParent());
-						checkimpliedConstraint(alternatives, mutex, impliedConstraint);	
-					}
 				}
 			}
 		}
+		/*
+		for(AlternativeGroup alternative: alternatives) {
+			
+			for(Feature f: alternative.getFeatures()) {
+				if(implicationMap.containsKey(f)) {
+					Set<Feature> implyingFeatures = implicationMap.get(f);
+					for(Feature implyingFeature: implyingFeatures) {
+						
+					}
+				}
+			}
+		}*/
 		
 		for(MutualExclusion mutex: checkingMutex) {
 			if(!removedMutex.contains(mutex)) {
@@ -235,6 +265,18 @@ public class FormalConceptAnalysis {
 		if(!removedMutex.isEmpty()) {
 			constraints.removeAll(removedMutex);
 		}
+	}
+
+	private Map<Feature, Group> computeFeatureGroupMap(List<Feature> features, List<Group> groups) {
+		Map<Feature, Group> featureGroupMap = new HashMap<>();
+		
+		for(Group group: groups) {
+			for(Feature feature: group.getFeatures()) {
+				featureGroupMap.put(feature, group);
+			}
+		}
+		
+		return featureGroupMap;		
 	}
 
 	private void checkimpliedConstraint(List<AlternativeGroup> alternatives, MutualExclusion mutex, MutualExclusion impliedConstraint) {
@@ -320,7 +362,16 @@ public class FormalConceptAnalysis {
 	}
 
 	private boolean isParentFeatureCovered(Feature key, List<Feature> subFeatures) {
-		List<Integer> extents = context.getExtent(context.getAttributeIndex(key.getName())).toList();		
+		List<Integer> extents;		
+		
+		if(key.equals(base)) {
+			extents = new ArrayList<>();
+			for(int i = 0; i < context.getObjectCount(); i++) {
+				extents.add(i);
+			}
+		} else {
+			extents = context.getExtent(context.getAttributeIndex(key.getName())).toList();
+		}
 		
 		Set<Integer> subExtents = new HashSet<>();
 		
@@ -468,7 +519,7 @@ public class FormalConceptAnalysis {
 						Feature parent = findParent(reducedValues);
 
 						if(parent.equals(base)) {
-							if(isParentFeatureCovered(base, reducedValues)){
+							if(isParentFeatureCovered(base, reducedValues) && !reducedValues.contains(base)){
 								alternatives.add(new AlternativeGroup(reducedValues, base));
 								usedFeatures.addAll(reducedValues);
 							}
