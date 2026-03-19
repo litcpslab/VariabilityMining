@@ -21,7 +21,7 @@ import variabilityMining.Feature;
 
 public class UVLGenerator {
 	
-	private static final String PATH = "C:/Users/AK122272/Desktop/FeatureIDE-workspace/VarflixResultProject/model.uvl";
+	private static final String PATH = "model.uvl";
 
 	public static void createUVLModel(Feature root, List<SimpleConstraint> ctcs) {
 		
