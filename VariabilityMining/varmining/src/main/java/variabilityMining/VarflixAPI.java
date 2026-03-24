@@ -19,7 +19,6 @@ import java.util.Set;
 
 import constraints.Constraint;
 import guiModel.Group;
-import iec61499Mining.DeltaModelGenerator;
 import iec61499Mining.IEC61499VariabilityExtractor;
 import mappers.DataMapper;
 import mappers.DataMapper1499;
@@ -41,8 +40,8 @@ public class VarflixAPI {
 	public List<Group> computeInitialGroups(){
 		
 		extractor = new IEC61499VariabilityExtractor();
-		
-		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("<Enter path to file with list of variants here>", "<Enter path to file with 1499 diff results here>");
+
+        List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("<Enter path to file with list of variants here>", "<Enter path to file with 1499 diff results here>");
 		
 		mapper = new DataMapper();
 		

@@ -75,7 +75,10 @@ public class Feature {
 	public void setMandatory(boolean isMandatory) {
 		this.mandatory = isMandatory;
 	}
-	
+
+    public boolean isOptional(){
+        return !mandatory&& !getParent().isAlternativeParent() && !getParent().isOrParent();
+    }
 	public void setChildren(List<Feature> children) {
 		this.children = children;
 	}

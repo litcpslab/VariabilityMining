@@ -12,6 +12,7 @@
   	LIT Cyber-Physical Systems Lab
  	Contributors:
  	Alexander Stummer - Adapted name changing operations
+    Kejda Domi- Added the visualization section
 **/
 
 package at.variabilityanalysisgui.controller;
@@ -180,6 +181,7 @@ public class DetailsController {
 			group.getName().setValue(candidateName);
 			currentDetailItem.setValue(null);
 			currentDetailItem.setValue(currentTreeNode);
+            controller.redrawVisualization();
 		} else {
 			Alert errorAlert = new Alert(AlertType.ERROR, "Invalid name. Duplicate names are not allowed, as well as names starting with a number or containing whitespaces!", ButtonType.OK);
 			errorAlert.setHeaderText("Invalid Name Error");

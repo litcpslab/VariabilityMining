@@ -12,6 +12,7 @@
   	LIT Cyber-Physical Systems Lab
  	Contributors:
  	Alexander Stummer - Adapted drag-and-drop and delete actions
+    Kejda Domi- Added the visualization section
 **/
 
 package at.variabilityanalysisgui.controller;
@@ -377,6 +378,7 @@ public class TreeViewController {
                 parent.getChildren().remove(item);
                 if(item.getValue().getData() instanceof Group) {
                 	controller.getOriginalGroups().remove(item.getValue().getData());
+                    controller.redrawVisualization();
                 }
                 System.out.println("Removed item: " + item.getValue().getDisplayName());
                 removeEmptyContainers(parent);

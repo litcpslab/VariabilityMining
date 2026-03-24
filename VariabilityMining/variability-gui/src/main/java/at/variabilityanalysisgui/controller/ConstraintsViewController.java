@@ -8,6 +8,7 @@
  * LIT Cyber-Physical Systems Lab
  * Contributors:
  *  Alexander Stummer - Initial Implementation
+ *  Kejda Domi- Added the visualization section
 ********************************************************************************/
 
 package at.variabilityanalysisgui.controller;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import at.variabilityanalysisgui.visualization.TreeGraph;
 import org.controlsfx.control.CheckComboBox;
 
 import constraints.AlternativeGroup;
@@ -80,6 +82,7 @@ public class ConstraintsViewController {
     
 	
 	//GroupInfoView InfoController
+    @FXML private ScrollPane visualizationWindow;
     @FXML private ScrollPane infoScrollPane;
     @FXML private HBox detailsNameHBox;
     @FXML private Label groupInfoLabel;
@@ -497,7 +500,9 @@ public class ConstraintsViewController {
 				Scene scene = groupTreeView.getScene();
 	        	groupTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
 			}	
-	    });	
+	    });
+        TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
+        visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
 	}
 	
 	/*

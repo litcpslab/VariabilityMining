@@ -12,11 +12,13 @@
   	LIT Cyber-Physical Systems Lab
  	Contributors:
  	Alexander Stummer - Added scene switching & adapted to integrate with Varflix backend
+    Kejda Domi- Added the visualization section
 **/
 
 package at.variabilityanalysisgui.controller;
 
 
+import at.variabilityanalysisgui.visualization.TreeGraph;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -61,6 +63,7 @@ public class Controller {
     @FXML private Button filterButton;
 
     // DetailsController
+    @FXML private ScrollPane visualizationWindow;
     @FXML private ListView<guiModel.Element> detailSubElementListView;
     @FXML private ScrollPane detailScrollPane;
     @FXML private HBox detailsNameHBox;
@@ -104,7 +107,18 @@ public class Controller {
         treeViewController.populateTreeView(filterController.getFilteredGroups(), null); // Populate with parsed data
         detailsController.hideDetailsPane();
         filterController.setupFilterListener();
+        redrawVisualization();
 
+    }
+    public void redrawVisualization(){
+        model.computePCM(originalGroups);
+        Set<Constraint> constraints = model.performFCA();
+        List<Feature> features = model.getFeatures();
+        Feature currentBase = model.getBaseFeature();
+        model.generateModel(currentBase, features, new ArrayList<>(constraints));
+        TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
+        //visualizationWindow.setContent(null);
+        visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
     }
     
     private void loadFile(File selectedFile) {

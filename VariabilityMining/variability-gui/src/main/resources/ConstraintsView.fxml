@@ -14,78 +14,52 @@
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.variabilityanalysisgui.controller.ConstraintsViewController">
+<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.variabilityanalysisgui.controller.ConstraintsViewController">
     <right>
         <ScrollPane fx:id="infoScrollPane" fitToWidth="true" managed="false" prefWidth="400.0" visible="false">
             <VBox fx:id="infoPane" spacing="10" style="-fx-padding: 10;">
                 <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Info">
-               <font>
-                  <Font size="18.0" />
-               </font></Label>
-            <Label fx:id="groupInfoLabel" style="-fx-font-weight: bold;">
-               <font>
-                  <Font size="14.0" />
-               </font></Label>
-            <Label fx:id="parentFeatureLabel">
-               <font>
-                  <Font size="14.0" />
-               </font></Label>
-            <Text fx:id="infoText" strokeType="OUTSIDE" strokeWidth="0.0">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Text>
+                    <font>
+                        <Font size="18.0" />
+                    </font></Label>
+                <Label fx:id="groupInfoLabel" style="-fx-font-weight: bold;">
+                    <font>
+                        <Font size="14.0" />
+                    </font></Label>
+                <Label fx:id="parentFeatureLabel">
+                    <font>
+                        <Font size="14.0" />
+                    </font></Label>
+                <Text fx:id="infoText" strokeType="OUTSIDE" strokeWidth="0.0">
+                    <font>
+                        <Font size="14.0" />
+                    </font>
+                </Text>
                 <ListView fx:id="groupFeatureListView" prefHeight="100.0" />
-            <Button fx:id="removeFeatureButton" mnemonicParsing="false" onAction="#handleRemoveAction" text="Remove" />
-            <Label fx:id="editLabel" style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Add a feature" visible="false">
-               <font>
-                  <Font size="16.0" />
-               </font></Label>
-            <ComboBox fx:id="featureComboBox" prefWidth="150.0" />
-            <HBox fx:id="editButtonBox" prefHeight="100.0" prefWidth="200.0">
-               <children>
-                  <Button mnemonicParsing="false" onAction="#handleAddAction" text="Add" />
-               </children>
-            </HBox>
+                <Button fx:id="removeFeatureButton" mnemonicParsing="false" onAction="#handleRemoveAction" text="Remove" />
+                <Label fx:id="editLabel" style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Add a feature" visible="false">
+                    <font>
+                        <Font size="16.0" />
+                    </font></Label>
+                <ComboBox fx:id="featureComboBox" prefWidth="150.0" />
+                <HBox fx:id="editButtonBox" prefHeight="100.0" prefWidth="200.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#handleAddAction" text="Add" />
+                    </children>
+                </HBox>
                 <Button fx:id="infoCloseButton" text="Close Info" />
             </VBox>
         </ScrollPane>
     </right>
-   <center>
-      <VBox BorderPane.alignment="CENTER">
-         <children>
-              <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10;">
-                  <Button fx:id="filterButton" text="Filter" HBox.hgrow="NEVER">
-                      <tooltip>
-                     <Tooltip text="Filter Options (Not Implemented Yet)" />
-                  </tooltip>
-                  </Button>
-                  <TextField fx:id="searchTextField" promptText="Search..." HBox.hgrow="ALWAYS" />
-              </HBox>
-            <VBox VBox.vgrow="ALWAYS">
-               <children>
-                    <TreeView fx:id="groupTreeView" style="-fx-padding: 5;" VBox.vgrow="ALWAYS" />
-               </children>
-            </VBox>
-            <HBox fx:id="hierarchyButtonHBox" alignment="CENTER_LEFT" maxHeight="20.0" prefHeight="20.0" style="-fx-padding: 10;">
-               <padding>
-                  <Insets left="10.0" />
-               </padding>
-               <children>
-                  <Button fx:id="extractionViewButton" mnemonicParsing="false" onAction="#switchToExtractionView" text="Features" />
-                  <Button fx:id="proceedButton" mnemonicParsing="false" onAction="#handleProceedAction" text="Proceed" />
-                  <Button fx:id="generateButton" mnemonicParsing="false" onAction="#handleGenerateAction" text="Generate Model" visible="false" />
-                  <Button fx:id="addConstraintButton" mnemonicParsing="false" text="Add constraint" visible="false" />
-               </children></HBox>
-         </children>
-      </VBox>
-   </center>
-   <top>
+    <top>
         <MenuBar BorderPane.alignment="CENTER">
             <menus>
                 <Menu text="File">
@@ -101,6 +75,48 @@
                 <Insets bottom="5.0" />
             </BorderPane.margin>
         </MenuBar>
-   </top>
+    </top>
+    <center>
+        <GridPane BorderPane.alignment="CENTER">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            </rowConstraints>
+            <children>
+                <VBox prefWidth="400.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 10;">
+                            <Button fx:id="filterButton" text="Filter" HBox.hgrow="NEVER">
+                                <tooltip>
+                                    <Tooltip text="Filter Options (Not Implemented Yet)" />
+                                </tooltip>
+                            </Button>
+                            <TextField fx:id="searchTextField" promptText="Search..." HBox.hgrow="ALWAYS" />
+                        </HBox>
+                        <VBox VBox.vgrow="ALWAYS">
+                            <children>
+                                <TreeView fx:id="groupTreeView" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="359.0" style="-fx-padding: 5;" VBox.vgrow="ALWAYS" />
+                            </children>
+                        </VBox>
+                        <HBox fx:id="hierarchyButtonHBox" alignment="CENTER_LEFT" maxHeight="20.0" prefHeight="20.0" style="-fx-padding: 10;">
+                            <padding>
+                                <Insets left="10.0" />
+                            </padding>
+                            <children>
+                                <Button fx:id="extractionViewButton" mnemonicParsing="false" onAction="#switchToExtractionView" text="Features" />
+                                <Button fx:id="proceedButton" mnemonicParsing="false" onAction="#handleProceedAction" text="Proceed" />
+                                <Button fx:id="generateButton" mnemonicParsing="false" onAction="#handleGenerateAction" text="Generate Model" visible="false" />
+                                <Button fx:id="addConstraintButton" mnemonicParsing="false" text="Add constraint" visible="false" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+                <ScrollPane fx:id="visualizationWindow" GridPane.columnIndex="1" />
+            </children>
+        </GridPane>
+    </center>
 
 </BorderPane>

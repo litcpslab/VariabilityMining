@@ -182,47 +182,5 @@ public class IEC61499VariabilityExtractor implements IVariabilityExtractor<IEC61
 		
 		return elements;
 	}
-		
-	public void generateDeltas() {
-		
-		for(JSON1499VariabilityGroup group: groupings) {
-			String deltaName = "D" + group.getAttributeName();
-			File deltaFile = new File("C:\\Users\\AK122272\\git\\VariabilityMining\\VariabilityMining\\varmining\\deltaTest\\" + deltaName + ".delta");
-			try (FileWriter writer = new FileWriter(deltaFile.getAbsolutePath())) {
-				writer.write("delta " + deltaName + ";\n");
-				writer.write("uses VariabilityMiningDeltaApp;\n\n");
-				
-				writer.write("{\n");
-				List<IEC61499Variability> elements = group.getElements();
-				
-				List<IEC61499Variability> functionBlocks = elements.stream().filter(e -> e.getNode_id() != null && e.getType() != null).toList();
-				List<IEC61499Variability> connections = elements.stream().filter(e -> e.getEdge_source() != null).toList();
-				
-				for(IEC61499Variability functionBlock: functionBlocks) {
-					writer.write("\t<Add> FB name=" + functionBlock.getNode_id().substring(functionBlock.getNode_id().lastIndexOf(";")+1) + " type=" + functionBlock.getType() + ";\n");
-				}
-				
-				for(IEC61499Variability connection: connections) {
-					String[] sourceParts = connection.getEdge_source().split(";");
-					String source = sourceParts[sourceParts.length - 2] + "." + sourceParts[sourceParts.length - 1];
-					String[] targetParts = connection.getEdge_target().split(";");
-					String target = targetParts[targetParts.length - 2] + "." + targetParts[targetParts.length - 1];
-					
-					if(connection.getType() != null && connection.getType().equals("Event")) {
-						writer.write("\t<Add> EventConnection source=" + source + " dest=" + target + ";\n");
-					} else {
-						writer.write("\t<Add> DataConnection source=" + source + " dest=" + target + ";\n");
-					}
-				}
-				writer.write("}");
-			
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-			
-		}
-		
-	}
-	
-	
+
 }
