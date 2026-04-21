@@ -106,7 +106,7 @@ public class ConstraintsViewController {
     private ContextMenu constraintFilterMenu;
     
     private VarflixAPI model;
-    private Set<Constraint> constraints; 
+    private Set<Constraint> constraints;
     private List<Feature> features;
     private Feature currentBase;
     
@@ -249,8 +249,15 @@ public class ConstraintsViewController {
 		
 		groupTreeView.refresh();
 		featureComboBox.setValue(null);
-		
+        updateConstraintModel();
 	}
+
+    public void updateConstraintModel(){
+        model.generateModel(currentBase, features, new ArrayList<>(constraints));
+        TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
+        visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
+    }
+    
 	
 	/*
 	 * Handling the action performed to remove a group from a feature
@@ -259,6 +266,7 @@ public class ConstraintsViewController {
 	public void handleRemoveAction(ActionEvent e) {
 		infoController.removeGroupFeature();
 		groupTreeView.refresh();
+        updateConstraintModel();
 	}
 	
 	/*
@@ -654,7 +662,7 @@ public class ConstraintsViewController {
 			    	resolveGroupConstraint(constraint);
 			    	unfilteredItems.remove(constraintItem);
 			    }
-				
+				updateConstraintModel();
 			});
 			constraintItem.setGraphic(button);
 			unfilteredItems.add(constraintItem);

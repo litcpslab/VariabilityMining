@@ -266,7 +266,6 @@ public class TreeGraph implements ViewerListener {
             z-index: 3;
         }
         edge {
-            shape: straight;
             size: 1.5px;
             fill-color: #555;
             z-index: 1;
