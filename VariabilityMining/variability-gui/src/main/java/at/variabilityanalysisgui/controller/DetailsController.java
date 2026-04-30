@@ -1,26 +1,14 @@
 /***
- 
-    This Source Code Form is subject to the terms of the Mozilla
-    Public License, v. 2.0. If a copy of the MPL was not distributed
-    with this file, You can obtain one at
-    https://mozilla.org/MPL/2.0/.*
-    Contributors:
-    Michael Schmidhammer
-    
-    Modifications: 
-    Copyright (c) 2025 Johannes Kepler University Linz
-  	LIT Cyber-Physical Systems Lab
- 	Contributors:
- 	Alexander Stummer - Adapted name changing operations
-**/
+ The MIT License (MIT)
+
+ Copyright (c) 2025 Michael Schmidhammer
+ */
 
 package at.variabilityanalysisgui.controller;
 
+import at.variabilityanalysisgui.changeTracking.RenameElement;
 import at.variabilityanalysisgui.view.DifferenceDirectory;
 import at.variabilityanalysisgui.view.FeatureTreeNode;
-import constraints.AlternativeGroup;
-import constraints.Implication;
-import constraints.MutualExclusion;
 import guiModel.Difference;
 import guiModel.Element;
 import guiModel.Group;
@@ -30,7 +18,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import variabilityMining.Feature;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,13 +37,18 @@ public class DetailsController {
     private final Label detailElementLabel;
     private final TextArea detailElementData;
     private final Label detailSubElementLabel;
+    private final Label detailNamingHistoryLabel;
+    private final ListView<String> detailNamingHistoryListView;
+    private final Button detailChangeBackButton;
+    private final HBox detailNamingHistoryHBox;
 
     private TreeItem<FeatureTreeNode> currentDetailItem = null;
 
     public DetailsController(Controller controller, ListView<Element> detailSubElementListView, ScrollPane detailScrollPane,
                              HBox detailsNameHBox, Label detailLocationLabel, TextArea detailLocationTextArea,
                              TextField detailGroupNameTextField, Button detailChangeNameButton, Label detailOccurrenceLabel, ListView<String> detailOccurrencesListView,
-                             Label detailElementLabel, TextArea detailElementData, Label detailSubElementLabel, Button detailCloseButton) {
+                             Label detailElementLabel, TextArea detailElementData, Label detailSubElementLabel, Button detailCloseButton, Label detailNamingHistoryLabel,
+                             ListView<String> detailNamingHistoryListView, Button detailChangeBackButton, HBox detailNamingHistoryHBox) {
         this.controller = controller;
         this.detailSubElementListView = detailSubElementListView;
         this.detailScrollPane = detailScrollPane;
@@ -70,9 +62,15 @@ public class DetailsController {
         this.detailElementLabel = detailElementLabel;
         this.detailElementData = detailElementData;
         this.detailSubElementLabel = detailSubElementLabel;
-        
-        this.detailChangeNameButton.setOnAction(event -> updateGroupName());
-        this.detailGroupNameTextField.setOnAction(event -> updateGroupName());
+
+        this.detailNamingHistoryLabel = detailNamingHistoryLabel;
+        this.detailNamingHistoryListView = detailNamingHistoryListView;
+        this.detailChangeBackButton = detailChangeBackButton;
+        this.detailNamingHistoryHBox = detailNamingHistoryHBox;
+
+        this.detailChangeNameButton.setOnAction(event -> updateGroupName(false));
+        this.detailGroupNameTextField.setOnAction(event -> updateGroupName(false));
+        this.detailChangeBackButton.setOnAction(event -> updateGroupName(true));
         // Configure the optional detail elements list view display
         detailSubElementListView.setCellFactory(lv -> new ListCell<>() {
             @Override
@@ -130,8 +128,9 @@ public class DetailsController {
         //group.getName().bind(detailGroupNameTextField.textProperty());
         detailSubElementListView.setItems(FXCollections.observableArrayList(group.getElements()));
         detailOccurrencesListView.setItems(FXCollections.observableArrayList(group.getOccurrences()));
+        detailNamingHistoryListView.setItems(group.getPreviousNames());
 
-        setNodeVisibility(true, detailOccurrenceLabel, detailOccurrencesListView, detailSubElementLabel, detailSubElementListView, detailScrollPane, detailsNameHBox);
+        setNodeVisibility(true, detailOccurrenceLabel, detailOccurrencesListView, detailSubElementLabel, detailSubElementListView, detailScrollPane, detailsNameHBox, detailNamingHistoryLabel, detailNamingHistoryListView, detailChangeBackButton, detailNamingHistoryHBox);
         setNodeVisibility(false, detailLocationLabel, detailLocationTextArea, detailElementLabel, detailElementData);
 
         detailGroupNameTextField.setEditable(true);
@@ -145,7 +144,7 @@ public class DetailsController {
         detailSubElementListView.setItems(FXCollections.observableArrayList(element));
         detailLocationTextArea.setText(element.getLocation());
 
-        setNodeVisibility(false, detailOccurrenceLabel, detailOccurrencesListView);
+        setNodeVisibility(false, detailOccurrenceLabel, detailOccurrencesListView, detailNamingHistoryLabel, detailNamingHistoryListView, detailChangeBackButton, detailNamingHistoryHBox);
         setNodeVisibility(true, detailsNameHBox, detailLocationLabel, detailLocationTextArea, detailElementLabel, detailElementData, detailScrollPane);
         setNodeVisibility(currentDetailItem.getValue().isDirectory(), detailSubElementLabel, detailSubElementListView);
 
@@ -172,14 +171,22 @@ public class DetailsController {
         detailSubElementListView.setItems(FXCollections.emptyObservableList());
     }
     
-    private void updateGroupName() {
+    private void updateGroupName(boolean changeBack) {
     	FeatureTreeNode currentTreeNode = currentDetailItem.getValue();
-    	String candidateName = detailGroupNameTextField.getText();
+        String candidateName = detailGroupNameTextField.getText();
+        if (changeBack) {
+            candidateName = detailNamingHistoryListView.getSelectionModel().getSelectedItem();
+        }
 		Group group = (Group) currentDetailItem.getValue().getData();
-		if(isValidName(candidateName)) {
+        if(isValidName(candidateName)) {
+            String oldName = group.getName().get();
+            group.addPreviousName(oldName);
+            //SO: store change element
+            controller.getChangeTracker().addUndo(new RenameElement(this, group, oldName, candidateName));
 			group.getName().setValue(candidateName);
 			currentDetailItem.setValue(null);
 			currentDetailItem.setValue(currentTreeNode);
+            setDetailGroupNameTextField(candidateName);
 		} else {
 			Alert errorAlert = new Alert(AlertType.ERROR, "Invalid name. Duplicate names are not allowed, as well as names starting with a number or containing whitespaces!", ButtonType.OK);
 			errorAlert.setHeaderText("Invalid Name Error");
@@ -188,7 +195,11 @@ public class DetailsController {
 		}	
    	}
 
-	private boolean isValidName(String candidateName) {
+    public void setDetailGroupNameTextField(String name) {
+        detailGroupNameTextField.setText(name);
+    }
+
+    private boolean isValidName(String candidateName) {
 		if(candidateName.isEmpty() || candidateName.contains(" ") || Character.isDigit(candidateName.charAt(0))) {
 			return false;
 		}

@@ -1,15 +1,3 @@
-/*******************************************************************************
- * This Source Code Form is subject to the terms of the Mozilla
- * Public License, v. 2.0. If a copy of the MPL was not distributed
- * with this file, You can obtain one at
- * https://mozilla.org/MPL/2.0/.
- *
- * Copyright (c) 2025 Johannes Kepler University Linz
- * LIT Cyber-Physical Systems Lab
- * Contributors:
- *  Alexander Stummer - Initial Implementation
-********************************************************************************/
-
 package variabilityMining;
 
 import java.io.File;
@@ -19,7 +7,6 @@ import java.util.Set;
 
 import constraints.Constraint;
 import guiModel.Group;
-import iec61499Mining.DeltaModelGenerator;
 import iec61499Mining.IEC61499VariabilityExtractor;
 import mappers.DataMapper;
 import mappers.DataMapper1499;
@@ -28,6 +15,12 @@ import varflixModel.IEC61499.IEC61499Variability;
 import varflixModel.IEC61499.IEC61499Variant;
 import varflixModel.IEC61499.JSON1499VariabilityGroup;
 
+/*
+Copyright (c) 2025 Johannes Kepler University Linz
+LIT Cyber-Physical Systems Lab
+*Contributors:
+Alexander Stummer - Initial Implementation
+*/
 public class VarflixAPI {
 	
 	private IVariabilityExtractor<IEC61499Variant, IEC61499Variability> extractor;
@@ -42,7 +35,7 @@ public class VarflixAPI {
 		
 		extractor = new IEC61499VariabilityExtractor();
 		
-		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("<Enter path to file with list of variants here>", "<Enter path to file with 1499 diff results here>");
+		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("C:\\VariabilityMining\\VariabilityMining\\variability-gui\\variantsAxisControl.txt", "C:\\VariabilityMining\\VariabilityMining\\variability-gui\\axisControlDiff.json");
 		
 		mapper = new DataMapper();
 		

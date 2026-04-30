@@ -1,22 +1,12 @@
-/***
- 
-    This Source Code Form is subject to the terms of the Mozilla
-    Public License, v. 2.0. If a copy of the MPL was not distributed
-    with this file, You can obtain one at
-    https://mozilla.org/MPL/2.0/.*
-    Contributors:
-    Michael Schmidhammer
-    
-    Modifications: 
-    Copyright (c) 2025 Johannes Kepler University Linz
-  	LIT Cyber-Physical Systems Lab
- 	Contributors:
- 	Alexander Stummer - Added scene switching & adapted to integrate with Varflix backend
-**/
+/**
+   Modified from Variability Analyser GUI
+   Original license: MIT License (c) 2025 Michael Schmidhammer
+ */
 
 package at.variabilityanalysisgui.controller;
 
 
+import at.variabilityanalysisgui.changeTracking.ChangeTracker;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -34,7 +24,6 @@ import java.util.*;
 
 import at.variabilityanalysisgui.parser.InputParser;
 import at.variabilityanalysisgui.view.FeatureTreeNode;
-import constraints.Constraint;
 import guiModel.Difference;
 import guiModel.Element;
 import guiModel.ExtractionType;
@@ -43,7 +32,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Window;
-import variabilityMining.Feature;
 import variabilityMining.VarflixAPI;
 
 
@@ -74,10 +62,17 @@ public class Controller {
     @FXML private TextArea detailElementData;
     @FXML private Label detailSubElementLabel;
     @FXML private Button detailCloseButton;
+    @FXML private Label detailNamingHistoryLabel;
+    @FXML private ListView<String> detailNamingHistoryListView;
+    @FXML private Button detailChangeBackButton;
 
     //TreeViewController
     @FXML public HBox hierarchyButtonHBox;
     @FXML private TreeView<FeatureTreeNode> featureTreeView;
+    @FXML private HBox detailNamingHistoryHBox;
+
+    @FXML private Button undoButton;
+    @FXML private Button redoButton;
 
     private final InputParser parser = new InputParser();
     private List<Group> originalGroups;
@@ -87,7 +82,7 @@ public class Controller {
     public Map<ExtractionType, String> seperatorMap = Map.of(ExtractionType.JAVA, "/", ExtractionType.IEC61499, ";");
 
     private UndoManager undoManager = new UndoManager();
-
+    private ChangeTracker<Controller, TreeViewController> changeTracker;
 
     @FXML
     public void initialize() {
@@ -96,17 +91,18 @@ public class Controller {
         this.detailsController = new DetailsController(this, detailSubElementListView, detailScrollPane, detailsNameHBox,
                 detailLocationLabel, detailLocationTextArea, detailGroupNameTextField, detailChangeNameButton,
                 detailOccurrenceLabel, detailOccurrencesListView, detailElementLabel, detailElementData,
-                detailSubElementLabel, detailCloseButton);
-        
+                detailSubElementLabel, detailCloseButton, detailNamingHistoryLabel, detailNamingHistoryListView,
+                detailChangeBackButton, detailNamingHistoryHBox);
+
         originalGroups = model.computeInitialGroups();
         artifactType = ExtractionType.IEC61499;		//TODO Change dynamically based on artifacts used
         treeViewController.initializeHierarchyButtons();
         treeViewController.populateTreeView(filterController.getFilteredGroups(), null); // Populate with parsed data
         detailsController.hideDetailsPane();
         filterController.setupFilterListener();
-
+        changeTracker = new ChangeTracker<>(this, treeViewController);
     }
-    
+
     private void loadFile(File selectedFile) {
 		if (selectedFile != null) {
             try {
@@ -206,7 +202,6 @@ public class Controller {
     // Main window
     private Window getWindow() {
         Node node = treeViewController.getFeatureTreeView().getScene().getRoot();
-        
         if (node != null) {
             return node.getScene().getWindow();
         }
@@ -273,6 +268,27 @@ public class Controller {
     	
     	Scene scene = ((Node)event.getSource()).getScene();
     	scene.setRoot((Parent)SceneManager.getConstraintScene());
+    }
+
+    public Group findGroupById(int groupId) {
+        return getOriginalGroups().stream()
+                .filter(g -> g.getId() == groupId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    @FXML
+    public void undo() {
+        changeTracker.undo();
+    }
+
+    @FXML
+    public void redo() {
+        changeTracker.redo();
+    }
+
+    public ChangeTracker<Controller, TreeViewController> getChangeTracker() {
+        return changeTracker;
     }
 
 }

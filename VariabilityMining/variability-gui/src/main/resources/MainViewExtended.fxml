@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-    This Source Code Form is subject to the terms of the Mozilla
-    Public License, v. 2.0. If a copy of the MPL was not distributed
-    with this file, You can obtain one at
-    https://mozilla.org/MPL/2.0/.*
-    Contributors:
-    Michael Schmidhammer
-    
-    Modifications: 
-    Copyright (c) 2025 Johannes Kepler University Linz
-  	LIT Cyber-Physical Systems Lab
- 	Contributors:
- 	Alexander Stummer - Extended the main view with additional features and elements
+ The MIT License (MIT)
+
+ Copyright (c) 2025 Michael Schmidhammer
 -->
 
 <?import javafx.geometry.Insets?>
@@ -37,53 +28,78 @@
         <ScrollPane fx:id="detailScrollPane" fitToWidth="true" managed="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefWidth="400.0" visible="false">
             <VBox fx:id="detailsPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10" style="-fx-padding: 10;">
                 <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Details" />
-            <HBox fx:id="detailsNameHBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="30.0" prefWidth="200.0">
-               <children>
-                      <Label fx:id="detailGroupNameLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Name: " wrapText="true" />
-                  <TextField fx:id="detailGroupNameTextField" />
-                  <Button fx:id="detailChangeNameButton" mnemonicParsing="false" text="Change Name" />
-               </children>
-            </HBox>
-            <Label fx:id="detailLocationLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Location" />
-            <TextArea fx:id="detailLocationTextArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="200.0" />
+                <HBox fx:id="detailsNameHBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="30.0" prefWidth="200.0">
+                    <children>
+                        <Label fx:id="detailGroupNameLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Name: " wrapText="true" />
+                        <TextField fx:id="detailGroupNameTextField" />
+                        <Button fx:id="detailChangeNameButton" mnemonicParsing="false" text="Change Name" />
+                    </children>
+                </HBox>
+                <HBox fx:id="detailNamingHistoryHBox" prefHeight="30.0" prefWidth="200.0">
+                    <children>
+                        <Label fx:id="detailNamingHistoryLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Naming-History" />
+                        <Button fx:id="detailChangeBackButton" mnemonicParsing="false" text="Change Back">
+                            <HBox.margin>
+                                <Insets left="7.0" top="2.0" />
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                </HBox>
+                <ListView fx:id="detailNamingHistoryListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" />
+                <Label fx:id="detailLocationLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Location" />
+                <TextArea fx:id="detailLocationTextArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="200.0" />
                 <Label fx:id="detailOccurrenceLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Occurrences" />
                 <ListView fx:id="detailOccurrencesListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" />
-            <Label fx:id="detailElementLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Element" />
-            <TextArea fx:id="detailElementData" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" />
+                <Label fx:id="detailElementLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Element" />
+                <TextArea fx:id="detailElementData" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" />
                 <Label fx:id="detailSubElementLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Subelements" />
                 <ListView fx:id="detailSubElementListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200" />
                 <Button fx:id="detailCloseButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Close Details" />
             </VBox>
         </ScrollPane>
     </right>
-   <center>
-      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
-         <children>
-              <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10" style="-fx-padding: 10;">
-                  <Button fx:id="filterButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Filter" HBox.hgrow="NEVER">
-                      <tooltip>
-                     <Tooltip maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Filter Options (Not Implemented Yet)" />
-                  </tooltip>
-                  </Button>
-                  <TextField fx:id="searchTextField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="Search..." HBox.hgrow="ALWAYS" />
-              </HBox>
-              <TreeView fx:id="featureTreeView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-padding: 5;" VBox.vgrow="ALWAYS" />
-            <HBox alignment="CENTER_LEFT" maxHeight="20.0" prefHeight="20.0" style="-fx-padding: 10;">
-               <padding>
-                  <Insets left="10.0" />
-               </padding>
-               <children>
-                  <HBox fx:id="hierarchyButtonHBox" maxHeight="20.0" prefHeight="20.0" />
-                  <HBox alignment="CENTER_RIGHT" maxHeight="20.0" prefHeight="20.0">
-                     <children>
-                        <Button fx:id="constraintsViewButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#changeScene" text="Constraints View" />
-                     </children>
-                  </HBox>
-               </children></HBox>
-         </children>
-      </VBox>
-   </center>
-   <top>
+    <center>
+        <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+            <children>
+                <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10" style="-fx-padding: 10;">
+                    <Button fx:id="filterButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Filter" HBox.hgrow="NEVER">
+                        <tooltip>
+                            <Tooltip maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Filter Options (Not Implemented Yet)" />
+                        </tooltip>
+                    </Button>
+                    <TextField fx:id="searchTextField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="Search..." HBox.hgrow="ALWAYS" />
+                </HBox>
+                <TreeView fx:id="featureTreeView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-padding: 5;" VBox.vgrow="ALWAYS" />
+                <HBox alignment="CENTER_LEFT" maxHeight="20.0" prefHeight="20.0" style="-fx-padding: 10;">
+                    <padding>
+                        <Insets left="10.0" />
+                    </padding>
+                    <children>
+                        <HBox fx:id="hierarchyButtonHBox" maxHeight="20.0" prefHeight="20.0" />
+                        <HBox alignment="CENTER_LEFT" maxHeight="20.0" prefHeight="20.0">
+                            <children>
+                                <Button fx:id="constraintsViewButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#changeScene" text="Constraints View" />
+                            </children>
+                        </HBox>
+                        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                            <children>
+                                <Button fx:id="UndoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#undo" text="Undo">
+                                    <HBox.margin>
+                                        <Insets left="5.0" />
+                                    </HBox.margin>
+                                </Button>
+                                <Button fx:id="RedoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#redo" text="Redo">
+                                    <HBox.margin>
+                                        <Insets left="5.0" />
+                                    </HBox.margin>
+                                </Button>
+                            </children>
+                        </HBox>
+                    </children></HBox>
+            </children>
+        </VBox>
+    </center>
+    <top>
         <MenuBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
             <menus>
                 <Menu text="File">
@@ -99,6 +115,6 @@
                 <Insets bottom="5.0" />
             </BorderPane.margin>
         </MenuBar>
-   </top>
+    </top>
 
 </BorderPane>
