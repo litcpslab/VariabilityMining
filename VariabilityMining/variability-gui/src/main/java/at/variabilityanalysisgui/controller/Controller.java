@@ -20,6 +20,7 @@ package at.variabilityanalysisgui.controller;
 
 import at.variabilityanalysisgui.changeTracking.ChangeTracker;
 import at.variabilityanalysisgui.visualization.TreeGraph;
+import constraints.Constraint;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -45,6 +46,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Window;
+import variabilityMining.Feature;
 import variabilityMining.VarflixAPI;
 
 

@@ -121,6 +121,20 @@
                                         <Button fx:id="constraintsViewButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#changeScene" text="Constraints View" />
                                     </children>
                                 </HBox>
+                                <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Button fx:id="UndoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#undo" text="Undo">
+                                            <HBox.margin>
+                                                <Insets left="5.0" />
+                                            </HBox.margin>
+                                        </Button>
+                                        <Button fx:id="RedoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#redo" text="Redo">
+                                            <HBox.margin>
+                                                <Insets left="5.0" />
+                                            </HBox.margin>
+                                        </Button>
+                                    </children>
+                                </HBox>
                             </children>
                         </HBox>
                     </children>
