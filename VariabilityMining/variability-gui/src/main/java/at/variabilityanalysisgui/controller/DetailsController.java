@@ -1,8 +1,19 @@
 /***
- The MIT License (MIT)
-
- Copyright (c) 2025 Michael Schmidhammer
- */
+ 
+    This Source Code Form is subject to the terms of the Mozilla
+    Public License, v. 2.0. If a copy of the MPL was not distributed
+    with this file, You can obtain one at
+    https://mozilla.org/MPL/2.0/.*
+    Contributors:
+    Michael Schmidhammer
+    
+    Modifications: 
+    Copyright (c) 2025 Johannes Kepler University Linz
+  	LIT Cyber-Physical Systems Lab
+ 	Contributors:
+ 	Alexander Stummer - Adapted name changing operations
+    Kejda Domi- Added the visualization section
+**/
 
 package at.variabilityanalysisgui.controller;
 
@@ -186,6 +197,7 @@ public class DetailsController {
 			group.getName().setValue(candidateName);
 			currentDetailItem.setValue(null);
 			currentDetailItem.setValue(currentTreeNode);
+            controller.redrawVisualization();
             setDetailGroupNameTextField(candidateName);
 		} else {
 			Alert errorAlert = new Alert(AlertType.ERROR, "Invalid name. Duplicate names are not allowed, as well as names starting with a number or containing whitespaces!", ButtonType.OK);

@@ -1,7 +1,19 @@
-/**
- * Modified from Variability Analyser GUI
- * Original license: MIT License (c) 2025 Michael Schmidhammer
- */
+/***
+ 
+    This Source Code Form is subject to the terms of the Mozilla
+    Public License, v. 2.0. If a copy of the MPL was not distributed
+    with this file, You can obtain one at
+    https://mozilla.org/MPL/2.0/.*
+    Contributors:
+    Michael Schmidhammer
+    
+    Modifications: 
+    Copyright (c) 2025 Johannes Kepler University Linz
+  	LIT Cyber-Physical Systems Lab
+ 	Contributors:
+ 	Alexander Stummer - Adapted drag-and-drop and delete actions
+    Kejda Domi- Added the visualization section
+**/
 
 package at.variabilityanalysisgui.controller;
 
@@ -384,6 +396,7 @@ public class TreeViewController {
                 parent.getChildren().remove(item);
                 if(item.getValue().getData() instanceof Group) {
                 	controller.getOriginalGroups().remove(item.getValue().getData());
+                    controller.redrawVisualization();
                 }
                 System.out.println("Removed item: " + item.getValue().getDisplayName());
                 removeEmptyContainers(parent);

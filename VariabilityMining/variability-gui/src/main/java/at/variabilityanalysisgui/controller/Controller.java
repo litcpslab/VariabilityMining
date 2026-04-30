@@ -1,12 +1,25 @@
-/**
-   Modified from Variability Analyser GUI
-   Original license: MIT License (c) 2025 Michael Schmidhammer
- */
+/***
+ 
+    This Source Code Form is subject to the terms of the Mozilla
+    Public License, v. 2.0. If a copy of the MPL was not distributed
+    with this file, You can obtain one at
+    https://mozilla.org/MPL/2.0/.*
+    Contributors:
+    Michael Schmidhammer
+    
+    Modifications: 
+    Copyright (c) 2025 Johannes Kepler University Linz
+  	LIT Cyber-Physical Systems Lab
+ 	Contributors:
+ 	Alexander Stummer - Added scene switching & adapted to integrate with Varflix backend
+    Kejda Domi- Added the visualization section
+**/
 
 package at.variabilityanalysisgui.controller;
 
 
 import at.variabilityanalysisgui.changeTracking.ChangeTracker;
+import at.variabilityanalysisgui.visualization.TreeGraph;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -49,6 +62,7 @@ public class Controller {
     @FXML private Button filterButton;
 
     // DetailsController
+    @FXML private ScrollPane visualizationWindow;
     @FXML private ListView<guiModel.Element> detailSubElementListView;
     @FXML private ScrollPane detailScrollPane;
     @FXML private HBox detailsNameHBox;
@@ -101,6 +115,18 @@ public class Controller {
         detailsController.hideDetailsPane();
         filterController.setupFilterListener();
         changeTracker = new ChangeTracker<>(this, treeViewController);
+        redrawVisualization();
+
+    }
+    public void redrawVisualization(){
+        model.computePCM(originalGroups);
+        Set<Constraint> constraints = model.performFCA();
+        List<Feature> features = model.getFeatures();
+        Feature currentBase = model.getBaseFeature();
+        model.generateModel(currentBase, features, new ArrayList<>(constraints));
+        TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
+        //visualizationWindow.setContent(null);
+        visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
     }
 
     private void loadFile(File selectedFile) {

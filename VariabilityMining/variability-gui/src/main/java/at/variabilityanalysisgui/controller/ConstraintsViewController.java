@@ -1,3 +1,16 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+ *  Kejda Domi- Added the visualization section
+********************************************************************************/
+
 package at.variabilityanalysisgui.controller;
 
 import java.io.File;
@@ -9,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import at.variabilityanalysisgui.changeTracking.ChangeTracker;
+import at.variabilityanalysisgui.visualization.TreeGraph;
 import org.controlsfx.control.CheckComboBox;
 
 import constraints.AlternativeGroup;
@@ -74,6 +88,7 @@ public class ConstraintsViewController {
     
 	
 	//GroupInfoView InfoController
+    @FXML private ScrollPane visualizationWindow;
     @FXML private ScrollPane infoScrollPane;
     @FXML private HBox detailsNameHBox;
     @FXML private Label groupInfoLabel;
@@ -97,7 +112,7 @@ public class ConstraintsViewController {
     private ContextMenu constraintFilterMenu;
     
     private VarflixAPI model;
-    private Set<Constraint> constraints; 
+    private Set<Constraint> constraints;
     private List<Feature> features;
     private Feature currentBase;
     
@@ -105,7 +120,7 @@ public class ConstraintsViewController {
     private boolean isGroupView = true;
 
 	private ChangeTracker<ConstraintsViewController, ConstraintInfoController> changeTracker;
-	
+
     @FXML
     public void initialize() {
     	this.infoController = new ConstraintInfoController(this, infoScrollPane, groupInfoLabel, parentFeatureLabel, infoText, groupFeatureListView, removeFeatureButton, editLabel, featureComboBox, editButtonBox, infoCloseButton);
@@ -120,7 +135,7 @@ public class ConstraintsViewController {
     	unfilteredItems = new HashSet<>();
 
     	changeTracker = new ChangeTracker<>(this, infoController);
-    	
+
     	infoScrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
     		if(newScene != null) {
     	        newScene.windowProperty().addListener((obs2, oldWin, newWin) -> {
@@ -216,7 +231,7 @@ public class ConstraintsViewController {
 				    if(result.isPresent() && result.get() == ButtonType.YES) {
 				    	g.removeFeature(addFeature);
 						//SO AddConstraintChildList with empty list
-				    	
+
 				    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
 						//SO AddConstraintChildList with constraint
 						//List to add constraints
@@ -250,8 +265,15 @@ public class ConstraintsViewController {
 		
 		groupTreeView.refresh();
 		featureComboBox.setValue(null);
-		
+        updateConstraintModel();
 	}
+
+    public void updateConstraintModel(){
+        model.generateModel(currentBase, features, new ArrayList<>(constraints));
+        TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
+        visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
+    }
+
 	
 	/*
 	 * Handling the action performed to remove a group from a feature
@@ -260,6 +282,7 @@ public class ConstraintsViewController {
 	public void handleRemoveAction(ActionEvent e) {
 		infoController.removeGroupFeature();
 		groupTreeView.refresh();
+        updateConstraintModel();
 	}
 	
 	/*
@@ -349,7 +372,7 @@ public class ConstraintsViewController {
 		rightFeatureComboBox.setPromptText("Select right feature");
 		
 		Button addButton = new Button("Add");
-		
+
 		EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
 			
 			@Override
@@ -483,7 +506,9 @@ public class ConstraintsViewController {
 				Scene scene = groupTreeView.getScene();
 	        	groupTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
 			}	
-	    });	
+	    });
+        TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
+        visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
 	}
 	
 	/*
@@ -637,7 +662,7 @@ public class ConstraintsViewController {
 					//SO new DeleteConstraintKeepLogic() tracking
 			    	unfilteredItems.remove(constraintItem);
 			    }
-				
+				updateConstraintModel();
 			});
 			constraintItem.setGraphic(button);
 			unfilteredItems.add(constraintItem);

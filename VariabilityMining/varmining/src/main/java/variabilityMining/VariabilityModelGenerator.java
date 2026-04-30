@@ -44,10 +44,13 @@ public class VariabilityModelGenerator {
 	public void generateVariabilityModel(Feature base, List<Feature> features, List<Constraint> constraints) {
 		
 		this.features = features;
-		
+        List<Feature> removedFeatures =features.stream().filter(feature -> (feature.getName().startsWith("OR") || feature.getName().startsWith("ALT"))).toList();
+		this.features.removeAll(removedFeatures);
 		features.forEach(feature -> {
 			feature.setChildren(new ArrayList<>());
 			feature.setParent(null);
+            feature.setAlternativeParent(false);
+            feature.setOrParent(false);
 		});
 		
 		root = base == null? new Feature("Base"): base;
