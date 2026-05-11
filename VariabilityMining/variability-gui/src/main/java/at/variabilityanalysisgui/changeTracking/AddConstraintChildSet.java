@@ -2,29 +2,41 @@ package at.variabilityanalysisgui.changeTracking;
 
 import at.variabilityanalysisgui.controller.ConstraintInfoController;
 import at.variabilityanalysisgui.controller.ConstraintsViewController;
+import constraints.Constraint;
 import constraints.Group;
 import variabilityMining.Feature;
 
-public class AddConstraintChild implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
+import java.util.Set;
 
+public class AddConstraintChildSet implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
     Feature feature;
-    Group group;
+    Group oldGroup;
+    Group newGroup;
+    Set<Constraint> constraints;
 
-    public AddConstraintChild(Feature feature, Group group) {
+    public AddConstraintChildSet(Feature feature, Group oldGroup, Group newGroup, Set<Constraint> constraints) {
         this.feature = feature;
-        this.group = group;
+        this.oldGroup = oldGroup;
+        this.newGroup = newGroup;
+        this.constraints = constraints;
     }
 
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        group.removeFeature(feature);
+        oldGroup.addFeature(feature);
+        newGroup.removeFeature(feature);
+
+        controller.getConstraints().removeAll(constraints);
         controller.getFeatureComboBox().getItems().add(feature);
         controller.getGroupFeatureListView().getItems().remove(feature);
     }
 
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        group.addFeature(feature);
+        oldGroup.removeFeature(feature);
+        newGroup.addFeature(feature);
+
+        controller.getConstraints().addAll(constraints);
         controller.getFeatureComboBox().getItems().remove(feature);
         controller.getGroupFeatureListView().getItems().add(feature);
     }

@@ -117,6 +117,8 @@ public class Controller {
         detailsController.hideDetailsPane();
         filterController.setupFilterListener();
         changeTracker = new ChangeTracker<>(this, treeViewController);
+        undoButton.disableProperty().bind(changeTracker.canUndoProperty().not());
+        redoButton.disableProperty().bind(changeTracker.canRedoProperty().not());
         redrawVisualization();
 
     }

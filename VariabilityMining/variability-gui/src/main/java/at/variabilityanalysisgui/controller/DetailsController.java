@@ -187,6 +187,9 @@ public class DetailsController {
         String candidateName = detailGroupNameTextField.getText();
         if (changeBack) {
             candidateName = detailNamingHistoryListView.getSelectionModel().getSelectedItem();
+            if (candidateName == null) {
+                return;
+            }
         }
 		Group group = (Group) currentDetailItem.getValue().getData();
         if(isValidName(candidateName)) {

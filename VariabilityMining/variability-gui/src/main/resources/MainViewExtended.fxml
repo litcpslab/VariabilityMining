@@ -123,12 +123,12 @@
                                 </HBox>
                                 <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
                                     <children>
-                                        <Button fx:id="UndoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#undo" text="Undo">
+                                        <Button fx:id="undoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#undo" text="Undo">
                                             <HBox.margin>
                                                 <Insets left="5.0" />
                                             </HBox.margin>
                                         </Button>
-                                        <Button fx:id="RedoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#redo" text="Redo">
+                                        <Button fx:id="redoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#redo" text="Redo">
                                             <HBox.margin>
                                                 <Insets left="5.0" />
                                             </HBox.margin>
