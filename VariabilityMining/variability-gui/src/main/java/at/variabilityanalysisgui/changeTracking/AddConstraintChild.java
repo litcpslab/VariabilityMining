@@ -20,6 +20,7 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
         group.removeFeature(feature);
         controller.getFeatureComboBox().getItems().add(feature);
         controller.getGroupFeatureListView().getItems().remove(feature);
+        controller.getGroupTreeView().refresh();
     }
 
     @Override
@@ -27,5 +28,6 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
         group.addFeature(feature);
         controller.getFeatureComboBox().getItems().remove(feature);
         controller.getGroupFeatureListView().getItems().add(feature);
+        controller.getGroupTreeView().refresh();
     }
 }

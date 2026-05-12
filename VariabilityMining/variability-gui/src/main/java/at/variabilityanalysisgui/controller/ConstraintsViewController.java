@@ -734,6 +734,10 @@ public class ConstraintsViewController {
 		return groupFeatureListView;
 	}
 
+	public TreeView<Constraint> getGroupTreeView() {
+		return groupTreeView;
+	}
+
 	public Set<Constraint> getConstraints() {
 		return constraints;
 	}
