@@ -290,6 +290,9 @@ public class ConstraintsViewController {
         model.generateModel(currentBase, features, new ArrayList<>(constraints));
         TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
         visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
+        visualizationWindow.setFitToWidth(true);
+        visualizationWindow.setFitToHeight(true);
+
     }
 
 	
@@ -525,8 +528,7 @@ public class ConstraintsViewController {
 	        	groupTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
 			}	
 	    });
-        TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
-        visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
+        updateConstraintModel();
 	}
 	
 	/*

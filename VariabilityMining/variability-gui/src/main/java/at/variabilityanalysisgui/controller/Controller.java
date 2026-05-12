@@ -25,6 +25,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.application.Platform;
@@ -131,6 +132,8 @@ public class Controller {
         TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
         //visualizationWindow.setContent(null);
         visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
+        visualizationWindow.setFitToWidth(true);
+        visualizationWindow.setFitToHeight(true);
     }
 
     private void loadFile(File selectedFile) {
