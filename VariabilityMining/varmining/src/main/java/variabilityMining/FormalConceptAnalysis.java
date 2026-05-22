@@ -50,7 +50,7 @@ public class FormalConceptAnalysis {
 	
 	private ConceptOrder fullOrder;
 	
-	private Set<Constraint> constraints;
+	private List<Constraint> constraints;
 	
 	private List<Feature> features;
 	
@@ -60,7 +60,7 @@ public class FormalConceptAnalysis {
 	
 	public FormalConceptAnalysis(File file) {
 		this.source = file;
-		this.constraints = new HashSet<>();
+		this.constraints = new ArrayList<>();
 		this.features = new ArrayList<>();
 	}
 	
@@ -327,12 +327,17 @@ public class FormalConceptAnalysis {
 					List<MutualExclusion> mutExs = new ArrayList<>();
 					if(checkAlternativeConnection(matchSet)) {
 						AlternativeGroup alternative = new AlternativeGroup(matchSet, key);
-						constraints.add(alternative);	
+						if(!constraints.contains(alternative)) {
+							constraints.add(alternative);
+						}
+							
 						mutExs = constraints.stream().filter(c -> c instanceof MutualExclusion).map(c -> (MutualExclusion)c).filter(mutex -> (matchSet.contains(mutex.getFeature1()) && matchSet.contains(mutex.getFeature2()))).collect(Collectors.toList());
 						//TODO check for potentially dead features when adding an alternative
 					} else {
 						OrRelation orRelation = new OrRelation(matchSet, key);
-						constraints.add(orRelation);
+						if(!constraints.contains(orRelation)) {
+							constraints.add(orRelation);
+						}
 					}
 						
 					usedFeatures.addAll(matchSet);
@@ -401,7 +406,11 @@ public class FormalConceptAnalysis {
 						Feature currentFeature = getFeatureByName(context.getAttributeName(order.getConceptReducedIntent(key).first()));
 						Feature mutexFeature = getFeatureByName(context.getAttributeName(order.getConceptReducedIntent(key2).first()));
 						
-						constraints.add(new MutualExclusion(currentFeature, mutexFeature));
+						MutualExclusion mutex = new MutualExclusion(currentFeature, mutexFeature);
+						
+						if(!constraints.contains(mutex)) {
+							constraints.add(mutex);
+						}
 
 					} 
 				}
@@ -524,8 +533,10 @@ public class FormalConceptAnalysis {
 								usedFeatures.addAll(reducedValues);
 							}
 						} else {
-							alternatives.add(new AlternativeGroup(reducedValues, findParent(reducedValues)));
-							usedFeatures.addAll(reducedValues);
+							if(isParentFeatureCovered(parent, reducedValues)){
+								alternatives.add(new AlternativeGroup(reducedValues, parent));
+								usedFeatures.addAll(reducedValues);
+							}
 						}			
 					
 					}
@@ -533,9 +544,12 @@ public class FormalConceptAnalysis {
 			}
 		}
 		
-		constraints.addAll(alternatives);
+		//constraints.addAll(alternatives);
 
 		for(AlternativeGroup alternative: alternatives) {
+			if(!constraints.contains(alternative)) {
+				constraints.add(alternative);
+			}
 			List<Feature> features = alternative.getFeatures();
 			List<Implication> implications = constraints.stream().filter(c -> c instanceof Implication).map(c -> (Implication) c).toList();
 			implications = implications.stream().filter(i -> features.contains(i.getFeature1()) && i.getFeature2().equals(alternative.getParent())).toList();
@@ -573,8 +587,12 @@ public class FormalConceptAnalysis {
 							
 							Feature currentFeature = getFeatureByName(context.getAttributeName(curr.first()));
 							Feature impliedFeature = getFeatureByName(context.getAttributeName(cover.first()));
-								
-							constraints.add(new Implication(currentFeature, impliedFeature));
+							
+							Implication implication = new Implication(currentFeature, impliedFeature);
+							
+							if(!constraints.contains(implication)) {
+								constraints.add(implication);
+							}
 						}
 					}
 				}
@@ -596,14 +614,18 @@ public class FormalConceptAnalysis {
 				while(currentIterator.hasNext()) {
 					Feature feature2 = getFeatureByName(context.getAttributeName(currentIterator.next()));
 					
-					constraints.add(new Equivalence(featureName, feature2));
+					Equivalence equivalence = new Equivalence(featureName, feature2);
+					
+					if(!constraints.contains(equivalence)) {
+						constraints.add(equivalence);
+					}
 					
 				}
 			}
 		}
 	}
 	
-	public Set<Constraint> getConstraints() {
+	public List<Constraint> getConstraints() {
 		return constraints;
 	}
 

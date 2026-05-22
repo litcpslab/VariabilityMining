@@ -87,7 +87,7 @@ public class ConstraintFileIO {
 		return null;
 	}
 	
-	public static void writeConstraintsToFile(File selectedFile, Set<Constraint> constraints, List<Feature> features, Feature base) {
+	public static void writeConstraintsToFile(File selectedFile, List<Constraint> constraints, List<Feature> features, Feature base) {
 		
 		Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
 		

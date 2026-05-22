@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import UVL.UVLGenerator;
+import constraints.AlternativeGroup;
 import constraints.Constraint;
 import constraints.Group;
 import constraints.SimpleConstraint;
@@ -41,7 +42,7 @@ public class VariabilityModelGenerator {
 	 * Method to generate a variability model given the base/root feature, a list of all features and a list of all the constraints.
 	 * The result is written to a uvl file
 	 */
-	public void generateVariabilityModel(Feature base, List<Feature> features, List<Constraint> constraints) {
+	public List<Constraint> generateVariabilityModel(Feature base, List<Feature> features, List<Constraint> constraints) {
 		
 		this.features = features;
         List<Feature> removedFeatures =features.stream().filter(feature -> (feature.getName().startsWith("OR") || feature.getName().startsWith("ALT"))).toList();
@@ -82,13 +83,17 @@ public class VariabilityModelGenerator {
 		List<SimpleConstraint> relevantConstraints = constraints.stream().filter(c -> c instanceof SimpleConstraint).map(c -> (SimpleConstraint) c)
 				.filter(f -> uncoveredFeatures.contains(f.getFeature1()) || uncoveredFeatures.contains(f.getFeature2())).toList();
 		
-		buildOtherRelations(uncoveredFeatures, relevantConstraints);
+		List<Constraint> addedConstraints = buildOtherRelations(uncoveredFeatures, relevantConstraints);
+		
+		constraints.addAll(addedConstraints);
 		
 		positionUncoveredFeatures(uncoveredFeatures.stream().filter(f -> f.getParent() == null).toList());
 			
 		List<SimpleConstraint> ctcs = constraints.stream().filter(c -> !coveredConstraints.contains(c) && c instanceof SimpleConstraint).map(c -> (SimpleConstraint) c).toList();
 			
-		UVLGenerator.createUVLModel(root, ctcs);		
+		UVLGenerator.createUVLModel(root, ctcs);
+		
+		return constraints;
 	}
 
 	private void positionUncoveredFeatures(List<Feature> uncoveredFeatures) {
@@ -102,8 +107,9 @@ public class VariabilityModelGenerator {
 	/*
 	 * Check the remaining constraints and determine which are CTCs and which can directly be integrated in the variability model
 	 */
-	private void buildOtherRelations(List<Feature> uncoveredFeatures, List<SimpleConstraint> relevantConstraints) {
+	private List<Constraint> buildOtherRelations(List<Feature> uncoveredFeatures, List<SimpleConstraint> relevantConstraints) {
 		
+		List<Constraint> addedConstraints = new ArrayList<>();
 		List<SimpleConstraint> relevantEquivalences = relevantConstraints.stream().filter(c -> c.getType().equals("Equivalence")).toList();
 		
 		if(relevantConstraints.isEmpty()) {
@@ -148,6 +154,7 @@ public class VariabilityModelGenerator {
 						altParent.addChild(other);
 						other.setParent(altParent);
 						coveredConstraints.add(mutex);
+						addedConstraints.add(new AlternativeGroup(altParent.getChildren(), altParent));
 						continue featureLoop;
 					}
 				}
@@ -170,6 +177,7 @@ public class VariabilityModelGenerator {
 				}
 			}
 		}
+		return addedConstraints;
 	}
 
 	/*

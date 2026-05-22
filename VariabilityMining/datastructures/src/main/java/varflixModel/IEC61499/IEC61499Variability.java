@@ -25,7 +25,7 @@ public class IEC61499Variability implements IVariability {
 	@SerializedName("node_id")
 	private String node_id;
 	
-	@SerializedName("type")
+	@SerializedName(value="type", alternate={"node_type", "edge_type"})
 	private String type;
 	
 	@SerializedName("edge_source")

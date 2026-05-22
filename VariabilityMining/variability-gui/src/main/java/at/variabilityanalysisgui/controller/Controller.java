@@ -111,9 +111,10 @@ public class Controller {
         redrawVisualization();
 
     }
+    
     public void redrawVisualization(){
         model.computePCM(originalGroups);
-        Set<Constraint> constraints = model.performFCA();
+        List<Constraint> constraints = model.performFCA();
         List<Feature> features = model.getFeatures();
         Feature currentBase = model.getBaseFeature();
         model.generateModel(currentBase, features, new ArrayList<>(constraints));
