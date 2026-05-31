@@ -21,9 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import at.variabilityanalysisgui.changeTracking.AddConstraintChild;
-import at.variabilityanalysisgui.changeTracking.AddConstraintChildSet;
-import at.variabilityanalysisgui.changeTracking.ChangeTracker;
+import at.variabilityanalysisgui.changeTracking.*;
 import at.variabilityanalysisgui.visualization.TreeGraph;
 import org.controlsfx.control.CheckComboBox;
 
@@ -423,17 +421,21 @@ public class ConstraintsViewController {
 								 
 								Optional<ButtonType> result = removeAlert.showAndWait();
 							    if(result.isPresent() && result.get() == ButtonType.YES) {
+									int index = groupTreeView.getRoot().getChildren().indexOf(addItem);
 							    	groupTreeView.getRoot().getChildren().remove(addItem);
-									//SO remove simple constraint
 							    	constraints.remove(addItem.getValue());
+									unfilteredItems.remove(addItem);
+									//SO remove simple constraint
+									changeTracker.addUndo(new DeleteConstraint(addItem, index));
 							    }							
 							});
 							addItem.setGraphic(button);
 							
 							groupTreeView.getRoot().getChildren().add(addItem);
-							//SO add simple constraint
 							unfilteredItems.add(addItem);
 							groupTreeView.refresh();
+							//SO add simple constraint
+							changeTracker.addUndo(new AddSimpleConstraint(addItem));
 						}	
 					}
 					
@@ -462,7 +464,6 @@ public class ConstraintsViewController {
 		
 		List<Constraint> groups = constraints.stream().filter(c -> c instanceof Group).toList();
 		setUpTreeItems(groups);
-		
 		proceedButton.setText("Proceed");
 		
 		proceedButton.setOnAction(e -> {
@@ -671,16 +672,21 @@ public class ConstraintsViewController {
 				 
 				Optional<ButtonType> result = removeAlert.showAndWait();
 			    if(result.isPresent() && result.get() == ButtonType.YES) {
-			    	groupTreeView.getRoot().getChildren().remove(constraintItem);
+					int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
+					groupTreeView.getRoot().getChildren().remove(constraintItem);
 			    	unfilteredItems.remove(constraintItem);
 			    	this.constraints.remove(constraint);
 					//SO new DeleteConstraint tracking
+					changeTracker.addUndo(new DeleteConstraint(constraintItem, index));
 			    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
+					Set<Constraint> newConstraints = new HashSet<>();
+					int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
 			    	groupTreeView.getRoot().getChildren().remove(constraintItem);
 			    	this.constraints.remove(constraint);
-			    	resolveGroupConstraint(constraint);
-					//SO new DeleteConstraintKeepLogic() tracking
+			    	resolveGroupConstraint(constraint, newConstraints);
 			    	unfilteredItems.remove(constraintItem);
+					//SO new DeleteConstraintKeepLogic() tracking
+					changeTracker.addUndo(new DeleteConstraintSet(constraintItem, index, newConstraints));
 			    }
 				updateConstraintModel();
 			});
@@ -696,18 +702,18 @@ public class ConstraintsViewController {
 	/*
 	 * Logic to keep the constraints when removing (a feature from) a group
 	 */
-	private void resolveGroupConstraint(Constraint constraint) {
+	private void resolveGroupConstraint(Constraint constraint, Set<Constraint> newConstraints) {
 		//SO create list with all new Constraints
 		if(constraint instanceof AlternativeGroup) {
 			AlternativeGroup alternative = (AlternativeGroup) constraint;
-			
+
 			Set<Feature> processed = new HashSet<>();
 			
 			for(Feature f: alternative.getFeatures()) {
-				constraints.add(new Implication(f, alternative.getParent()));
+				newConstraints.add(new Implication(f, alternative.getParent()));
 				
 				for(Feature f2: processed) {
-					constraints.add(new MutualExclusion(f, f2));
+					newConstraints.add(new MutualExclusion(f, f2));
 				}
 				
 				processed.add(f);
@@ -716,9 +722,10 @@ public class ConstraintsViewController {
 			OrRelation orGroup = (OrRelation) constraint;
 			
 			for(Feature f: orGroup.getFeatures()) {
-				constraints.add(new Implication(f, orGroup.getParent()));
+				newConstraints.add(new Implication(f, orGroup.getParent()));
 			}
 		}
+		constraints.addAll(newConstraints);
 	}
 	
 	/*
@@ -738,6 +745,10 @@ public class ConstraintsViewController {
 
 	public TreeView<Constraint> getGroupTreeView() {
 		return groupTreeView;
+	}
+
+	public Set<TreeItem<Constraint>> getUnfilteredItems() {
+		return unfilteredItems;
 	}
 
 	public Set<Constraint> getConstraints() {

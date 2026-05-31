@@ -17,7 +17,7 @@
 
 package at.variabilityanalysisgui.controller;
 
-import at.variabilityanalysisgui.changeTracking.RenameElement;
+import at.variabilityanalysisgui.changeTracking.RenameGroup;
 import at.variabilityanalysisgui.view.DifferenceDirectory;
 import at.variabilityanalysisgui.view.FeatureTreeNode;
 import guiModel.Difference;
@@ -196,7 +196,7 @@ public class DetailsController {
             String oldName = group.getName().get();
             group.addPreviousName(oldName);
             //SO: store change element
-            controller.getChangeTracker().addUndo(new RenameElement(this, group, oldName, candidateName));
+            controller.getChangeTracker().addUndo(new RenameGroup(this, group, oldName, candidateName));
 			group.getName().setValue(candidateName);
 			currentDetailItem.setValue(null);
 			currentDetailItem.setValue(currentTreeNode);

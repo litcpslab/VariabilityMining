@@ -1,6 +1,7 @@
 package at.variabilityanalysisgui.changeTracking;
 
-import at.variabilityanalysisgui.controller.ConstraintsViewController;import at.variabilityanalysisgui.controller.Controller;
+import at.variabilityanalysisgui.controller.ConstraintsViewController;
+import at.variabilityanalysisgui.controller.Controller;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import java.util.Stack;

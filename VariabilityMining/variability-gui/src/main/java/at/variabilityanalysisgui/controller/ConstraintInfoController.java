@@ -189,7 +189,7 @@ public class ConstraintInfoController {
 		    	 ((Group) currentInfoItem.getValue()).removeFeature(feature);
 		    	 groupFeatureList.getItems().remove(feature);
 				 //SO new DeleteConstraintChild
-				 controller.getChangeTracker().addUndo(new DeleteConstraintChild());
+				 controller.getChangeTracker().addUndo(new DeleteConstraintChild(feature, (Group) currentInfoItem.getValue()));
 
 		     }
 		 }

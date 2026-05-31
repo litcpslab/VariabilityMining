@@ -6,13 +6,13 @@ import at.variabilityanalysisgui.controller.TreeViewController;
 import guiModel.Group;
 import javafx.beans.property.SimpleStringProperty;
 
-public class RenameElement implements ChangeModel<Controller, TreeViewController> {
+public class RenameGroup implements ChangeModel<Controller, TreeViewController> {
     private final Group group;
     private final String oldName;
     private final String newName;
     private final DetailsController detailsController;
 
-    public RenameElement(DetailsController detailsController, Group group, String oldName, String newName) {
+    public RenameGroup(DetailsController detailsController, Group group, String oldName, String newName) {
         this.group = group;
         this.oldName = oldName;
         this.detailsController = detailsController;
