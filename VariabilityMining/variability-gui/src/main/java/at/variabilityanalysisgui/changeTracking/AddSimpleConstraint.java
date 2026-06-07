@@ -8,22 +8,32 @@ import javafx.scene.control.TreeItem;
 public class AddSimpleConstraint implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
 
     TreeItem<Constraint> constraint;
+    int index;
 
-    public AddSimpleConstraint(TreeItem<Constraint> constraint) {
+    public AddSimpleConstraint(TreeItem<Constraint> constraint, int index) {
         this.constraint = constraint;
+        this.index = index;
     }
 
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        controller.getGroupTreeView().getRoot().getChildren().remove(constraint);
         controller.getUnfilteredItems().remove(constraint);
-        controller.getGroupTreeView().refresh();
+        controller.getConstraints().remove(constraint.getValue());
+
+        if (!controller.getIsGroupView()) {
+            controller.getGroupTreeView().getRoot().getChildren().remove(index);
+            controller.getGroupTreeView().refresh();
+        }
     }
 
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        controller.getGroupTreeView().getRoot().getChildren().add(constraint);
         controller.getUnfilteredItems().add(constraint);
-        controller.getGroupTreeView().refresh();
+        controller.getConstraints().add(constraint.getValue());
+
+        if (!controller.getIsGroupView()) {
+            controller.getGroupTreeView().getRoot().getChildren().add(index, constraint);
+            controller.getGroupTreeView().refresh();
+        }
     }
 }

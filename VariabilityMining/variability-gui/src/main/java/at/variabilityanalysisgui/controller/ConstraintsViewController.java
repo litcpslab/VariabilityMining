@@ -426,7 +426,7 @@ public class ConstraintsViewController {
 							    	constraints.remove(addItem.getValue());
 									unfilteredItems.remove(addItem);
 									//SO remove simple constraint
-									changeTracker.addUndo(new DeleteConstraint(addItem, index));
+									changeTracker.addUndo(new DeleteConstraint(addItem, index, false));
 							    }							
 							});
 							addItem.setGraphic(button);
@@ -435,7 +435,7 @@ public class ConstraintsViewController {
 							unfilteredItems.add(addItem);
 							groupTreeView.refresh();
 							//SO add simple constraint
-							changeTracker.addUndo(new AddSimpleConstraint(addItem));
+							changeTracker.addUndo(new AddSimpleConstraint(addItem, groupTreeView.getRoot().getChildren().indexOf(addItem)));
 						}	
 					}
 					
@@ -677,7 +677,7 @@ public class ConstraintsViewController {
 			    	unfilteredItems.remove(constraintItem);
 			    	this.constraints.remove(constraint);
 					//SO new DeleteConstraint tracking
-					changeTracker.addUndo(new DeleteConstraint(constraintItem, index));
+					changeTracker.addUndo(new DeleteConstraint(constraintItem, index, constraint instanceof Group));
 			    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
 					Set<Constraint> newConstraints = new HashSet<>();
 					int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
@@ -753,6 +753,10 @@ public class ConstraintsViewController {
 
 	public Set<Constraint> getConstraints() {
 		return constraints;
+	}
+
+	public boolean getIsGroupView() {
+		return isGroupView;
 	}
 
 	@FXML

@@ -9,23 +9,33 @@ public class DeleteConstraint implements ChangeModel<ConstraintsViewController, 
 
     TreeItem<Constraint> constraint;
     int index;
+    boolean isGroupConstraint;
 
-    public DeleteConstraint(TreeItem<Constraint> constraint, int index) {
+    public DeleteConstraint(TreeItem<Constraint> constraint, int index, boolean isGroupConstraint) {
         this.constraint = constraint;
         this.index = index;
+        this.isGroupConstraint = isGroupConstraint;
     }
 
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        controller.getGroupTreeView().getRoot().getChildren().add(index, constraint);
         controller.getUnfilteredItems().add(constraint);
         controller.getConstraints().add(constraint.getValue());
+
+        if(controller.getIsGroupView() && isGroupConstraint) {
+            controller.getGroupTreeView().getRoot().getChildren().add(index, constraint);
+            controller.getGroupTreeView().refresh();
+        }
     }
 
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        controller.getGroupTreeView().getRoot().getChildren().remove(constraint);
         controller.getUnfilteredItems().remove(constraint);
         controller.getConstraints().remove(constraint.getValue());
+
+        if(controller.getIsGroupView() && isGroupConstraint) {
+            controller.getGroupTreeView().getRoot().getChildren().remove(index);
+            controller.getGroupTreeView().refresh();
+        }
     }
 }

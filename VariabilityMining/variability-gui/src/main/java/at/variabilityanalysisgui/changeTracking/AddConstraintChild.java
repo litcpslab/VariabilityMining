@@ -9,6 +9,8 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
 
     Feature feature;
     Group group;
+    int listViewIndex;
+    int comboBoxIndex;
 
     public AddConstraintChild(Feature feature, Group group) {
         this.feature = feature;
@@ -18,16 +20,24 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
         group.removeFeature(feature);
-        controller.getFeatureComboBox().getItems().add(feature);
-        controller.getGroupFeatureListView().getItems().remove(feature);
-        controller.getGroupTreeView().refresh();
+        comboBoxIndex = controller.getFeatureComboBox().getItems().indexOf(feature);
+        controller.getFeatureComboBox().getItems().add(comboBoxIndex, feature);
+
+        if (controller.getIsGroupView()) {
+            listViewIndex = controller.getGroupFeatureListView().getItems().indexOf(feature);
+            controller.getGroupFeatureListView().getItems().remove(listViewIndex);
+            controller.getGroupTreeView().refresh();
+        }
     }
 
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
         group.addFeature(feature);
-        controller.getFeatureComboBox().getItems().remove(feature);
-        controller.getGroupFeatureListView().getItems().add(feature);
-        controller.getGroupTreeView().refresh();
+        controller.getFeatureComboBox().getItems().remove(comboBoxIndex);
+
+        if (controller.getIsGroupView()) {
+            controller.getGroupFeatureListView().getItems().add(listViewIndex, feature);
+            controller.getGroupTreeView().refresh();
+        }
     }
 }

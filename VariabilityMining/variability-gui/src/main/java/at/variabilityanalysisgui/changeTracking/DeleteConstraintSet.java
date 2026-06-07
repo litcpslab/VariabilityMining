@@ -21,17 +21,25 @@ public class DeleteConstraintSet implements ChangeModel<ConstraintsViewControlle
 
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        controller.getGroupTreeView().getRoot().getChildren().add(index, constraint);
         controller.getConstraints().add(constraint.getValue());
         controller.getConstraints().removeAll(newConstraints);
         controller.getUnfilteredItems().add(constraint);
+
+        if (controller.getIsGroupView()) {
+            controller.getGroupTreeView().getRoot().getChildren().add(index, constraint);
+            controller.getGroupTreeView().refresh();
+        }
     }
 
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        controller.getGroupTreeView().getRoot().getChildren().remove(constraint);
         controller.getConstraints().remove(constraint.getValue());
         controller.getConstraints().addAll(newConstraints);
         controller.getUnfilteredItems().remove(constraint);
+
+        if (controller.getIsGroupView()) {
+            controller.getGroupTreeView().getRoot().getChildren().remove(index);
+            controller.getGroupTreeView().refresh();
+        }
     }
 }
