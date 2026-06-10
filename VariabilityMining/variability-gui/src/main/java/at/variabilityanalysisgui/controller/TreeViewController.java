@@ -17,6 +17,9 @@
 
 package at.variabilityanalysisgui.controller;
 
+import at.variabilityanalysisgui.changeTracking.DeleteElement;
+import at.variabilityanalysisgui.changeTracking.DeleteGroup;
+import at.variabilityanalysisgui.changeTracking.MoveElement;
 import at.variabilityanalysisgui.view.DifferenceDirectory;
 import at.variabilityanalysisgui.view.FeatureTreeCell;
 import at.variabilityanalysisgui.view.FeatureTreeNode;
@@ -125,6 +128,13 @@ public class TreeViewController {
         groupItem = populateGroup(group, controller.getFilteredElements(), index);
         expandNodes(expandedNodes, groupItem);
         groupItem.setExpanded(true);
+    }
+
+    public void refreshGroup(Group group) {
+        TreeItem<FeatureTreeNode> groupItem = findTreeItemByPath(rootNode, group.getName().get());
+        if (groupItem != null) {
+            refreshGroup(groupItem);
+        }
     }
 
     private Set<FeatureTreeNode> getExpandedElement(TreeItem<FeatureTreeNode> groupItem) {
@@ -339,6 +349,14 @@ public class TreeViewController {
         }
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == yesButton) {
+            //SO: store element
+            Difference data = item.getValue().getData();
+            if (data instanceof Element element) {
+                Group sourceGroup = findGroupContainingElement(controller.getOriginalGroups(), element);
+                controller.getChangeTracker().addUndo(new DeleteElement(element, sourceGroup.getElements().indexOf(element), sourceGroup.getId()));
+            } else if (data instanceof Group group) {
+                controller.getChangeTracker().addUndo(new DeleteGroup(group, controller.getOriginalGroups().indexOf(group)));
+            }
             for(TreeItem<FeatureTreeNode> child: item.getChildren()) {
             	if(child.getValue().getData() instanceof Element) {
 	                Element element = (Element) child.getValue().getData();
@@ -407,6 +425,9 @@ public class TreeViewController {
             System.err.println("Invalid types for moveElementToGroup");
             return;
         }
+        //SO create Map and SET
+        Map<Integer, List<Element>> movedElements = new HashMap<>();
+        Set<TreeItem<FeatureTreeNode>> deletedItems = new HashSet<>();
 
         int index = 0;
         for(TreeItem<FeatureTreeNode> elementItem: elementItems) {
@@ -434,64 +455,79 @@ public class TreeViewController {
                 targetGroupItem = targetGroupItem.getParent();
             }
 
-            if(elementItem.getValue().getData() instanceof Element) {
-            	
-    	        Element element = (Element) elementItem.getValue().getData();
-    	        Group targetGroup = (Group) targetGroupItem.getValue().getData();
-    	
-    	        Group sourceGroup = findGroupContainingElement(controller.getOriginalGroups(), element);
-    	        
-    	        // Remove from old group's element list
-    	        boolean removed = sourceGroup.getElements().remove(element);
-    	        if (!removed) {
-    	            System.err.println("Failed to remove element from source group's list in model.");
-    	        } else {
-    	            // Add to new group's element list
-    	            targetGroup.getElements().add(element);
-    	
-    	            //refresh old group TreeItem
-    	            TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, sourceGroup.getName().get());
-    	            int sourceIndex = rootNode.getChildren().indexOf(sourceGroupItem);
-    	            if (sourceGroupItem != null) {
-    	            	refreshGroup(sourceGroupItem);
- 
-    	            	if(sourceGroup.getElements().isEmpty()) {
-        	            	sourceGroupItem = rootNode.getChildren().get(sourceIndex);
-        	            	handleDeleteAction(sourceGroupItem);
-        	            } 
-    	            }
-    	            // Add new group TreeItem
-    	            index = rootNode.getChildren().indexOf(targetGroupItem);
-    	            refreshGroup(targetGroupItem);
-    	            targetGroupItem = rootNode.getChildren().get(index);
-    	            // remove old group TreeItem
-    	            deleteItem(elementItem);
-    	
-    	            System.out.println("Moved element " + element.getName().get());
-    	        }
-            } else if(elementItem.getValue().getData() instanceof Group) {
-            	Group element = (Group) elementItem.getValue().getData();
-     	        Group targetGroup = (Group) targetGroupItem.getValue().getData();
-     	        
-     	        targetGroup.getElements().addAll(element.getElements());
-     	        element.getElements().clear();
+            Group sourceGroup = null;
+            if (elementItem.getValue().getData() instanceof Element) {
 
-     	        
-     	        index = rootNode.getChildren().indexOf(targetGroupItem);
-     	        refreshGroup(targetGroupItem);
-     	        targetGroupItem = rootNode.getChildren().get(index);
-     	        
-     	       TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, element.getName().get());
-     	       int sourceIndex = rootNode.getChildren().indexOf(sourceGroupItem);
-	           if (sourceGroupItem != null) {
-	        	   refreshGroup(sourceGroupItem);
-	        	   sourceGroupItem = rootNode.getChildren().get(sourceIndex);
-	        	   handleDeleteAction(sourceGroupItem);
-   	           } 
-     	
-     	       System.out.println("Moved element " + element.getName().get());
+                Element element = (Element) elementItem.getValue().getData();
+                Group targetGroup = (Group) targetGroupItem.getValue().getData();
+                //SO add to Map
+                sourceGroup = Controller.findGroupContainingElement(controller.getOriginalGroups(), element);
+
+                movedElements.computeIfAbsent(sourceGroup.getId(), k -> new ArrayList<>()).add(element);
+
+                // Remove from old group's element list
+                boolean removed = sourceGroup.getElements().remove(element);
+                if (!removed) {
+                    System.err.println("Failed to remove element from source group's list in model.");
+                } else {
+                    // Add to new group's element list
+                    targetGroup.getElements().add(element);
+
+                    //refresh old group TreeItem
+                    TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, sourceGroup.getName().get());
+                    int sourceIndex = rootNode.getChildren().indexOf(sourceGroupItem);
+                    if (sourceGroupItem != null) {
+                        refreshGroup(sourceGroupItem);
+
+                        if (sourceGroup.getElements().isEmpty()) {
+                            sourceGroupItem = rootNode.getChildren().get(sourceIndex);
+                            //SO add to delete SET
+                            deletedItems.add(sourceGroupItem);
+                            //handleDeleteAction(sourceGroupItem);
+                        }
+                    }
+                    // Add new group TreeItem
+                    index = rootNode.getChildren().indexOf(targetGroupItem);
+                    refreshGroup(targetGroupItem);
+                    targetGroupItem = rootNode.getChildren().get(index);
+                    // remove old group TreeItem
+                    deleteItem(elementItem);
+
+                    System.out.println("Moved element " + element.getName().get());
+                }
+            } else if (elementItem.getValue().getData() instanceof Group) {
+                Group element = (Group) elementItem.getValue().getData();
+                Group targetGroup = (Group) targetGroupItem.getValue().getData();
+
+                targetGroup.getElements().addAll(element.getElements());
+                //SO add to Map
+                movedElements.put(element.getId(), new ArrayList<>(element.getElements()));
+                element.getElements().clear();
+
+                index = rootNode.getChildren().indexOf(targetGroupItem);
+                refreshGroup(targetGroupItem);
+                targetGroupItem = rootNode.getChildren().get(index);
+
+                TreeItem<FeatureTreeNode> sourceGroupItem = findTreeItemByPath(rootNode, element.getName().get());
+                int sourceIndex = rootNode.getChildren().indexOf(sourceGroupItem);
+                if (sourceGroupItem != null) {
+                    refreshGroup(sourceGroupItem);
+                    sourceGroupItem = rootNode.getChildren().get(sourceIndex);
+                    //SO add to delete SET
+                    deletedItems.add(sourceGroupItem);
+                    //handleDeleteAction(sourceGroupItem);
+                }
+
+                System.out.println("Moved element " + element.getName().get());
             }
+            //SO: store moved elements
+
+        }
+        controller.getChangeTracker().addUndo(new MoveElement(((Group) targetGroupItem.getValue().getData()).getId(), movedElements));
+        //SO call handleDeleteAction for every element in SET
+        for (TreeItem<FeatureTreeNode> item: deletedItems) {
+            handleDeleteAction(item);
         }
     }
-       
+
 }

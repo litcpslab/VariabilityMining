@@ -111,6 +111,20 @@
                                 <Button fx:id="generateButton" mnemonicParsing="false" onAction="#handleGenerateAction" text="Generate Model" visible="false" />
                                 <Button fx:id="addConstraintButton" mnemonicParsing="false" text="Add constraint" visible="false" />
                             </children>
+                            <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                                <children>
+                                    <Button fx:id="undoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#undo" text="Undo">
+                                        <HBox.margin>
+                                            <Insets left="5.0" />
+                                        </HBox.margin>
+                                    </Button>
+                                    <Button fx:id="redoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#redo" text="Redo">
+                                        <HBox.margin>
+                                            <Insets left="5.0" />
+                                        </HBox.margin>
+                                    </Button>
+                                </children>
+                            </HBox>
                         </HBox>
                     </children>
                 </VBox>

@@ -41,7 +41,7 @@ public class VarflixAPI {
 	public List<Group> computeInitialGroups(){
 		
 		extractor = new IEC61499VariabilityExtractor();
-		
+
 		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("<Enter path to file with list of variants here>", "<Enter path to file with 1499 diff results here>");
 		
 		mapper = new DataMapper();

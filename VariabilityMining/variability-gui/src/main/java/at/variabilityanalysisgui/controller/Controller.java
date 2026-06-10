@@ -18,7 +18,9 @@
 package at.variabilityanalysisgui.controller;
 
 
+import at.variabilityanalysisgui.changeTracking.ChangeTracker;
 import at.variabilityanalysisgui.visualization.TreeGraph;
+import constraints.Constraint;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -37,7 +39,6 @@ import java.util.*;
 
 import at.variabilityanalysisgui.parser.InputParser;
 import at.variabilityanalysisgui.view.FeatureTreeNode;
-import constraints.Constraint;
 import guiModel.Difference;
 import guiModel.Element;
 import guiModel.ExtractionType;
@@ -78,10 +79,17 @@ public class Controller {
     @FXML private TextArea detailElementData;
     @FXML private Label detailSubElementLabel;
     @FXML private Button detailCloseButton;
+    @FXML private Label detailNamingHistoryLabel;
+    @FXML private ListView<String> detailNamingHistoryListView;
+    @FXML private Button detailChangeBackButton;
 
     //TreeViewController
     @FXML public HBox hierarchyButtonHBox;
     @FXML private TreeView<FeatureTreeNode> featureTreeView;
+    @FXML private HBox detailNamingHistoryHBox;
+
+    @FXML private Button undoButton;
+    @FXML private Button redoButton;
 
     private final InputParser parser = new InputParser();
     private List<Group> originalGroups;
@@ -91,7 +99,7 @@ public class Controller {
     public Map<ExtractionType, String> seperatorMap = Map.of(ExtractionType.JAVA, "/", ExtractionType.IEC61499, ";");
 
     private UndoManager undoManager = new UndoManager();
-
+    private ChangeTracker<Controller, TreeViewController> changeTracker;
 
     @FXML
     public void initialize() {
@@ -100,14 +108,18 @@ public class Controller {
         this.detailsController = new DetailsController(this, detailSubElementListView, detailScrollPane, detailsNameHBox,
                 detailLocationLabel, detailLocationTextArea, detailGroupNameTextField, detailChangeNameButton,
                 detailOccurrenceLabel, detailOccurrencesListView, detailElementLabel, detailElementData,
-                detailSubElementLabel, detailCloseButton);
-        
+                detailSubElementLabel, detailCloseButton, detailNamingHistoryLabel, detailNamingHistoryListView,
+                detailChangeBackButton, detailNamingHistoryHBox);
+
         originalGroups = model.computeInitialGroups();
         artifactType = ExtractionType.IEC61499;		//TODO Change dynamically based on artifacts used
         treeViewController.initializeHierarchyButtons();
         treeViewController.populateTreeView(filterController.getFilteredGroups(), null); // Populate with parsed data
         detailsController.hideDetailsPane();
         filterController.setupFilterListener();
+        changeTracker = new ChangeTracker<>(this, treeViewController);
+        undoButton.disableProperty().bind(changeTracker.canUndoProperty().not());
+        redoButton.disableProperty().bind(changeTracker.canRedoProperty().not());
         redrawVisualization();
 
     }
@@ -124,7 +136,7 @@ public class Controller {
         visualizationWindow.setFitToWidth(true);
         visualizationWindow.setFitToHeight(true);
     }
-    
+
     private void loadFile(File selectedFile) {
 		if (selectedFile != null) {
             try {
@@ -224,7 +236,6 @@ public class Controller {
     // Main window
     private Window getWindow() {
         Node node = treeViewController.getFeatureTreeView().getScene().getRoot();
-        
         if (node != null) {
             return node.getScene().getWindow();
         }
@@ -291,6 +302,27 @@ public class Controller {
     	
     	Scene scene = ((Node)event.getSource()).getScene();
     	scene.setRoot((Parent)SceneManager.getConstraintScene());
+    }
+
+    public Group findGroupById(int groupId) {
+        return getOriginalGroups().stream()
+                .filter(g -> g.getId() == groupId)
+                .findFirst()
+                .orElse(null);
+    }
+
+    @FXML
+    public void undo() {
+        changeTracker.undo();
+    }
+
+    @FXML
+    public void redo() {
+        changeTracker.redo();
+    }
+
+    public ChangeTracker<Controller, TreeViewController> getChangeTracker() {
+        return changeTracker;
     }
 
 }
