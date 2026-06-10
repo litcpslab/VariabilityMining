@@ -12,7 +12,6 @@
 
 package iec61499Mining;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +24,6 @@ import java.util.Stack;
 
 import constraints.Constraint;
 import constraints.Implication;
-import constraints.SimpleConstraint;
 import varflixModel.IEC61499.IEC61499Variability;
 import varflixModel.IEC61499.JSON1499VariabilityGroup;
 import variabilityMining.Feature;

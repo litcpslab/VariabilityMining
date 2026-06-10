@@ -13,6 +13,7 @@
 package variabilityMining;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,7 +76,6 @@ public class VariabilityModelGenerator {
 			
 		coveredConstraints.addAll(baseEquivalences);
 			
-		//buildGroups(base, new ArrayList<>(constraints.stream().filter(c -> c instanceof Group).map(c -> (Group) c).toList()));
 		buildGroups(base, groupConstraints);	
 		
 		List<Feature> uncoveredFeatures = features.stream().filter(f -> f.getParent() == null && !f.equals(root)).toList();
@@ -188,106 +188,101 @@ public class VariabilityModelGenerator {
 		int orCount = 0;
 		altCount = 0;
 		
-		List<Group> baseGroups = groups.stream().filter(g -> g.getParent().equals(base)).toList();
+		groups.sort((g1, g2) -> g1.getParent().getName().compareTo(g2.getParent().getName()));
 		
-		 Map<String, Feature> fmFeatureMap = features.stream()
-	                .collect(Collectors.toMap(Feature::getName, f -> f));
-		
-		List<Feature> parentCandidates = new ArrayList<>();
 		List<Feature> groupChildren = new ArrayList<>();
-		for(Group group: baseGroups) {
-			
-			switch (group.getType()) {
-				case "Or Group":
-					orCount++;
-					String parentName = "OR" + orCount;
-					Feature orParent = features.stream().filter(f -> f.getName().equals(parentName))
-							.findFirst().orElse(new Feature(parentName, root));
-					if(!features.contains(orParent)) {
-						features.add(orParent);
-					} else {
-						orParent.setParent(root);
-					}
-					
-					root.addChild(orParent);
-					orParent.setMandatory(true);
-					orParent.setOrParent(true);
-					groupChildren = group.getFeatures();
-					groupChildren.stream().forEach(f -> f.setParent(orParent));
-					orParent.setChildren(groupChildren);
-					break;
-				case "Alternative":
-					altCount++;
-					parentName = "ALT" + altCount;
-					Feature altParent = features.stream().filter(f -> f.getName().equals(parentName))
-							.findFirst().orElse(new Feature(parentName, root));
-					if(!features.contains(altParent)) {
-						features.add(altParent);
-					} else {
-						altParent.setParent(root);
-					}
-					root.addChild(altParent);
-					altParent.setMandatory(true);
-					altParent.setAlternativeParent(true);
-					groupChildren = group.getFeatures();
-					groupChildren.stream().forEach(f -> f.setParent(altParent));
-					altParent.setChildren(groupChildren);
-					break;
-				default:
-					break;
-			}
-			
-			parentCandidates.addAll(groupChildren);
-		}
 		
-		groups.removeAll(baseGroups);
+		Map<Feature, List<Group>> groupMap = new HashMap<>();
 		
-		groupLoop:
 		for(Group group: groups) {
-			boolean mapped = false;
-			for(Feature feature: parentCandidates) {
+			for(Feature feature: features) {
 				if(group.getParent().getName().equals(feature.getName())) {
-					switch (group.getType()) {
-						case "Or Group":
-							orCount++;
-							feature.setOrParent(true);
-							break;
-						case "Alternative":
-							altCount++;
-							feature.setAlternativeParent(true);
-							break;
-						default:
-							break;
+					if(groupMap.get(feature) == null) {
+						List<Group> groupList = new ArrayList<>();
+						groupList.add(group);
+						groupMap.put(feature, groupList);
+					} else {
+						groupMap.get(feature).add(group);
 					}
-					groupChildren = group.getFeatures().stream().map(f -> fmFeatureMap.get(f.getName())).toList();
-					groupChildren.stream().forEach(f -> f.setParent(feature));
-					feature.addChildren(groupChildren);
-					continue groupLoop;
 				}
 			}
-			if(!mapped) {
-				Feature parent = features.stream().filter(f -> group.getParent().getName().equals(f.getName())).findAny().orElse(null);
-				
-				if(parent != null) {
+		}
+		
+		
+		for(Feature parent: groupMap.keySet()) {
+			List<Group> childGroups = groupMap.get(parent);
+			
+			childGroups.sort((g1, g2) -> g1.getFeatures().get(0).getName().compareTo(g2.getFeatures().get(0).getName()));
+			
+			if(childGroups.size() > 1) {
+				for(Group group: childGroups) {
 					switch (group.getType()) {
 					case "Or Group":
 						orCount++;
-						parent.setOrParent(true);
+						String parentName = "OR" + orCount;
+						Feature orParent = features.stream().filter(f -> f.getName().equals(parentName))
+								.findFirst().orElse(new Feature(parentName, parent));
+						if(!features.contains(orParent)) {
+							features.add(orParent);
+						} else {
+							orParent.setParent(parent);
+						}
+						
+						parent.addChild(orParent);
+						orParent.setMandatory(true);
+						orParent.setOrParent(true);
+						groupChildren = new ArrayList<>();
+						groupChildren.addAll(group.getFeatures());
+						groupChildren.stream().forEach(f -> f.setParent(orParent));
+						groupChildren.sort((c1,c2) -> c1.getName().compareTo(c2.getName()));
+						orParent.setChildren(groupChildren);
 						break;
 					case "Alternative":
 						altCount++;
+						parentName = "ALT" + altCount;
+						Feature altParent = features.stream().filter(f -> f.getName().equals(parentName))
+								.findFirst().orElse(new Feature(parentName, parent));
+						if(!features.contains(altParent)) {
+							features.add(altParent);
+						} else {
+							altParent.setParent(parent);
+						}
+						parent.addChild(altParent);
+						altParent.setMandatory(true);
+						altParent.setAlternativeParent(true);
+						groupChildren = new ArrayList<>();
+						groupChildren.addAll(group.getFeatures());
+						groupChildren.stream().forEach(f -> f.setParent(altParent));
+						groupChildren.sort((c1,c2) -> c1.getName().compareTo(c2.getName()));
+						altParent.setChildren(groupChildren);
+						break;
+					default:
+						break;
+				}
+				}
+			} else {
+				Group group = childGroups.get(0);
+				switch (group.getType()) {
+					case "Or Group":
+						parent.setOrParent(true);
+						break;
+					case "Alternative":
 						parent.setAlternativeParent(true);
 						break;
 					default:
 						break;
-					}
-					groupChildren = group.getFeatures().stream().map(f -> fmFeatureMap.get(f.getName())).toList();
-					groupChildren.stream().forEach(f -> f.setParent(parent));
-					parent.addChildren(groupChildren);
 				}
+				
+				groupChildren = new ArrayList<>();
+				groupChildren.addAll(group.getFeatures());
+				groupChildren.stream().forEach(f -> f.setParent(parent));
+				groupChildren.sort((c1,c2) -> c1.getName().compareTo(c2.getName()));
+				parent.addChildren(groupChildren);
 			}
 		}
+				
 	}
+	
 		
 
 	/*
