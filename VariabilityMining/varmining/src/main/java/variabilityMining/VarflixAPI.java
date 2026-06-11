@@ -41,7 +41,7 @@ public class VarflixAPI {
 		
 		extractor = new IEC61499VariabilityExtractor();
 
-		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("C:\\VariabilityMining\\VariabilityMining\\variability-gui\\variantsAxisControl.txt", "C:\\VariabilityMining\\VariabilityMining\\variability-gui\\axisControlDiff.json");
+		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("/home/sophie/VariabilityMining/VariabilityMining/variability-gui/variantsAxisControl.txt", "/home/sophie/VariabilityMining/VariabilityMining/variability-gui/axisControlDiff.json");
 		
 		mapper = new DataMapper();
 		

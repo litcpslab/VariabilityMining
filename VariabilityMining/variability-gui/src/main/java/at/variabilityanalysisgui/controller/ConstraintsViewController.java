@@ -217,6 +217,7 @@ public class ConstraintsViewController {
 	@FXML
 	public void handleAddAction(ActionEvent e) {
 		Feature addFeature = featureComboBox.getValue();
+		int comboBoxIndex = featureComboBox.getSelectionModel().getSelectedIndex();
 		
 		Constraint constraint = groupTreeView.getSelectionModel().getSelectedItem().getValue();
 		boolean shouldBeAdded = true;
@@ -238,7 +239,7 @@ public class ConstraintsViewController {
 				    if(result.isPresent() && result.get() == ButtonType.YES) {
 				    	g.removeFeature(addFeature);
 						//SO AddConstraintChildList with empty list
-						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, new HashSet<>()));
+						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, new HashSet<>(), comboBoxIndex));
 
 				    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
 						//SO AddConstraintChildList with constraint
@@ -256,7 +257,7 @@ public class ConstraintsViewController {
 
 						newConstraints.add(new Implication(addFeature, g.getParent()));
 				    	g.removeFeature(addFeature);
-						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, newConstraints));
+						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, newConstraints, comboBoxIndex));
 						constraints.addAll(newConstraints);
 
 				    } else {
@@ -268,7 +269,7 @@ public class ConstraintsViewController {
 			}
 			//SO if not in other group -> new AddConstraintChild
 			if (!featureInGroup) {
-				changeTracker.addUndo(new AddConstraintChild(addFeature, group));
+				changeTracker.addUndo(new AddConstraintChild(addFeature, group, comboBoxIndex));
 			}
 
 			if(shouldBeAdded && !group.getFeatures().contains(addFeature) && !group.getParent().equals(addFeature)) {
@@ -353,6 +354,7 @@ public class ConstraintsViewController {
 	
 	@FXML
 	public void switchToExtractionView(ActionEvent event) {
+		changeTracker.clearStack();
     	Scene scene = ((Node)event.getSource()).getScene();
     	scene.setRoot((Parent)SceneManager.getExtractionScene());
 	}
@@ -393,57 +395,36 @@ public class ConstraintsViewController {
 		Button addButton = new Button("Add");
 
 		EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
-			
+
 			@Override
 			public void handle(ActionEvent event) {
 				String type = constraintTypeComboBox.getValue();
-				
+
 				Feature left = leftFeatureComboBox.getValue();
 				Feature right = rightFeatureComboBox.getValue();
-				if(left != right) {
+				if (left != right) {
 					SimpleConstraint constraint = null;//new SimpleConstraint(left, right, type);
-					if(type.equals("Implication")) {
+					if (type.equals("Implication")) {
 						constraint = new Implication(left, right);
-					} else if(type.equals("Mutual Exclusion")) {
+					} else if (type.equals("Mutual Exclusion")) {
 						constraint = new MutualExclusion(left, right);
-					} else if(type.equals("Equivalence")) {
+					} else if (type.equals("Equivalence")) {
 						constraint = new Equivalence(left, right);
 					}
-					
-					if(constraint != null) {
-						if(constraints.add(constraint)) {
-							TreeItem<Constraint> addItem = new TreeItem<Constraint>(constraint);
-							Button button = new Button("X");
-							button.setOnAction(e -> {
 
-								Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + addItem.getValue() + " be removed?", ButtonType.YES, ButtonType.NO);
-								removeAlert.setHeaderText("Removal Confirmation");
-								 
-								Optional<ButtonType> result = removeAlert.showAndWait();
-							    if(result.isPresent() && result.get() == ButtonType.YES) {
-									int index = groupTreeView.getRoot().getChildren().indexOf(addItem);
-							    	groupTreeView.getRoot().getChildren().remove(addItem);
-							    	constraints.remove(addItem.getValue());
-									unfilteredItems.remove(addItem);
-									//SO remove simple constraint
-									changeTracker.addUndo(new DeleteConstraint(addItem, index, false));
-							    }							
-							});
-							addItem.setGraphic(button);
-							
-							groupTreeView.getRoot().getChildren().add(addItem);
-							unfilteredItems.add(addItem);
-							groupTreeView.refresh();
+					if (constraint != null) {
+						if (constraints.add(constraint)) {
+							TreeItem<Constraint> addItem = addSimpleConstraintTreeItem(constraint);
 							//SO add simple constraint
 							changeTracker.addUndo(new AddSimpleConstraint(addItem, groupTreeView.getRoot().getChildren().indexOf(addItem)));
-						}	
+						}
 					}
-					
+
 				} else {
 					Alert addError = new Alert(AlertType.ERROR, "The same feature can't be chosen for both sides of the logical constraint!");
 					addError.show();
 				}
-				
+
 				popupStage.close();
 			}
 		};
@@ -454,6 +435,33 @@ public class ConstraintsViewController {
 
 		popupStage.setScene(new Scene(layout, 250, 200));
 	    popupStage.show();
+	}
+
+	public TreeItem<Constraint> addSimpleConstraintTreeItem(Constraint constraint) {
+		TreeItem<Constraint> addItem = new TreeItem<Constraint>(constraint);
+		Button button = new Button("X");
+		button.setOnAction(e -> {
+
+			Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + addItem.getValue() + " be removed?", ButtonType.YES, ButtonType.NO);
+			removeAlert.setHeaderText("Removal Confirmation");
+
+			Optional<ButtonType> result = removeAlert.showAndWait();
+			if(result.isPresent() && result.get() == ButtonType.YES) {
+				int index = groupTreeView.getRoot().getChildren().indexOf(addItem);
+				groupTreeView.getRoot().getChildren().remove(addItem);
+				constraints.remove(addItem.getValue());
+				unfilteredItems.remove(addItem);
+				//SO remove simple constraint
+				changeTracker.addUndo(new DeleteConstraint(addItem, index, false));
+			}
+		});
+		addItem.setGraphic(button);
+
+		groupTreeView.getRoot().getChildren().add(addItem);
+		unfilteredItems.add(addItem);
+		groupTreeView.refresh();
+
+		return addItem;
 	}
 
 	/*
@@ -650,7 +658,7 @@ public class ConstraintsViewController {
 	/*
 	 * Setting up the single items for the view
 	 */
-	private void setUpTreeItems(List<Constraint> constraints) {
+	public void setUpTreeItems(List<Constraint> constraints) {
 		TreeItem<Constraint> root = new TreeItem<>();
 		
 		unfilteredItems = new HashSet<>();
@@ -686,7 +694,7 @@ public class ConstraintsViewController {
 			    	resolveGroupConstraint(constraint, newConstraints);
 			    	unfilteredItems.remove(constraintItem);
 					//SO new DeleteConstraintKeepLogic() tracking
-					changeTracker.addUndo(new DeleteConstraintSet(constraintItem, index, newConstraints));
+					changeTracker.addUndo(new DeleteGroupConstraintSet(constraintItem, index, newConstraints));
 			    }
 				updateConstraintModel();
 			});

@@ -9,23 +9,21 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
 
     Feature feature;
     Group group;
-    int listViewIndex;
     int comboBoxIndex;
 
-    public AddConstraintChild(Feature feature, Group group) {
+    public AddConstraintChild(Feature feature, Group group, int comboBoxIndex) {
         this.feature = feature;
         this.group = group;
+        this.comboBoxIndex = comboBoxIndex;
     }
 
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
         group.removeFeature(feature);
-        comboBoxIndex = controller.getFeatureComboBox().getItems().indexOf(feature);
-        controller.getFeatureComboBox().getItems().add(comboBoxIndex, feature);
 
-        if (controller.getIsGroupView()) {
-            listViewIndex = controller.getGroupFeatureListView().getItems().indexOf(feature);
-            controller.getGroupFeatureListView().getItems().remove(listViewIndex);
+        if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
+            controller.getFeatureComboBox().getItems().add(comboBoxIndex, feature);
+            controller.getGroupFeatureListView().getItems().remove(feature);
             controller.getGroupTreeView().refresh();
         }
     }
@@ -33,10 +31,10 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
         group.addFeature(feature);
-        controller.getFeatureComboBox().getItems().remove(comboBoxIndex);
 
-        if (controller.getIsGroupView()) {
-            controller.getGroupFeatureListView().getItems().add(listViewIndex, feature);
+        if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
+            controller.getFeatureComboBox().getItems().remove(comboBoxIndex);
+            controller.getGroupFeatureListView().getItems().add(feature);
             controller.getGroupTreeView().refresh();
         }
     }

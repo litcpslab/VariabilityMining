@@ -195,4 +195,8 @@ public class ConstraintInfoController {
 		 }
 	 
 	 }
+
+	 public ScrollPane getInfoPane() {
+		 return infoScrollPane;
+	 }
 }

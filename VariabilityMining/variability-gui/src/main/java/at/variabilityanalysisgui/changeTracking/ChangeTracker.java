@@ -68,4 +68,10 @@ public class ChangeTracker<T, U> {
             ((ConstraintsViewController) controller).updateConstraintModel();
         }
     }
+
+    public void clearStack() {
+        undoStack.clear();
+        redoStack.clear();
+        updateProperties();
+    }
 }

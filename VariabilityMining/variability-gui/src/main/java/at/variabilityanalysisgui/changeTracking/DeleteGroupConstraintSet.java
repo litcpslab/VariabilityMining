@@ -7,13 +7,13 @@ import javafx.scene.control.TreeItem;
 
 import java.util.Set;
 
-public class DeleteConstraintSet implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
+public class DeleteGroupConstraintSet implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
 
     TreeItem<Constraint> constraint;
     int index;
     Set<Constraint> newConstraints;
 
-    public DeleteConstraintSet(TreeItem<Constraint> constraint, int index, Set<Constraint> newConstraints) {
+    public DeleteGroupConstraintSet(TreeItem<Constraint> constraint, int index, Set<Constraint> newConstraints) {
         this.constraint = constraint;
         this.index = index;
         this.newConstraints = newConstraints;
