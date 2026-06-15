@@ -36,14 +36,13 @@ public class AddConstraintChildSet implements ChangeModel<ConstraintsViewControl
         if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
             controller.getFeatureComboBox().getItems().add(comboBoxIndex, feature);
             controller.getGroupFeatureListView().getItems().remove(feature);
-            controller.getGroupTreeView().refresh();
         } else if (!controller.getIsGroupView()) {
             ObservableList<TreeItem<Constraint>> treeItems = controller.getGroupTreeView().getRoot().getChildren();
             for (Constraint constraint : keepConstraints) {
                 treeItems.removeIf(item -> item.getValue().equals(constraint));
             }
-            controller.getGroupTreeView().refresh();
         }
+        controller.getGroupTreeView().refresh();
     }
 
     @Override
@@ -55,14 +54,13 @@ public class AddConstraintChildSet implements ChangeModel<ConstraintsViewControl
         if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
             controller.getFeatureComboBox().getItems().remove(feature);
             controller.getGroupFeatureListView().getItems().add(feature);
-            controller.getGroupTreeView().refresh();
         } else if (!controller.getIsGroupView()) {
             for (Constraint c : keepConstraints) {
                 controller.addSimpleConstraintTreeItem(c);
             }
             controller.getGroupTreeView().getRoot().getChildren()
                     .sort(Comparator.comparingInt(item -> controller.getConstraints().stream().toList().indexOf(item.getValue())));
-            controller.getGroupTreeView().refresh();
         }
+        controller.getGroupTreeView().refresh();
     }
 }

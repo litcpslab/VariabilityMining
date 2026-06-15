@@ -18,14 +18,18 @@ public class DeleteConstraintChild implements ChangeModel<ConstraintsViewControl
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
         group.addFeature(feature);
-        controller.getGroupFeatureListView().getItems().add(feature);
+        if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
+            controller.getGroupFeatureListView().getItems().add(feature);
+        }
         controller.getGroupTreeView().refresh();
     }
 
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
         group.removeFeature(feature);
-        controller.getGroupFeatureListView().getItems().remove(feature);
+        if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
+            controller.getGroupFeatureListView().getItems().remove(feature);
+        }
         controller.getGroupTreeView().refresh();
     }
 }

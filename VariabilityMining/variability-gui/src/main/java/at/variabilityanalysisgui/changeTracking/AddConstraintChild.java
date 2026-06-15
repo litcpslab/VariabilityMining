@@ -24,8 +24,8 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
         if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
             controller.getFeatureComboBox().getItems().add(comboBoxIndex, feature);
             controller.getGroupFeatureListView().getItems().remove(feature);
-            controller.getGroupTreeView().refresh();
         }
+        controller.getGroupTreeView().refresh();
     }
 
     @Override
@@ -35,7 +35,7 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
         if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
             controller.getFeatureComboBox().getItems().remove(comboBoxIndex);
             controller.getGroupFeatureListView().getItems().add(feature);
-            controller.getGroupTreeView().refresh();
         }
+        controller.getGroupTreeView().refresh();
     }
 }

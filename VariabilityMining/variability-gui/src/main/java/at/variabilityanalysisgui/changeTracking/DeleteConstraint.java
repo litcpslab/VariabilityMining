@@ -22,7 +22,7 @@ public class DeleteConstraint implements ChangeModel<ConstraintsViewController, 
         controller.getUnfilteredItems().add(constraint);
         controller.getConstraints().add(constraint.getValue());
 
-        if((controller.getIsGroupView() && isGroupConstraint)|| (!controller.getIsGroupView() &&  !isGroupConstraint)) {
+        if((controller.getIsGroupView() && isGroupConstraint) || (!controller.getIsGroupView() &&  !isGroupConstraint)) {
             controller.getGroupTreeView().getRoot().getChildren().add(index, constraint);
             controller.getGroupTreeView().refresh();
         }
@@ -33,7 +33,7 @@ public class DeleteConstraint implements ChangeModel<ConstraintsViewController, 
         controller.getUnfilteredItems().remove(constraint);
         controller.getConstraints().remove(constraint.getValue());
 
-        if((controller.getIsGroupView() && isGroupConstraint)|| (!controller.getIsGroupView() &&  !isGroupConstraint)) {
+        if((controller.getIsGroupView() && isGroupConstraint) || (!controller.getIsGroupView() &&  !isGroupConstraint)) {
             controller.getGroupTreeView().getRoot().getChildren().remove(index);
             controller.getGroupTreeView().refresh();
         }
