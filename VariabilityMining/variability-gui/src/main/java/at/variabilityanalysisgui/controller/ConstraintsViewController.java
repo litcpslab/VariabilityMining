@@ -9,6 +9,7 @@
  * Contributors:
  *  Alexander Stummer - Initial Implementation
  *  Kejda Domi- Added the visualization section
+ *  Sophie Öttl - Change Tracking
 ********************************************************************************/
 
 package at.variabilityanalysisgui.controller;
@@ -69,12 +70,6 @@ import variabilityMining.Feature;
 import variabilityMining.JSONConstraints;
 import variabilityMining.VarflixAPI;
 
-/*
-Copyright (c) 2025 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
 public class ConstraintsViewController {
 
 	private ConstraintInfoController infoController;
@@ -234,16 +229,12 @@ public class ConstraintsViewController {
 					warningAlert.setHeaderText("Addition Warning");
 					
 					Optional<ButtonType> result = warningAlert.showAndWait();
-					//SO wenn in andere gruppe zuvor
 					featureInGroup = true;
 				    if(result.isPresent() && result.get() == ButtonType.YES) {
 				    	g.removeFeature(addFeature);
-						//SO AddConstraintChildList with empty list
 						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, new HashSet<>(), comboBoxIndex));
 
 				    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
-						//SO AddConstraintChildList with constraint
-						//List to add constraints
 						Set<Constraint> newConstraints = new HashSet<>();
 
 				    	if(group instanceof AlternativeGroup) {
@@ -267,7 +258,6 @@ public class ConstraintsViewController {
 				}
 
 			}
-			//SO if not in other group -> new AddConstraintChild
 			if (!featureInGroup) {
 				changeTracker.addUndo(new AddConstraintChild(addFeature, group, comboBoxIndex));
 			}
@@ -415,7 +405,6 @@ public class ConstraintsViewController {
 					if (constraint != null) {
 						if (constraints.add(constraint)) {
 							TreeItem<Constraint> addItem = addSimpleConstraintTreeItem(constraint);
-							//SO add simple constraint
 							changeTracker.addUndo(new AddSimpleConstraint(addItem, groupTreeView.getRoot().getChildren().indexOf(addItem)));
 						}
 					}
@@ -451,7 +440,6 @@ public class ConstraintsViewController {
 				groupTreeView.getRoot().getChildren().remove(addItem);
 				constraints.remove(addItem.getValue());
 				unfilteredItems.remove(addItem);
-				//SO remove simple constraint
 				changeTracker.addUndo(new DeleteConstraint(addItem, index, false));
 			}
 		});
@@ -684,7 +672,6 @@ public class ConstraintsViewController {
 					groupTreeView.getRoot().getChildren().remove(constraintItem);
 			    	unfilteredItems.remove(constraintItem);
 			    	this.constraints.remove(constraint);
-					//SO new DeleteConstraint tracking
 					changeTracker.addUndo(new DeleteConstraint(constraintItem, index, constraint instanceof Group));
 			    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
 					Set<Constraint> newConstraints = new HashSet<>();
@@ -693,7 +680,6 @@ public class ConstraintsViewController {
 			    	this.constraints.remove(constraint);
 			    	resolveGroupConstraint(constraint, newConstraints);
 			    	unfilteredItems.remove(constraintItem);
-					//SO new DeleteConstraintKeepLogic() tracking
 					changeTracker.addUndo(new DeleteGroupConstraintSet(constraintItem, index, newConstraints));
 			    }
 				updateConstraintModel();
@@ -711,7 +697,6 @@ public class ConstraintsViewController {
 	 * Logic to keep the constraints when removing (a feature from) a group
 	 */
 	private void resolveGroupConstraint(Constraint constraint, Set<Constraint> newConstraints) {
-		//SO create list with all new Constraints
 		if(constraint instanceof AlternativeGroup) {
 			AlternativeGroup alternative = (AlternativeGroup) constraint;
 

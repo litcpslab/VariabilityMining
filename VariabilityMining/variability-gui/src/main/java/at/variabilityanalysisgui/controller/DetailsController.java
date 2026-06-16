@@ -13,6 +13,7 @@
  	Contributors:
  	Alexander Stummer - Adapted name changing operations
     Kejda Domi- Added the visualization section
+   Sophie Öttl - Change Tracking
 **/
 
 package at.variabilityanalysisgui.controller;
@@ -195,7 +196,6 @@ public class DetailsController {
         if(isValidName(candidateName)) {
             String oldName = group.getName().get();
             group.addPreviousName(oldName);
-            //SO: store change element
             controller.getChangeTracker().addUndo(new RenameGroup(this, group, oldName, candidateName));
 			group.getName().setValue(candidateName);
 			currentDetailItem.setValue(null);

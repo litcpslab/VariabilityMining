@@ -8,6 +8,7 @@
  * LIT Cyber-Physical Systems Lab
  * Contributors:
  *  Alexander Stummer - Initial Implementation
+ *  Sophie Öttl - Change Tracking
 ********************************************************************************/
 
 package at.variabilityanalysisgui.controller;

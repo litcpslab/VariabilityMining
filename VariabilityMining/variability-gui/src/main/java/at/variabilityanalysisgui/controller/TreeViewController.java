@@ -13,6 +13,7 @@
  	Contributors:
  	Alexander Stummer - Adapted drag-and-drop and delete actions
     Kejda Domi- Added the visualization section
+    Sophie Öttl - Change Tracking
 **/
 
 package at.variabilityanalysisgui.controller;
@@ -349,7 +350,6 @@ public class TreeViewController {
         }
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == yesButton) {
-            //SO: store element
             Difference data = item.getValue().getData();
             if (data instanceof Element element) {
                 Group sourceGroup = findGroupContainingElement(controller.getOriginalGroups(), element);
@@ -425,7 +425,6 @@ public class TreeViewController {
             System.err.println("Invalid types for moveElementToGroup");
             return;
         }
-        //SO create Map and SET
         Map<Integer, List<Element>> movedElements = new HashMap<>();
         Set<TreeItem<FeatureTreeNode>> deletedItems = new HashSet<>();
 
@@ -460,7 +459,7 @@ public class TreeViewController {
 
                 Element element = (Element) elementItem.getValue().getData();
                 Group targetGroup = (Group) targetGroupItem.getValue().getData();
-                //SO add to Map
+
                 sourceGroup = Controller.findGroupContainingElement(controller.getOriginalGroups(), element);
 
                 movedElements.computeIfAbsent(sourceGroup.getId(), k -> new ArrayList<>()).add(element);
@@ -481,9 +480,7 @@ public class TreeViewController {
 
                         if (sourceGroup.getElements().isEmpty()) {
                             sourceGroupItem = rootNode.getChildren().get(sourceIndex);
-                            //SO add to delete SET
                             deletedItems.add(sourceGroupItem);
-                            //handleDeleteAction(sourceGroupItem);
                         }
                     }
                     // Add new group TreeItem
@@ -500,7 +497,6 @@ public class TreeViewController {
                 Group targetGroup = (Group) targetGroupItem.getValue().getData();
 
                 targetGroup.getElements().addAll(element.getElements());
-                //SO add to Map
                 movedElements.put(element.getId(), new ArrayList<>(element.getElements()));
                 element.getElements().clear();
 
@@ -513,18 +509,14 @@ public class TreeViewController {
                 if (sourceGroupItem != null) {
                     refreshGroup(sourceGroupItem);
                     sourceGroupItem = rootNode.getChildren().get(sourceIndex);
-                    //SO add to delete SET
                     deletedItems.add(sourceGroupItem);
-                    //handleDeleteAction(sourceGroupItem);
                 }
 
                 System.out.println("Moved element " + element.getName().get());
             }
-            //SO: store moved elements
 
         }
         controller.getChangeTracker().addUndo(new MoveElement(((Group) targetGroupItem.getValue().getData()).getId(), movedElements));
-        //SO call handleDeleteAction for every element in SET
         for (TreeItem<FeatureTreeNode> item: deletedItems) {
             handleDeleteAction(item);
         }
