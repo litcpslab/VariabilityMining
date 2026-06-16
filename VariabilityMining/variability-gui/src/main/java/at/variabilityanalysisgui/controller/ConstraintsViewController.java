@@ -110,7 +110,7 @@ public class ConstraintsViewController {
     private ContextMenu constraintFilterMenu;
     
     private VarflixAPI model;
-    private Set<Constraint> constraints;
+    private List<Constraint> constraints;
     private List<Feature> features;
     private Feature currentBase;
     
@@ -176,7 +176,7 @@ public class ConstraintsViewController {
         File selectedFile = fileChooser.showOpenDialog(groupTreeView.getScene().getWindow());
 
         JSONConstraints jsonConstraints = ConstraintFileIO.readInformationfromFile(selectedFile);
-        constraints = new HashSet<>();
+        constraints = new ArrayList<>();
         constraints.addAll(jsonConstraints.getConstraints());
         constraints.addAll(jsonConstraints.getGroups());
         features = jsonConstraints.getFeatures();
@@ -276,12 +276,14 @@ public class ConstraintsViewController {
 	}
 
     public void updateConstraintModel(){
-        model.generateModel(currentBase, features, new ArrayList<>(constraints));
+        constraints = model.generateModel(currentBase, features, constraints);
         TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
         visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
+        if(isGroupView) {
+        	initializeTreeView(constraints.stream().filter(c -> c instanceof Group).toList());
+        }
         visualizationWindow.setFitToWidth(true);
         visualizationWindow.setFitToHeight(true);
-
     }
 
 	

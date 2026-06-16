@@ -19,6 +19,7 @@ import java.util.Set;
 
 import constraints.Constraint;
 import guiModel.Group;
+import iec61499Mining.DeltaModelGenerator;
 import iec61499Mining.IEC61499VariabilityExtractor;
 import mappers.DataMapper;
 import mappers.DataMapper1499;
@@ -40,10 +41,12 @@ public class VarflixAPI {
 	public List<Group> computeInitialGroups(){
 		
 		extractor = new IEC61499VariabilityExtractor();
-
-		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("/home/sophie/VariabilityMining/VariabilityMining/variability-gui/variantsAxisControl.txt", "/home/sophie/VariabilityMining/VariabilityMining/variability-gui/axisControlDiff.json");
+		
+		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> initialGroups = extractor.performAutomaticMining("<Enter path to file with list of variants here>", "<Enter path to file with 1499 diff results here>");
 		
 		mapper = new DataMapper();
+		
+		DeltaModelGenerator.generateDeltas(initialGroups.stream().map(e -> (JSON1499VariabilityGroup) e).toList(), "output/deltas/");
 		
 		return mapper.mapVariabilityGroup(initialGroups);
 	}
@@ -52,10 +55,12 @@ public class VarflixAPI {
 		
 		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> updatedGroups = mapper.mapGUIGroupTo1499VariabilityGroup(editedGroups, extractor.getVariants(), extractor.getElements());	
 		
+		DeltaModelGenerator.generateDeltas(updatedGroups.stream().map(e -> (JSON1499VariabilityGroup) e).toList(), "output/deltas/");
+		
 		extractor.buildPCM(extractor.getVariants(), updatedGroups);	
 	}
 	
-	public Set<Constraint> performFCA(){
+	public List<Constraint> performFCA(){
 		analysis = new FormalConceptAnalysis(new File("pcm.csv"));
 		
 		analysis.buildConceptLattice();
@@ -71,7 +76,9 @@ public class VarflixAPI {
 		return analysis.getBaseFeature();
 	}
 	
-	public void generateModel(Feature base, List<Feature> features, List<Constraint> constraints) {
-		generator.generateVariabilityModel(base, features, constraints);
+	public List<Constraint> generateModel(Feature base, List<Feature> features, List<Constraint> constraints) {
+		List<Constraint> updatedConstraints = generator.generateVariabilityModel(base, features, constraints);
+		DeltaModelGenerator.generateDeltaConfigFile(features, constraints, "output/deltas/");
+		return updatedConstraints;
 	}
 }
