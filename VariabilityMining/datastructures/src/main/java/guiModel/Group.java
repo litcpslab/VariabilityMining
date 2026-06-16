@@ -17,6 +17,9 @@
 package guiModel;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +29,7 @@ public class Group extends Difference {
 	private int id;
     private List<String> occurrences;
     private List<Element> elements;
+    private ObservableList<String> previousNames = FXCollections.observableArrayList();
 
     public Group(int id, String name) {
     	this.id = id;
@@ -33,7 +37,16 @@ public class Group extends Difference {
         this.occurrences = new ArrayList<>();
         this.elements = new ArrayList<>();
     }
-    
+
+    public Group(Group group) {
+        this.id = group.getId();
+        this.name = group.getName();
+        this.occurrences = group.getOccurrences();
+        this.elements = new ArrayList<>();
+        this.elements.addAll(group.getElements());
+        this.previousNames = group.getPreviousNames();
+    }
+
     public Group() {
     	
     }
@@ -58,6 +71,10 @@ public class Group extends Difference {
         this.elements.add(element);
     }
 
+    public void addElementAt(Element element, int index) {
+        this.elements.add(index, element);
+    }
+
     public void setId(int id) {
 		this.id = id;
 	}
@@ -69,6 +86,24 @@ public class Group extends Difference {
 	public void setElements(List<Element> elements) {
 		this.elements = elements;
 	}
+
+    public ObservableList<String> getPreviousNames() {
+        return previousNames;
+    }
+
+    public void addPreviousName(String previousName) {
+        if (!previousNames.contains(previousName)) {
+            previousNames.add(previousName);
+        }
+    }
+
+    public void removePreviousName(String previousName) {
+        previousNames.remove(previousName);
+    }
+
+    public void setName(StringProperty name) {
+        this.name = name;
+    }
 
 	@Override
     public String toString() {

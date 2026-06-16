@@ -9,6 +9,7 @@
  * Contributors:
  *  Alexander Stummer - Initial Implementation
  *  Kejda Domi- Added the visualization section
+ *  Sophie Öttl - Change Tracking
 ********************************************************************************/
 
 package at.variabilityanalysisgui.controller;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import at.variabilityanalysisgui.changeTracking.*;
 import at.variabilityanalysisgui.visualization.TreeGraph;
 import org.controlsfx.control.CheckComboBox;
 
@@ -56,7 +58,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -102,6 +103,9 @@ public class ConstraintsViewController {
     @FXML private Button proceedButton;
     @FXML private Button addConstraintButton;
     @FXML private Button generateButton;
+
+	@FXML private Button undoButton;
+	@FXML private Button redoButton;
     
     private ContextMenu constraintFilterMenu;
     
@@ -112,7 +116,9 @@ public class ConstraintsViewController {
     
     
     private boolean isGroupView = true;
-	
+
+	private ChangeTracker<ConstraintsViewController, ConstraintInfoController> changeTracker;
+
     @FXML
     public void initialize() {
     	this.infoController = new ConstraintInfoController(this, infoScrollPane, groupInfoLabel, parentFeatureLabel, infoText, groupFeatureListView, removeFeatureButton, editLabel, featureComboBox, editButtonBox, infoCloseButton);
@@ -125,7 +131,11 @@ public class ConstraintsViewController {
     	    }
     	});
     	unfilteredItems = new HashSet<>();
-    	
+
+    	changeTracker = new ChangeTracker<>(this, infoController);
+		undoButton.disableProperty().bind(changeTracker.canUndoProperty().not());
+		redoButton.disableProperty().bind(changeTracker.canRedoProperty().not());
+
     	infoScrollPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
     		if(newScene != null) {
     	        newScene.windowProperty().addListener((obs2, oldWin, newWin) -> {
@@ -202,9 +212,11 @@ public class ConstraintsViewController {
 	@FXML
 	public void handleAddAction(ActionEvent e) {
 		Feature addFeature = featureComboBox.getValue();
+		int comboBoxIndex = featureComboBox.getSelectionModel().getSelectedIndex();
 		
 		Constraint constraint = groupTreeView.getSelectionModel().getSelectedItem().getValue();
 		boolean shouldBeAdded = true;
+		boolean featureInGroup = false;
 		if(constraint instanceof Group) {
 			Group group = (Group) constraint;
 			
@@ -217,28 +229,39 @@ public class ConstraintsViewController {
 					warningAlert.setHeaderText("Addition Warning");
 					
 					Optional<ButtonType> result = warningAlert.showAndWait();
+					featureInGroup = true;
 				    if(result.isPresent() && result.get() == ButtonType.YES) {
 				    	g.removeFeature(addFeature);
-				    	
+						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, new HashSet<>(), comboBoxIndex));
+
 				    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
+						Set<Constraint> newConstraints = new HashSet<>();
+
 				    	if(group instanceof AlternativeGroup) {
 				    		 
 				    		for(Feature f: g.getFeatures()) {
 				    			if(f != addFeature) {
-				    				constraints.add(new MutualExclusion(addFeature, f));
+									newConstraints.add(new MutualExclusion(addFeature, f));
 				    			}
 				    		}
 				    	}
-				    	 		
-				    	constraints.add(new Implication(addFeature, g.getParent()));
+
+						newConstraints.add(new Implication(addFeature, g.getParent()));
 				    	g.removeFeature(addFeature);
-				    	 
+						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, newConstraints, comboBoxIndex));
+						constraints.addAll(newConstraints);
+
 				    } else {
 				    	shouldBeAdded = false;
 				    }
-				     
+
 				}
+
 			}
+			if (!featureInGroup) {
+				changeTracker.addUndo(new AddConstraintChild(addFeature, group, comboBoxIndex));
+			}
+
 			if(shouldBeAdded && !group.getFeatures().contains(addFeature) && !group.getParent().equals(addFeature)) {
 				group.getFeatures().add(addFeature);
 				featureComboBox.getItems().remove(addFeature);
@@ -262,7 +285,7 @@ public class ConstraintsViewController {
         visualizationWindow.setFitToWidth(true);
         visualizationWindow.setFitToHeight(true);
     }
-    
+
 	
 	/*
 	 * Handling the action performed to remove a group from a feature
@@ -323,6 +346,7 @@ public class ConstraintsViewController {
 	
 	@FXML
 	public void switchToExtractionView(ActionEvent event) {
+		changeTracker.clearStack();
     	Scene scene = ((Node)event.getSource()).getScene();
     	scene.setRoot((Parent)SceneManager.getExtractionScene());
 	}
@@ -348,11 +372,7 @@ public class ConstraintsViewController {
         popupStage.initOwner((Stage)((Node) e.getSource()).getScene().getWindow()); 
         popupStage.initModality(Modality.NONE); 
         popupStage.setAlwaysOnTop(true); 
-        popupStage.setTitle("Add a constraint");
-        
-        Label typeLabel = new Label("Constraint type:");
-        Label leftFeatureLabel = new Label("Left feature:");
-        Label rightFeatureLabel = new Label("Right feature:");
+        popupStage.setTitle("Add a constraint!");
 		
 		ComboBox<String> constraintTypeComboBox = new ComboBox<>(FXCollections.observableArrayList("Implication", "Equivalence", "Mutual Exclusion"));
 		
@@ -365,79 +385,73 @@ public class ConstraintsViewController {
 		rightFeatureComboBox.setPromptText("Select right feature");
 		
 		Button addButton = new Button("Add");
-		
-		GridPane pane = new GridPane();
-		pane.setHgap(10);
-		pane.setVgap(10);
-		pane.add(typeLabel, 0, 0);
-		pane.add(constraintTypeComboBox, 1, 0);
-		pane.add(leftFeatureLabel, 0, 1);
-		pane.add(leftFeatureComboBox, 1, 1);
-		pane.add(rightFeatureLabel, 0, 2);
-		pane.add(rightFeatureComboBox, 1, 2);
-		
+
 		EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
-			
+
 			@Override
 			public void handle(ActionEvent event) {
 				String type = constraintTypeComboBox.getValue();
-				
+
 				Feature left = leftFeatureComboBox.getValue();
 				Feature right = rightFeatureComboBox.getValue();
-				if(left != right) {
+				if (left != right) {
 					SimpleConstraint constraint = null;//new SimpleConstraint(left, right, type);
-					if(type.equals("Implication")) {
+					if (type.equals("Implication")) {
 						constraint = new Implication(left, right);
-					} else if(type.equals("Mutual Exclusion")) {
+					} else if (type.equals("Mutual Exclusion")) {
 						constraint = new MutualExclusion(left, right);
-					} else if(type.equals("Equivalence")) {
+					} else if (type.equals("Equivalence")) {
 						constraint = new Equivalence(left, right);
 					}
-					
-					if(constraint != null) {
-						if(constraints.add(constraint)) {
-							TreeItem<Constraint> addItem = new TreeItem<Constraint>(constraint);
-							Button button = new Button("X");
-							button.setOnAction(e -> {
 
-								Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + addItem.getValue() + " be removed?", ButtonType.YES, ButtonType.NO);
-								removeAlert.setHeaderText("Removal Confirmation");
-								 
-								Optional<ButtonType> result = removeAlert.showAndWait();
-							    if(result.isPresent() && result.get() == ButtonType.YES) {
-							    	groupTreeView.getRoot().getChildren().remove(addItem);
-							    	constraints.remove(addItem.getValue());
-							    }							
-							});
-							addItem.setGraphic(button);
-							
-							groupTreeView.getRoot().getChildren().add(addItem);
-							unfilteredItems.add(addItem);
-							groupTreeView.refresh();
-						}	
+					if (constraint != null) {
+						if (constraints.add(constraint)) {
+							TreeItem<Constraint> addItem = addSimpleConstraintTreeItem(constraint);
+							changeTracker.addUndo(new AddSimpleConstraint(addItem, groupTreeView.getRoot().getChildren().indexOf(addItem)));
+						}
 					}
-					
+
 				} else {
 					Alert addError = new Alert(AlertType.ERROR, "The same feature can't be chosen for both sides of the logical constraint!");
 					addError.show();
 				}
-				
+
 				popupStage.close();
 			}
 		};
 		
 		addButton.setOnAction(event);
 		
-		constraintTypeComboBox.setPrefWidth(200);
-		leftFeatureComboBox.setPrefWidth(200);
-		rightFeatureComboBox.setPrefWidth(200);
+		VBox layout = new VBox(10, constraintTypeComboBox, leftFeatureComboBox, rightFeatureComboBox, addButton);
 
-		addButton.setDefaultButton(true);
-		
-		VBox layout = new VBox(10, pane, addButton);
-
-		popupStage.setScene(new Scene(layout, 300, 150));
+		popupStage.setScene(new Scene(layout, 250, 200));
 	    popupStage.show();
+	}
+
+	public TreeItem<Constraint> addSimpleConstraintTreeItem(Constraint constraint) {
+		TreeItem<Constraint> addItem = new TreeItem<Constraint>(constraint);
+		Button button = new Button("X");
+		button.setOnAction(e -> {
+
+			Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + addItem.getValue() + " be removed?", ButtonType.YES, ButtonType.NO);
+			removeAlert.setHeaderText("Removal Confirmation");
+
+			Optional<ButtonType> result = removeAlert.showAndWait();
+			if(result.isPresent() && result.get() == ButtonType.YES) {
+				int index = groupTreeView.getRoot().getChildren().indexOf(addItem);
+				groupTreeView.getRoot().getChildren().remove(addItem);
+				constraints.remove(addItem.getValue());
+				unfilteredItems.remove(addItem);
+				changeTracker.addUndo(new DeleteConstraint(addItem, index, false));
+			}
+		});
+		addItem.setGraphic(button);
+
+		groupTreeView.getRoot().getChildren().add(addItem);
+		unfilteredItems.add(addItem);
+		groupTreeView.refresh();
+
+		return addItem;
 	}
 
 	/*
@@ -448,7 +462,6 @@ public class ConstraintsViewController {
 		
 		List<Constraint> groups = constraints.stream().filter(c -> c instanceof Group).toList();
 		setUpTreeItems(groups);
-		
 		proceedButton.setText("Proceed");
 		
 		proceedButton.setOnAction(e -> {
@@ -635,7 +648,7 @@ public class ConstraintsViewController {
 	/*
 	 * Setting up the single items for the view
 	 */
-	private void setUpTreeItems(List<Constraint> constraints) {
+	public void setUpTreeItems(List<Constraint> constraints) {
 		TreeItem<Constraint> root = new TreeItem<>();
 		
 		unfilteredItems = new HashSet<>();
@@ -657,14 +670,19 @@ public class ConstraintsViewController {
 				 
 				Optional<ButtonType> result = removeAlert.showAndWait();
 			    if(result.isPresent() && result.get() == ButtonType.YES) {
-			    	groupTreeView.getRoot().getChildren().remove(constraintItem);
+					int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
+					groupTreeView.getRoot().getChildren().remove(constraintItem);
 			    	unfilteredItems.remove(constraintItem);
 			    	this.constraints.remove(constraint);
+					changeTracker.addUndo(new DeleteConstraint(constraintItem, index, constraint instanceof Group));
 			    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
+					Set<Constraint> newConstraints = new HashSet<>();
+					int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
 			    	groupTreeView.getRoot().getChildren().remove(constraintItem);
 			    	this.constraints.remove(constraint);
-			    	resolveGroupConstraint(constraint);
+			    	resolveGroupConstraint(constraint, newConstraints);
 			    	unfilteredItems.remove(constraintItem);
+					changeTracker.addUndo(new DeleteGroupConstraintSet(constraintItem, index, newConstraints));
 			    }
 				updateConstraintModel();
 			});
@@ -680,18 +698,17 @@ public class ConstraintsViewController {
 	/*
 	 * Logic to keep the constraints when removing (a feature from) a group
 	 */
-	private void resolveGroupConstraint(Constraint constraint) {
-		
+	private void resolveGroupConstraint(Constraint constraint, Set<Constraint> newConstraints) {
 		if(constraint instanceof AlternativeGroup) {
 			AlternativeGroup alternative = (AlternativeGroup) constraint;
-			
+
 			Set<Feature> processed = new HashSet<>();
 			
 			for(Feature f: alternative.getFeatures()) {
-				constraints.add(new Implication(f, alternative.getParent()));
+				newConstraints.add(new Implication(f, alternative.getParent()));
 				
 				for(Feature f2: processed) {
-					constraints.add(new MutualExclusion(f, f2));
+					newConstraints.add(new MutualExclusion(f, f2));
 				}
 				
 				processed.add(f);
@@ -700,9 +717,10 @@ public class ConstraintsViewController {
 			OrRelation orGroup = (OrRelation) constraint;
 			
 			for(Feature f: orGroup.getFeatures()) {
-				constraints.add(new Implication(f, orGroup.getParent()));
+				newConstraints.add(new Implication(f, orGroup.getParent()));
 			}
 		}
+		constraints.addAll(newConstraints);
 	}
 	
 	/*
@@ -710,5 +728,43 @@ public class ConstraintsViewController {
 	 */
 	public List<Feature> getFeatures(){
 		return features;
+	}
+
+	public ComboBox<Feature> getFeatureComboBox() {
+		return featureComboBox;
+	}
+
+	public ListView<Feature> getGroupFeatureListView() {
+		return groupFeatureListView;
+	}
+
+	public TreeView<Constraint> getGroupTreeView() {
+		return groupTreeView;
+	}
+
+	public Set<TreeItem<Constraint>> getUnfilteredItems() {
+		return unfilteredItems;
+	}
+
+	public Set<Constraint> getConstraints() {
+		return constraints;
+	}
+
+	public boolean getIsGroupView() {
+		return isGroupView;
+	}
+
+	@FXML
+	public void undo() {
+		changeTracker.undo();
+	}
+
+	@FXML
+	public void redo() {
+		changeTracker.redo();
+	}
+
+	public ChangeTracker<ConstraintsViewController, ConstraintInfoController> getChangeTracker() {
+		return changeTracker;
 	}
 }

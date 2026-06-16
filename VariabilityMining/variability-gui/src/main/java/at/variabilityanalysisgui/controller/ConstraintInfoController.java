@@ -8,12 +8,14 @@
  * LIT Cyber-Physical Systems Lab
  * Contributors:
  *  Alexander Stummer - Initial Implementation
-********************************************************************************/
+ *  Sophie Öttl - Change Tracking
+ ********************************************************************************/
 
 package at.variabilityanalysisgui.controller;
 
 import java.util.Optional;
 
+import at.variabilityanalysisgui.changeTracking.DeleteConstraintChild;
 import constraints.AlternativeGroup;
 import constraints.Constraint;
 import constraints.Equivalence;
@@ -193,8 +195,14 @@ public class ConstraintInfoController {
 		     if(result.isPresent() && result.get() == ButtonType.YES) {
 		    	 ((Group) currentInfoItem.getValue()).removeFeature(feature);
 		    	 groupFeatureList.getItems().remove(feature);
+				 controller.getChangeTracker().addUndo(new DeleteConstraintChild(feature, (Group) currentInfoItem.getValue()));
+
 		     }
 		 }
 	 
+	 }
+
+	 public ScrollPane getInfoPane() {
+		 return infoScrollPane;
 	 }
 }

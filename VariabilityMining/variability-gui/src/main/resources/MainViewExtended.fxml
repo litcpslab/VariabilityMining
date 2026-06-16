@@ -48,6 +48,17 @@
                         <Button fx:id="detailChangeNameButton" mnemonicParsing="false" text="Change Name" />
                     </children>
                 </HBox>
+                <HBox fx:id="detailNamingHistoryHBox" prefHeight="30.0" prefWidth="200.0">
+                    <children>
+                        <Label fx:id="detailNamingHistoryLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Naming-History" />
+                        <Button fx:id="detailChangeBackButton" mnemonicParsing="false" text="Change Back">
+                            <HBox.margin>
+                                <Insets left="7.0" top="2.0" />
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                </HBox>
+                <ListView fx:id="detailNamingHistoryListView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" />
                 <Label fx:id="detailLocationLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Location" />
                 <TextArea fx:id="detailLocationTextArea" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="200.0" />
                 <Label fx:id="detailOccurrenceLabel" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-font-weight: bold;" text="Occurrences" />
@@ -108,6 +119,20 @@
                                 <HBox alignment="CENTER_RIGHT" maxHeight="20.0" prefHeight="20.0">
                                     <children>
                                         <Button fx:id="constraintsViewButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#changeScene" text="Constraints View" />
+                                    </children>
+                                </HBox>
+                                <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Button fx:id="undoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#undo" text="Undo">
+                                            <HBox.margin>
+                                                <Insets left="5.0" />
+                                            </HBox.margin>
+                                        </Button>
+                                        <Button fx:id="redoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#redo" text="Redo">
+                                            <HBox.margin>
+                                                <Insets left="5.0" />
+                                            </HBox.margin>
+                                        </Button>
                                     </children>
                                 </HBox>
                             </children>
