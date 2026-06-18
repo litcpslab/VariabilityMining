@@ -18,16 +18,15 @@ import constraints.Constraint;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
-import java.util.Comparator;
-import java.util.Set;
+import java.util.List;
 
 public class DeleteGroupConstraintSet implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
 
     TreeItem<Constraint> constraint;
     int index;
-    Set<Constraint> keepConstraints;
+    List<Constraint> keepConstraints;
 
-    public DeleteGroupConstraintSet(TreeItem<Constraint> constraint, int index, Set<Constraint> keepConstraints) {
+    public DeleteGroupConstraintSet(TreeItem<Constraint> constraint, int index, List<Constraint> keepConstraints) {
         this.constraint = constraint;
         this.index = index;
         this.keepConstraints = keepConstraints;
@@ -62,8 +61,6 @@ public class DeleteGroupConstraintSet implements ChangeModel<ConstraintsViewCont
             for (Constraint c : keepConstraints) {
                 controller.addSimpleConstraintTreeItem(c);
             }
-            controller.getGroupTreeView().getRoot().getChildren()
-                    .sort(Comparator.comparingInt(item -> controller.getConstraints().stream().toList().indexOf(item.getValue())));
         }
         controller.getGroupTreeView().refresh();
     }
