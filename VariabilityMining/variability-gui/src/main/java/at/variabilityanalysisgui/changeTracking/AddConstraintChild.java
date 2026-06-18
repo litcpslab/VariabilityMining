@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2026 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Sophie Öttl - Change Tracking
+ ********************************************************************************/
+
 package at.variabilityanalysisgui.changeTracking;
 
 import at.variabilityanalysisgui.controller.ConstraintInfoController;
@@ -9,25 +21,33 @@ public class AddConstraintChild implements ChangeModel<ConstraintsViewController
 
     Feature feature;
     Group group;
+    int comboBoxIndex;
 
-    public AddConstraintChild(Feature feature, Group group) {
+    public AddConstraintChild(Feature feature, Group group, int comboBoxIndex) {
         this.feature = feature;
         this.group = group;
+        this.comboBoxIndex = comboBoxIndex;
     }
 
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
         group.removeFeature(feature);
-        controller.getFeatureComboBox().getItems().add(feature);
-        controller.getGroupFeatureListView().getItems().remove(feature);
+
+        if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
+            controller.getFeatureComboBox().getItems().add(comboBoxIndex, feature);
+            controller.getGroupFeatureListView().getItems().remove(feature);
+        }
         controller.getGroupTreeView().refresh();
     }
 
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
         group.addFeature(feature);
-        controller.getFeatureComboBox().getItems().remove(feature);
-        controller.getGroupFeatureListView().getItems().add(feature);
+
+        if (controller.getIsGroupView() && viewController.getInfoPane().isVisible()) {
+            controller.getFeatureComboBox().getItems().remove(comboBoxIndex);
+            controller.getGroupFeatureListView().getItems().add(feature);
+        }
         controller.getGroupTreeView().refresh();
     }
 }

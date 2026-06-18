@@ -1,6 +1,19 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2026 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Sophie Öttl - Change Tracking
+ ********************************************************************************/
+
 package at.variabilityanalysisgui.changeTracking;
 
-import at.variabilityanalysisgui.controller.ConstraintsViewController;import at.variabilityanalysisgui.controller.Controller;
+import at.variabilityanalysisgui.controller.ConstraintsViewController;
+import at.variabilityanalysisgui.controller.Controller;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import java.util.Stack;
@@ -44,7 +57,6 @@ public class ChangeTracker<T, U> {
         undoStack.push(undo);
         redoStack.clear();
         updateProperties();
-        System.out.println("added undo: " + undo);
     }
 
     private void updateProperties() {
@@ -66,5 +78,11 @@ public class ChangeTracker<T, U> {
         } else {
             ((ConstraintsViewController) controller).updateConstraintModel();
         }
+    }
+
+    public void clearStack() {
+        undoStack.clear();
+        redoStack.clear();
+        updateProperties();
     }
 }

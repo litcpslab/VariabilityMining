@@ -8,6 +8,7 @@
  * LIT Cyber-Physical Systems Lab
  * Contributors:
  *  Alexander Stummer - Initial Implementation
+ *  Sophie Öttl - Change Tracking
 ********************************************************************************/
 
 package at.variabilityanalysisgui.controller;
@@ -16,6 +17,10 @@ import java.io.IOException;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 
 public class SceneManager {
 	
@@ -33,6 +38,41 @@ public class SceneManager {
 		try {
 			extractionScene = extractionLoader.load();
 			constraintsScene = constraintsLoader.load();
+
+			Controller controller = extractionLoader.getController();
+			ConstraintsViewController constraintsController = constraintsLoader.getController();
+
+			KeyCombination undoCombination = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
+			KeyCombination redoCombination = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
+			
+			extractionScene.sceneProperty().addListener((obs, oldScene, newScene) -> {
+				if (newScene != null) {
+					newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+						if (undoCombination.match(event)) {
+							controller.undo();
+							event.consume();
+						} else if (redoCombination.match(event)) {
+							controller.redo();
+							event.consume();
+						}
+					});
+				}
+			});
+			
+			constraintsScene.sceneProperty().addListener((obs, oldScene, newScene) -> {
+				if (newScene != null) {
+					newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+						if (undoCombination.match(event)) {
+							constraintsController.undo();
+							event.consume();
+						} else if (redoCombination.match(event)) {
+							constraintsController.redo();
+							event.consume();
+						}
+					});
+				}
+			});
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

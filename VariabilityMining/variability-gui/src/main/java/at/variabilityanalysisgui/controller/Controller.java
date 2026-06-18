@@ -13,6 +13,7 @@
  	Contributors:
  	Alexander Stummer - Added scene switching & adapted to integrate with Varflix backend
     Kejda Domi- Added the visualization section
+    Sophie Öttl - Change Tracking
 **/
 
 package at.variabilityanalysisgui.controller;

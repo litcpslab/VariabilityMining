@@ -1,3 +1,16 @@
+/*******************************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License, v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at
+ * https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright (c) 2025 Johannes Kepler University Linz
+ * LIT Cyber-Physical Systems Lab
+ * Contributors:
+ *  Alexander Stummer - Initial Implementation
+ *  Sophie Öttl - Change Tracking
+ ********************************************************************************/
+
 package at.variabilityanalysisgui.controller;
 
 import java.util.Optional;
@@ -26,12 +39,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import variabilityMining.Feature;
 
-/*
-Copyright (c) 2025 Johannes Kepler University Linz
-LIT Cyber-Physical Systems Lab
-*Contributors:
-Alexander Stummer - Initial Implementation
-*/
 public class ConstraintInfoController {
 	
 	private ConstraintsViewController controller;
@@ -188,11 +195,14 @@ public class ConstraintInfoController {
 		     if(result.isPresent() && result.get() == ButtonType.YES) {
 		    	 ((Group) currentInfoItem.getValue()).removeFeature(feature);
 		    	 groupFeatureList.getItems().remove(feature);
-				 //SO new DeleteConstraintChild
-				 controller.getChangeTracker().addUndo(new DeleteConstraintChild());
+				 controller.getChangeTracker().addUndo(new DeleteConstraintChild(feature, (Group) currentInfoItem.getValue()));
 
 		     }
 		 }
 	 
+	 }
+
+	 public ScrollPane getInfoPane() {
+		 return infoScrollPane;
 	 }
 }

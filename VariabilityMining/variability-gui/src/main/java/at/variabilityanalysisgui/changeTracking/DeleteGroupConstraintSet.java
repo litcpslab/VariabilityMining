@@ -15,39 +15,56 @@ package at.variabilityanalysisgui.changeTracking;
 import at.variabilityanalysisgui.controller.ConstraintInfoController;
 import at.variabilityanalysisgui.controller.ConstraintsViewController;
 import constraints.Constraint;
+import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
-public class DeleteConstraint implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
+import java.util.Comparator;
+import java.util.Set;
+
+public class DeleteGroupConstraintSet implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
 
     TreeItem<Constraint> constraint;
     int index;
-    boolean isGroupConstraint;
+    Set<Constraint> keepConstraints;
 
-    public DeleteConstraint(TreeItem<Constraint> constraint, int index, boolean isGroupConstraint) {
+    public DeleteGroupConstraintSet(TreeItem<Constraint> constraint, int index, Set<Constraint> keepConstraints) {
         this.constraint = constraint;
         this.index = index;
-        this.isGroupConstraint = isGroupConstraint;
+        this.keepConstraints = keepConstraints;
     }
 
     @Override
     public void undo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        controller.getUnfilteredItems().add(constraint);
         controller.getConstraints().add(constraint.getValue());
+        controller.getConstraints().removeAll(keepConstraints);
+        controller.getUnfilteredItems().add(constraint);
 
-        if((controller.getIsGroupView() && isGroupConstraint) || (!controller.getIsGroupView() &&  !isGroupConstraint)) {
+        if (controller.getIsGroupView()) {
             controller.getGroupTreeView().getRoot().getChildren().add(index, constraint);
-            controller.getGroupTreeView().refresh();
+        } else {
+            ObservableList<TreeItem<Constraint>> treeItems = controller.getGroupTreeView().getRoot().getChildren();
+            for (Constraint constraint : keepConstraints) {
+                treeItems.removeIf(item -> item.getValue().equals(constraint));
+            }
         }
+        controller.getGroupTreeView().refresh();
     }
 
     @Override
     public void redo(ConstraintsViewController controller, ConstraintInfoController viewController) {
-        controller.getUnfilteredItems().remove(constraint);
         controller.getConstraints().remove(constraint.getValue());
+        controller.getConstraints().addAll(keepConstraints);
+        controller.getUnfilteredItems().remove(constraint);
 
-        if((controller.getIsGroupView() && isGroupConstraint) || (!controller.getIsGroupView() &&  !isGroupConstraint)) {
+        if (controller.getIsGroupView()) {
             controller.getGroupTreeView().getRoot().getChildren().remove(index);
-            controller.getGroupTreeView().refresh();
+        } else {
+            for (Constraint c : keepConstraints) {
+                controller.addSimpleConstraintTreeItem(c);
+            }
+            controller.getGroupTreeView().getRoot().getChildren()
+                    .sort(Comparator.comparingInt(item -> controller.getConstraints().stream().toList().indexOf(item.getValue())));
         }
+        controller.getGroupTreeView().refresh();
     }
 }
