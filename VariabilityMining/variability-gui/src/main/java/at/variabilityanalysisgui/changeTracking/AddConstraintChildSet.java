@@ -24,18 +24,17 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import variabilityMining.Feature;
 
-import java.util.Comparator;
-import java.util.Set;
+import java.util.List;
 
 public class AddConstraintChildSet implements ChangeModel<ConstraintsViewController, ConstraintInfoController> {
     Feature feature;
     Group oldGroup;
     Group newGroup;
-    Set<Constraint> keepConstraints;
+    List<Constraint> keepConstraints;
     int comboBoxIndex;
 
 
-    public AddConstraintChildSet(Feature feature, Group oldGroup, Group newGroup, Set<Constraint> keepConstraints, int comboBoxIndex) {
+    public AddConstraintChildSet(Feature feature, Group oldGroup, Group newGroup, List<Constraint> keepConstraints, int comboBoxIndex) {
         this.feature = feature;
         this.oldGroup = oldGroup;
         this.newGroup = newGroup;
@@ -74,8 +73,6 @@ public class AddConstraintChildSet implements ChangeModel<ConstraintsViewControl
             for (Constraint c : keepConstraints) {
                 controller.addSimpleConstraintTreeItem(c);
             }
-            controller.getGroupTreeView().getRoot().getChildren()
-                    .sort(Comparator.comparingInt(item -> controller.getConstraints().stream().toList().indexOf(item.getValue())));
         }
         controller.getGroupTreeView().refresh();
     }

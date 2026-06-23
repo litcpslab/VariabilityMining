@@ -15,11 +15,7 @@
 package at.variabilityanalysisgui.controller;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import at.variabilityanalysisgui.changeTracking.*;
@@ -232,10 +228,10 @@ public class ConstraintsViewController {
 					featureInGroup = true;
 				    if(result.isPresent() && result.get() == ButtonType.YES) {
 				    	g.removeFeature(addFeature);
-						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, new HashSet<>(), comboBoxIndex));
+						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, new LinkedList<>(), comboBoxIndex));
 
 				    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
-						Set<Constraint> newConstraints = new HashSet<>();
+						List<Constraint> newConstraints = new LinkedList<>();
 
 				    	if(group instanceof AlternativeGroup) {
 				    		 
@@ -676,7 +672,7 @@ public class ConstraintsViewController {
 			    	this.constraints.remove(constraint);
 					changeTracker.addUndo(new DeleteConstraint(constraintItem, index, constraint instanceof Group));
 			    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
-					Set<Constraint> newConstraints = new HashSet<>();
+					List<Constraint> newConstraints = new LinkedList<>();
 					int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
 			    	groupTreeView.getRoot().getChildren().remove(constraintItem);
 			    	this.constraints.remove(constraint);
@@ -698,7 +694,7 @@ public class ConstraintsViewController {
 	/*
 	 * Logic to keep the constraints when removing (a feature from) a group
 	 */
-	private void resolveGroupConstraint(Constraint constraint, Set<Constraint> newConstraints) {
+	private void resolveGroupConstraint(Constraint constraint, List<Constraint> newConstraints) {
 		if(constraint instanceof AlternativeGroup) {
 			AlternativeGroup alternative = (AlternativeGroup) constraint;
 
