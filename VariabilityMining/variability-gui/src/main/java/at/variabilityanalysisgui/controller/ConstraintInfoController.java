@@ -205,4 +205,8 @@ public class ConstraintInfoController {
 	 public ScrollPane getInfoPane() {
 		 return infoScrollPane;
 	 }
+	 
+	 public TreeItem<Constraint> getCurrentInfoItem() {
+		return currentInfoItem;
+	}
 }

@@ -214,7 +214,7 @@ public class ConstraintsViewController {
 		Feature addFeature = featureComboBox.getValue();
 		int comboBoxIndex = featureComboBox.getSelectionModel().getSelectedIndex();
 		
-		Constraint constraint = groupTreeView.getSelectionModel().getSelectedItem().getValue();
+		Constraint constraint = infoController.getCurrentInfoItem().getValue();//groupTreeView.getSelectionModel().getSelectedItem().getValue();
 		boolean shouldBeAdded = true;
 		boolean featureInGroup = false;
 		if(constraint instanceof Group) {
@@ -746,7 +746,7 @@ public class ConstraintsViewController {
 		return unfilteredItems;
 	}
 
-	public Set<Constraint> getConstraints() {
+	public List<Constraint> getConstraints() {
 		return constraints;
 	}
 
