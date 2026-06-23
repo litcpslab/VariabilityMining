@@ -304,14 +304,6 @@ public class Controller {
     	
     	Scene scene = ((Node)event.getSource()).getScene();
     	scene.setRoot((Parent)SceneManager.getConstraintScene());
-    	
-    	/*scene.getRoot().sceneProperty().addListener((obs, oldScene, newScene) -> {
-         	if(newScene != null) {
-         		scene.getRoot().styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
-         	}
-     	});*/
-    	
-    	 
     }
 
     public Group findGroupById(int groupId) {
