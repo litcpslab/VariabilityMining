@@ -142,7 +142,7 @@ public class DetailsController {
         detailOccurrencesListView.setItems(FXCollections.observableArrayList(group.getOccurrences()));
         detailNamingHistoryListView.setItems(group.getPreviousNames());
 
-        setNodeVisibility(true, detailOccurrenceLabel, detailOccurrencesListView, detailSubElementLabel, detailSubElementListView, detailScrollPane, detailsNameHBox, detailNamingHistoryLabel, detailNamingHistoryListView, detailChangeBackButton, detailNamingHistoryHBox);
+        setNodeVisibility(true, detailOccurrenceLabel, detailOccurrencesListView, detailSubElementLabel, detailSubElementListView, detailScrollPane, detailsNameHBox, detailNamingHistoryLabel, detailNamingHistoryListView, detailChangeBackButton, detailNamingHistoryHBox, detailChangeNameButton);
         setNodeVisibility(false, detailLocationLabel, detailLocationTextArea, detailElementLabel, detailElementData);
 
         detailGroupNameTextField.setEditable(true);
@@ -156,7 +156,7 @@ public class DetailsController {
         detailSubElementListView.setItems(FXCollections.observableArrayList(element));
         detailLocationTextArea.setText(element.getLocation());
 
-        setNodeVisibility(false, detailOccurrenceLabel, detailOccurrencesListView, detailNamingHistoryLabel, detailNamingHistoryListView, detailChangeBackButton, detailNamingHistoryHBox);
+        setNodeVisibility(false, detailOccurrenceLabel, detailOccurrencesListView, detailNamingHistoryLabel, detailNamingHistoryListView, detailChangeBackButton, detailNamingHistoryHBox, detailChangeNameButton);
         setNodeVisibility(true, detailsNameHBox, detailLocationLabel, detailLocationTextArea, detailElementLabel, detailElementData, detailScrollPane);
         setNodeVisibility(currentDetailItem.getValue().isDirectory(), detailSubElementLabel, detailSubElementListView);
 

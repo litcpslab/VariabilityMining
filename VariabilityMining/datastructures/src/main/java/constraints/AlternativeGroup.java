@@ -34,7 +34,7 @@ public class AlternativeGroup extends Group {
 			builder.append(current);
 			
 			if(featureIterator.hasNext()) {
-				builder.append(" XOR ");
+				builder.append(" ⊕ ");
 			}
 		}
 		

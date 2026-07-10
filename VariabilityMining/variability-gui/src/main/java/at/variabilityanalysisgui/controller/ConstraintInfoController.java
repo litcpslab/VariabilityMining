@@ -111,7 +111,7 @@ public class ConstraintInfoController {
 		
 		if(constraint instanceof Group group) {
 			for(Feature feature: controller.getFeatures()) {
-				 if(!group.getFeatures().contains(feature) && !group.getParent().equals(feature)) {
+				 if(!group.getFeatures().contains(feature) && !group.getParent().equals(feature) && !(feature.getName().startsWith("ALT") || feature.getName().startsWith("OR"))) {
 					 featureComboBox.getItems().add(feature);
 				 }
 			 }

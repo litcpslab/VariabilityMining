@@ -39,7 +39,7 @@ public class MainApp extends Application {
         Scene scene = new Scene(SceneManager.getExtractionScene(), 900, 700);
         
         this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("Variability Analyser");
+        this.primaryStage.setTitle("Varflix");
         this.primaryStage.setScene(scene);
         this.primaryStage.show();
     }

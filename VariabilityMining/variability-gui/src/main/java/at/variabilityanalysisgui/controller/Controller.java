@@ -26,11 +26,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 
 import java.io.BufferedWriter;
@@ -100,7 +98,6 @@ public class Controller {
 
     public Map<ExtractionType, String> seperatorMap = Map.of(ExtractionType.JAVA, "/", ExtractionType.IEC61499, ";");
 
-    private UndoManager undoManager = new UndoManager();
     private ChangeTracker<Controller, TreeViewController> changeTracker;
 
     @FXML
@@ -121,7 +118,7 @@ public class Controller {
         filterController.setupFilterListener();
         changeTracker = new ChangeTracker<>(this, treeViewController);
         undoButton.disableProperty().bind(changeTracker.canUndoProperty().not());
-        redoButton.disableProperty().bind(changeTracker.canRedoProperty().not());
+        redoButton.disableProperty().bind(changeTracker.canRedoProperty().not());       
         redrawVisualization();
 
     }

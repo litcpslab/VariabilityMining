@@ -58,6 +58,9 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
         });
 
         setupDragAndDrop();
+        
+       
+        
     }
 
     @Override
@@ -71,12 +74,15 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
             if (item.getType() == FeatureTreeNode.DataType.ELEMENT) {
                 typeLabel.setText("E");
                 typeLabel.setStyle("-fx-text-fill: #00AA00;");
+                deleteButton.setVisible(true);
             } else if (item.getType() == FeatureTreeNode.DataType.CONTAINER) {
                 typeLabel.setText("D");
                 typeLabel.setStyle("-fx-text-fill: #0000FF;");
+                deleteButton.setVisible(false);
             } else if (item.getType() == FeatureTreeNode.DataType.GROUP) {
                 typeLabel.setText("G");
                 typeLabel.setStyle("-fx-text-fill: #A0A0A0;");
+                deleteButton.setVisible(true);
             }
             hbox.getChildren().setAll(nameLabel, typeLabel);
 

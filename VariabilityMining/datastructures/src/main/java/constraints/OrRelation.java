@@ -34,7 +34,7 @@ public class OrRelation extends Group {
 			builder.append(current);
 			
 			if(featureIterator.hasNext()) {
-				builder.append(" OR ");
+				builder.append(" ∨ ");
 			}
 		}
 		

@@ -331,6 +331,7 @@ public class TreeViewController {
                 hierarchyFlatButton.setSelected(true);
             }
         });
+        hierarchyFlatButton.setSelected(true);
     }
 
     // Actions

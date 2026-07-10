@@ -212,6 +212,10 @@ public class VariabilityModelGenerator {
 		for(Feature parent: groupMap.keySet()) {
 			List<Group> childGroups = groupMap.get(parent);
 			
+			for(Group group: childGroups) {
+				group.getFeatures().sort((f1, f2) -> f1.getName().compareTo(f2.getName()));
+			}
+			
 			childGroups.sort((g1, g2) -> g1.getFeatures().get(0).getName().compareTo(g2.getFeatures().get(0).getName()));
 			
 			if(childGroups.size() > 1) {

@@ -213,6 +213,11 @@ public class ConstraintsViewController {
 		Constraint constraint = infoController.getCurrentInfoItem().getValue();
 		boolean shouldBeAdded = true;
 		boolean featureInGroup = false;
+		
+		if(addFeature == null) {
+			return;
+		}
+		
 		if(constraint instanceof Group) {
 			Group group = (Group) constraint;
 			
@@ -311,7 +316,7 @@ public class ConstraintsViewController {
 		
 		infoController.hideInfoPane();
 		
-		proceedButton.setText("Go back");
+		proceedButton.setText("Group Constraints");
 		
 		proceedButton.setOnAction(e -> {
 			handleGoBackAction();
@@ -343,6 +348,7 @@ public class ConstraintsViewController {
 	@FXML
 	public void switchToExtractionView(ActionEvent event) {
 		changeTracker.clearStack();
+		infoController.hideInfoPane();
     	Scene scene = ((Node)event.getSource()).getScene();
     	scene.setRoot((Parent)SceneManager.getExtractionScene());
 	}
@@ -374,10 +380,12 @@ public class ConstraintsViewController {
 		
 		constraintTypeComboBox.setPromptText("Select constraint type");
 		
-		ComboBox<Feature> leftFeatureComboBox = new ComboBox<>(FXCollections.observableArrayList(features));
+		List<Feature> selectableFeatures = features.stream().filter(f -> !(f.getName().startsWith("ALT") || f.getName().startsWith("OR"))).toList();
+		
+		ComboBox<Feature> leftFeatureComboBox = new ComboBox<>(FXCollections.observableArrayList(selectableFeatures));
 		leftFeatureComboBox.setPromptText("Select left feature");
 		
-		ComboBox<Feature> rightFeatureComboBox = new ComboBox<>(FXCollections.observableArrayList(features));
+		ComboBox<Feature> rightFeatureComboBox = new ComboBox<>(FXCollections.observableArrayList(selectableFeatures));
 		rightFeatureComboBox.setPromptText("Select right feature");
 		
 		Button addButton = new Button("Add");
@@ -458,7 +466,7 @@ public class ConstraintsViewController {
 		
 		List<Constraint> groups = constraints.stream().filter(c -> c instanceof Group).toList();
 		setUpTreeItems(groups);
-		proceedButton.setText("Proceed");
+		proceedButton.setText("Simple Constraints");
 		
 		proceedButton.setOnAction(e -> {
 			handleProceedAction();
@@ -473,8 +481,6 @@ public class ConstraintsViewController {
 		typeCheckComboBox.getItems().clear();
 		typeCheckComboBox.getItems().addAll("Or Group", "Alternative");
 	}
-
-	
 
 	/*
 	 * Loading all the elements that should be displayed initially in the window and the logic to show the info window
@@ -550,19 +556,13 @@ public class ConstraintsViewController {
 		HBox featureFilterBox = new HBox(featureLabel, spacer, featureCheckComboBox);
 		featureCheckComboBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<Feature>) c -> {
 			
-			ObservableList<Feature> checkedItems = featureCheckComboBox.getCheckModel().getCheckedItems();
-			groupTreeView.getRoot().getChildren().clear();
+			Set<TreeItem<Constraint>> addItems = computeFilteredItems();
 			
-			Set<TreeItem<Constraint>> addItems = new HashSet<>();
-			
-			for(Feature feature: checkedItems) {
-				addItems.addAll(findRelevantItems(feature));	 
-			}
-			
-			groupTreeView.getRoot().getChildren().addAll(addItems);
-			
-			if(featureCheckComboBox.getCheckModel().getCheckedItems().isEmpty()) {
-				groupTreeView.getRoot().getChildren().addAll(unfilteredItems);
+			if(!addItems.isEmpty()) {
+				groupTreeView.getRoot().getChildren().clear();
+				groupTreeView.getRoot().getChildren().addAll(addItems);
+			} else {
+				groupTreeView.getRoot().getChildren().clear();
 			}
 		});
 		
@@ -582,20 +582,15 @@ public class ConstraintsViewController {
 		
 		typeCheckComboBox.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) c -> {
 			
-			ObservableList<String> checkedItems = typeCheckComboBox.getCheckModel().getCheckedItems();
-			groupTreeView.getRoot().getChildren().clear();
+			Set<TreeItem<Constraint>> addItems = computeFilteredItems();
 			
-			Set<TreeItem<Constraint>> addItems = new HashSet<>();
-			
-			for(String type: checkedItems) {
-				addItems.addAll(unfilteredItems.stream().filter(constraint -> constraint.getValue().getType().equals(type)).toList());	 
+			if(!addItems.isEmpty()) {
+				groupTreeView.getRoot().getChildren().clear();
+				groupTreeView.getRoot().getChildren().addAll(addItems);
+			} else {
+				groupTreeView.getRoot().getChildren().clear();
 			}
 			
-			groupTreeView.getRoot().getChildren().addAll(addItems);
-			
-			if(typeCheckComboBox.getCheckModel().getCheckedItems().isEmpty()) {
-				groupTreeView.getRoot().getChildren().addAll(unfilteredItems);
-			}
 		});
 		
 		
@@ -639,6 +634,33 @@ public class ConstraintsViewController {
     	}
     		
     	return relevantItems;
+	}
+	
+	private Set<TreeItem<Constraint>> computeFilteredItems(){
+		
+		ObservableList<Feature> checkedFeatures = featureCheckComboBox.getCheckModel().getCheckedItems();
+		ObservableList<String> checkedTypes = typeCheckComboBox.getCheckModel().getCheckedItems();
+		
+		if(checkedTypes.isEmpty() && checkedFeatures.isEmpty()) {
+			return unfilteredItems;
+		}
+		
+		Set<TreeItem<Constraint>> addItems = new HashSet<>();
+		
+		for(Feature feature: checkedFeatures) {
+			addItems.addAll(findRelevantItems(feature));	 
+		}
+		
+		for(String type: checkedTypes) {
+			if(addItems.isEmpty()) {
+				addItems.addAll(unfilteredItems.stream().filter(constraint -> constraint.getValue().getType().equals(type)).toList());	 
+			} else {
+				addItems = addItems.stream().filter(constraint -> constraint.getValue().getType().equals(type)).collect(Collectors.toSet());	 
+			}
+			
+		}
+			
+		return addItems;
 	}
 
 	/*
