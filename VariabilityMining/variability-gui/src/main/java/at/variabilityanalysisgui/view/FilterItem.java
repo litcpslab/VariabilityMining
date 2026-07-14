@@ -13,6 +13,8 @@ package at.variabilityanalysisgui.view;
 import at.variabilityanalysisgui.controller.Filter.Filter;
 import at.variabilityanalysisgui.controller.Filter.MultipleChoiceFilter;
 import at.variabilityanalysisgui.controller.Filter.SingleChoiceFilter;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
@@ -54,8 +56,13 @@ public class FilterItem extends HBox {
                     }
                 }
             });
+            this.checkBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            	if(oldValue == true && newValue == false) {
+            		checkComboBox.getCheckModel().clearChecks();
+            	}
+            });
+            
             this.getChildren().add(checkComboBox);
-
         } else if (filter instanceof SingleChoiceFilter singleChoiceFilter) {
             ChoiceBox<String> choiceBox = new ChoiceBox<>();
             choiceBox.setMinWidth(100);

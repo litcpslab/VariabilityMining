@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import at.variabilityanalysisgui.changeTracking.*;
 import at.variabilityanalysisgui.visualization.TreeGraph;
 import org.controlsfx.control.CheckComboBox;
-
 import constraints.AlternativeGroup;
 import constraints.Constraint;
 import constraints.Equivalence;
@@ -225,13 +224,15 @@ public class ConstraintsViewController {
 			
 			for(Group g: groups) {
 				if(g != group && g.getFeatures().contains(addFeature)) {
+					ButtonType yesButton = new ButtonType("Yes");
+				    ButtonType noButton = new ButtonType("No");
 					ButtonType buttonKeepConstraints = new ButtonType("Keep Constraints");
-					Alert warningAlert = new Alert(AlertType.WARNING, "The feature you are trying to add is already part of another group. Should it be moved here? (It will be removed from its current group)", ButtonType.YES, buttonKeepConstraints, ButtonType.NO);
+					Alert warningAlert = new Alert(AlertType.WARNING, "The feature you are trying to add is already part of another group. Should it be moved here? (It will be removed from its current group)", yesButton, buttonKeepConstraints, noButton);
 					warningAlert.setHeaderText("Addition Warning");
 					
 					Optional<ButtonType> result = warningAlert.showAndWait();
 					featureInGroup = true;
-				    if(result.isPresent() && result.get() == ButtonType.YES) {
+				    if(result.isPresent() && result.get() == yesButton) {
 				    	g.removeFeature(addFeature);
 						changeTracker.addUndo(new AddConstraintChildSet(addFeature, g, group, new LinkedList<>(), comboBoxIndex));
 
@@ -336,13 +337,11 @@ public class ConstraintsViewController {
 		List<Constraint> constraintsList = new ArrayList<>();
 		constraintsList.addAll(constraints);
 		model.generateModel(currentBase, features, constraintsList);
-		Alert confirmationAlert = new Alert(AlertType.CONFIRMATION, "The model was successfully generated in the file model.uvl!", ButtonType.FINISH);
+
+		Alert confirmationAlert = new Alert(AlertType.CONFIRMATION, "The model was successfully generated in the file model.uvl!", ButtonType.OK);
 		confirmationAlert.setHeaderText("Generation Confirmation");
 		 
 		Optional<ButtonType> result = confirmationAlert.showAndWait();
-	    if(result.isPresent() && result.get() == ButtonType.FINISH) {
-	    	//Platform.exit();
-	    }
 	}
 	
 	@FXML
@@ -399,7 +398,7 @@ public class ConstraintsViewController {
 				Feature left = leftFeatureComboBox.getValue();
 				Feature right = rightFeatureComboBox.getValue();
 				if (left != right) {
-					SimpleConstraint constraint = null;//new SimpleConstraint(left, right, type);
+					SimpleConstraint constraint = null;
 					if (type.equals("Implication")) {
 						constraint = new Implication(left, right);
 					} else if (type.equals("Mutual Exclusion")) {
@@ -409,7 +408,8 @@ public class ConstraintsViewController {
 					}
 
 					if (constraint != null) {
-						if (constraints.add(constraint)) {
+						if (!constraints.contains(constraint)) {
+							constraints.add(constraint);
 							TreeItem<Constraint> addItem = addSimpleConstraintTreeItem(constraint);
 							changeTracker.addUndo(new AddSimpleConstraint(addItem, groupTreeView.getRoot().getChildren().indexOf(addItem)));
 						}
@@ -436,12 +436,13 @@ public class ConstraintsViewController {
 		TreeItem<Constraint> addItem = new TreeItem<Constraint>(constraint);
 		Button button = new Button("X");
 		button.setOnAction(e -> {
-
-			Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + addItem.getValue() + " be removed?", ButtonType.YES, ButtonType.NO);
+			ButtonType yesButton = new ButtonType("Yes");
+		    ButtonType noButton = new ButtonType("No");
+			Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + addItem.getValue() + " be removed?", yesButton, noButton);
 			removeAlert.setHeaderText("Removal Confirmation");
-
+		    
 			Optional<ButtonType> result = removeAlert.showAndWait();
-			if(result.isPresent() && result.get() == ButtonType.YES) {
+			if(result.isPresent() && result.get() == yesButton) {
 				int index = groupTreeView.getRoot().getChildren().indexOf(addItem);
 				groupTreeView.getRoot().getChildren().remove(addItem);
 				constraints.remove(addItem.getValue());
@@ -590,7 +591,6 @@ public class ConstraintsViewController {
 			} else {
 				groupTreeView.getRoot().getChildren().clear();
 			}
-			
 		});
 		
 		
@@ -656,8 +656,7 @@ public class ConstraintsViewController {
 				addItems.addAll(unfilteredItems.stream().filter(constraint -> constraint.getValue().getType().equals(type)).toList());	 
 			} else {
 				addItems = addItems.stream().filter(constraint -> constraint.getValue().getType().equals(type)).collect(Collectors.toSet());	 
-			}
-			
+			}	
 		}
 			
 		return addItems;
@@ -676,8 +675,10 @@ public class ConstraintsViewController {
 			
 			TreeItem<Constraint> constraintItem = new TreeItem<>(constraint);
 			button.setOnAction(e -> {
-
-				Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + constraint + " be removed?", ButtonType.YES, ButtonType.NO);
+				ButtonType yesButton = new ButtonType("Yes");
+			    ButtonType noButton = new ButtonType("No");
+				
+				Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + constraint + " be removed?", yesButton, noButton);
 				removeAlert.setHeaderText("Removal Confirmation");
 				
 				ButtonType buttonKeepConstraints = new ButtonType("Keep constraints");
@@ -687,7 +688,7 @@ public class ConstraintsViewController {
 				}
 				 
 				Optional<ButtonType> result = removeAlert.showAndWait();
-			    if(result.isPresent() && result.get() == ButtonType.YES) {
+			    if(result.isPresent() && result.get() == yesButton) {
 					int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
 					groupTreeView.getRoot().getChildren().remove(constraintItem);
 			    	unfilteredItems.remove(constraintItem);
