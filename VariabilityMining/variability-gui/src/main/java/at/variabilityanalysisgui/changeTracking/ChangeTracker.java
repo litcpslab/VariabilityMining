@@ -14,6 +14,7 @@ package at.variabilityanalysisgui.changeTracking;
 
 import at.variabilityanalysisgui.controller.ConstraintsViewController;
 import at.variabilityanalysisgui.controller.Controller;
+import at.variabilityanalysisgui.controller.FeatureViewController;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import java.util.Stack;
@@ -73,8 +74,8 @@ public class ChangeTracker<T, U> {
     }
 
     public void redrawVisualization(T controller) {
-        if (controller instanceof Controller) {
-            ((Controller) controller).redrawVisualization();
+        if (controller instanceof FeatureViewController) {
+            ((FeatureViewController) controller).redrawVisualization();
         } else {
             ((ConstraintsViewController) controller).updateConstraintModel();
         }

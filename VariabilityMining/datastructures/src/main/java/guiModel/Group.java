@@ -22,19 +22,21 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Group extends Difference {
 	
 	private int id;
-    private List<String> occurrences;
+    private Set<String> occurrences;
     private List<Element> elements;
     private ObservableList<String> previousNames = FXCollections.observableArrayList();
 
     public Group(int id, String name) {
     	this.id = id;
         this.name = new SimpleStringProperty(name);
-        this.occurrences = new ArrayList<>();
+        this.occurrences = new HashSet<>();
         this.elements = new ArrayList<>();
     }
 
@@ -55,7 +57,7 @@ public class Group extends Difference {
 		return id;
 	}
     
-    public List<String> getOccurrences() {
+    public Set<String> getOccurrences() {
         return occurrences;
     }
 
@@ -79,7 +81,7 @@ public class Group extends Difference {
 		this.id = id;
 	}
 
-	public void setOccurrences(List<String> occurrences) {
+	public void setOccurrences(Set<String> occurrences) {
 		this.occurrences = occurrences;
 	}
 

@@ -12,7 +12,7 @@
 
 package at.variabilityanalysisgui.changeTracking;
 
-import at.variabilityanalysisgui.controller.Controller;
+import at.variabilityanalysisgui.controller.FeatureViewController;
 import at.variabilityanalysisgui.controller.TreeViewController;
 import guiModel.Element;
 import guiModel.Group;
@@ -20,7 +20,7 @@ import guiModel.Group;
 import java.util.List;
 import java.util.Map;
 
-public class MoveElement implements ChangeModel<Controller, TreeViewController> {
+public class MoveElement implements ChangeModel<FeatureViewController, TreeViewController> {
     private final Map<Integer, List<Element>> movedElements;
     private final int targetId;
 
@@ -30,7 +30,7 @@ public class MoveElement implements ChangeModel<Controller, TreeViewController> 
     }
 
     @Override
-    public void undo(Controller controller, TreeViewController treeViewController) {
+    public void undo(FeatureViewController controller, TreeViewController treeViewController) {
         Group sourceGroup = controller.findGroupById(targetId);
         for (Map.Entry<Integer, List<Element>> entry : movedElements.entrySet()) {
             Group targetGroup = controller.findGroupById(entry.getKey());
@@ -39,7 +39,7 @@ public class MoveElement implements ChangeModel<Controller, TreeViewController> 
     }
 
     @Override
-    public void redo(Controller controller, TreeViewController treeViewController) {
+    public void redo(FeatureViewController controller, TreeViewController treeViewController) {
         Group targetGroup = controller.findGroupById(targetId);
         for (Map.Entry<Integer, List<Element>> entry : movedElements.entrySet()) {
             Group sourceGroup = controller.findGroupById(entry.getKey());

@@ -36,7 +36,8 @@ import java.util.stream.Collectors;
 
 public class DetailsController {
 
-    Controller controller;
+	Controller mainController;
+    FeatureViewController featureController;
     private final ListView<Element> detailSubElementListView;
     private final ScrollPane detailScrollPane;
     private final HBox detailsNameHBox;
@@ -56,12 +57,13 @@ public class DetailsController {
 
     private TreeItem<FeatureTreeNode> currentDetailItem = null;
 
-    public DetailsController(Controller controller, ListView<Element> detailSubElementListView, ScrollPane detailScrollPane,
+    public DetailsController(Controller mainController, FeatureViewController featureController, ListView<Element> detailSubElementListView, ScrollPane detailScrollPane,
                              HBox detailsNameHBox, Label detailLocationLabel, TextArea detailLocationTextArea,
                              TextField detailGroupNameTextField, Button detailChangeNameButton, Label detailOccurrenceLabel, ListView<String> detailOccurrencesListView,
                              Label detailElementLabel, TextArea detailElementData, Label detailSubElementLabel, Button detailCloseButton, Label detailNamingHistoryLabel,
                              ListView<String> detailNamingHistoryListView, Button detailChangeBackButton, HBox detailNamingHistoryHBox) {
-        this.controller = controller;
+        this.mainController = mainController;
+    	this.featureController = featureController;
         this.detailSubElementListView = detailSubElementListView;
         this.detailScrollPane = detailScrollPane;
         this.detailsNameHBox = detailsNameHBox;
@@ -196,11 +198,11 @@ public class DetailsController {
         if(isValidName(candidateName)) {
             String oldName = group.getName().get();
             group.addPreviousName(oldName);
-            controller.getChangeTracker().addUndo(new RenameGroup(this, group, oldName, candidateName));
+            featureController.getChangeTracker().addUndo(new RenameGroup(this, group, oldName, candidateName));
 			group.getName().setValue(candidateName);
 			currentDetailItem.setValue(null);
 			currentDetailItem.setValue(currentTreeNode);
-            controller.redrawVisualization();
+            mainController.redrawVisualization();
             setDetailGroupNameTextField(candidateName);
 		} else {
 			Alert errorAlert = new Alert(AlertType.ERROR, "Invalid name. Duplicate names are not allowed, as well as names starting with a number or containing whitespaces!", ButtonType.OK);
@@ -219,7 +221,11 @@ public class DetailsController {
 			return false;
 		}
 		
-		return !controller.getOriginalGroups().stream().anyMatch(group -> group.getName().getValue().equals(candidateName));
+		return !mainController.getOriginalGroups().stream().anyMatch(group -> group.getName().getValue().equals(candidateName));
+	}
+    
+    public TreeItem<FeatureTreeNode> getCurrentDetailItem() {
+		return currentDetailItem;
 	}
 
 }

@@ -52,13 +52,16 @@ public class TreeViewController {
 
     ViewMode viewMode = ViewMode.FLAT;
 
-    Controller controller;
+    FeatureViewController featureViewController;
+    
+    Controller mainController;
 
     private List<TreeItem<FeatureTreeNode>> draggedItems = new ArrayList<>();
 
-    public TreeViewController(Controller controller, TreeView<FeatureTreeNode> featureTreeView, HBox hierarchyButtonHBox) {
+    public TreeViewController(Controller mainController, FeatureViewController featureViewController, TreeView<FeatureTreeNode> featureTreeView, HBox hierarchyButtonHBox) {
         this.featureTreeView = featureTreeView;
-        this.controller = controller;
+        this.mainController = mainController;
+        this.featureViewController = featureViewController;
         this.hierarchyButtonHBox = hierarchyButtonHBox;
 
         // Setup TreeView with custom cell factory
@@ -77,18 +80,11 @@ public class TreeViewController {
             }
             if (newValue != null && newValue.getValue() != null) {
                 FeatureTreeNode node = newValue.getValue();
-                controller.showDetailsPane(node.getData(), newValue);
+                featureViewController.showDetailsPane(node.getData(), newValue);
             }
         });
         
         featureTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    		
-        featureTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
-        	if(newScene != null) {
-        		Scene scene = featureTreeView.getScene();
-                featureTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
-        	}
-    	});
     }
 
     public void populateTreeView(List<Group> groups, List<Element> visibleElements) {
@@ -126,7 +122,7 @@ public class TreeViewController {
         int index = rootNode.getChildren().indexOf(groupItem);
         rootNode.getChildren().remove(index);
         Set<FeatureTreeNode> expandedNodes = getExpandedElement(groupItem);
-        groupItem = populateGroup(group, controller.getFilteredElements(), index);
+        groupItem = populateGroup(group, featureViewController.getFilteredElements(), index);
         expandNodes(expandedNodes, groupItem);
         groupItem.setExpanded(true);
     }
@@ -239,7 +235,7 @@ public class TreeViewController {
 
         List<Element> elements = ((Group) groupNodeData.getData()).getElements();
         for (Element element : elements) {
-            String[] pathParts = element.getLocation().split(controller.seperatorMap.get(controller.getArtifactType()));
+            String[] pathParts = element.getLocation().split(mainController.seperatorMap.get(mainController.getArtifactType()));
             ObservableList<TreeItem<FeatureTreeNode>> children = groupItem.getChildren();
             for (int i = 0; i < pathParts.length; i++) {
                 // Check if the path part already exists in the children
@@ -255,9 +251,9 @@ public class TreeViewController {
                 if (existingChild.isPresent()) {
                     children = existingChild.get().getChildren();
                 } else {
-                    String name = String.join(controller.seperatorMap.get(controller.getArtifactType()), Arrays.asList(pathParts).subList(0, i + 1));
+                    String name = String.join(mainController.seperatorMap.get(mainController.getArtifactType()), Arrays.asList(pathParts).subList(0, i + 1));
                     if(viewMode == ViewMode.JAVAFILE) name = name.split(":")[0];
-                    DifferenceDirectory dir = new DifferenceDirectory(name, controller.seperatorMap.get(controller.getArtifactType()));
+                    DifferenceDirectory dir = new DifferenceDirectory(name, mainController.seperatorMap.get(mainController.getArtifactType()));
                     TreeItem<FeatureTreeNode> conTreeItem = new TreeItem<>(new FeatureTreeNode(dir, true));
                     children.add(conTreeItem);
                     children = conTreeItem.getChildren();
@@ -290,13 +286,13 @@ public class TreeViewController {
                     }
                 });
                 this.viewMode = ViewMode.TREE;
-                populateTreeView(controller.getFilteredGroups(), null);
+                populateTreeView(featureViewController.getFilteredGroups(), null);
             } else {
                 hierarchyTreeButton.setSelected(true);
             }
         });
 
-        if (controller.getArtifactType() == ExtractionType.JAVA) {
+        if (mainController.getArtifactType() == ExtractionType.JAVA) {
             ToggleButton hierarchyJavaFileButton = new ToggleButton("File");
             hierarchyButtonHBox.getChildren().add(hierarchyJavaFileButton);
             hierarchyJavaFileButton.setOnAction(event -> {
@@ -307,12 +303,12 @@ public class TreeViewController {
                         }
                     });
                     this.viewMode = ViewMode.JAVAFILE;
-                    populateTreeView(controller.getFilteredGroups(), null);
+                    populateTreeView(featureViewController.getFilteredGroups(), null);
                 } else {
                     hierarchyJavaFileButton.setSelected(true);
                 }
             });
-        } else if (controller.getArtifactType() == ExtractionType.IEC61499) {
+        } else if (mainController.getArtifactType() == ExtractionType.IEC61499) {
             // IEC61499 specific hierarchy button here
         }
 
@@ -326,7 +322,7 @@ public class TreeViewController {
                     }
                 });
                 this.viewMode = ViewMode.FLAT;
-                populateTreeView(controller.getFilteredGroups(), null);
+                populateTreeView(featureViewController.getFilteredGroups(), null);
             } else {
                 hierarchyFlatButton.setSelected(true);
             }
@@ -353,15 +349,15 @@ public class TreeViewController {
         if (result.isPresent() && result.get() == yesButton) {
             Difference data = item.getValue().getData();
             if (data instanceof Element element) {
-                Group sourceGroup = findGroupContainingElement(controller.getOriginalGroups(), element);
-                controller.getChangeTracker().addUndo(new DeleteElement(element, sourceGroup.getElements().indexOf(element), sourceGroup.getId()));
+                Group sourceGroup = findGroupContainingElement(mainController.getOriginalGroups(), element);
+                featureViewController.getChangeTracker().addUndo(new DeleteElement(element, sourceGroup.getElements().indexOf(element), sourceGroup.getId()));
             } else if (data instanceof Group group) {
-                controller.getChangeTracker().addUndo(new DeleteGroup(group, controller.getOriginalGroups().indexOf(group)));
+                featureViewController.getChangeTracker().addUndo(new DeleteGroup(group, mainController.getOriginalGroups().indexOf(group)));
             }
             for(TreeItem<FeatureTreeNode> child: item.getChildren()) {
             	if(child.getValue().getData() instanceof Element) {
 	                Element element = (Element) child.getValue().getData();
-	                Group group = findGroupContainingElement(controller.getOriginalGroups(), element);
+	                Group group = findGroupContainingElement(mainController.getOriginalGroups(), element);
 	                if (group != null) {
 	                    group.getElements().remove(element);
 	                }
@@ -379,7 +375,7 @@ public class TreeViewController {
     private void removeElementAndRefreshGroup(TreeItem<FeatureTreeNode> item) {
         if (item.getValue().getType() == FeatureTreeNode.DataType.ELEMENT) {
             Element element = (Element) item.getValue().getData();
-            Group group = findGroupContainingElement(controller.getOriginalGroups(), element);
+            Group group = findGroupContainingElement(mainController.getOriginalGroups(), element);
             if (group != null) {
                 group.getElements().remove(element);
                 TreeItem<FeatureTreeNode> groupItem = findTreeItemByPath(rootNode, group.getName().get());
@@ -396,8 +392,8 @@ public class TreeViewController {
             if (parent != null) {
                 parent.getChildren().remove(item);
                 if(item.getValue().getData() instanceof Group) {
-                	controller.getOriginalGroups().remove(item.getValue().getData());
-                    controller.redrawVisualization();
+                	mainController.getOriginalGroups().remove(item.getValue().getData());
+                    mainController.redrawVisualization();
                 }
                 System.out.println("Removed item: " + item.getValue().getDisplayName());
                 removeEmptyContainers(parent);
@@ -461,7 +457,7 @@ public class TreeViewController {
                 Element element = (Element) elementItem.getValue().getData();
                 Group targetGroup = (Group) targetGroupItem.getValue().getData();
 
-                sourceGroup = Controller.findGroupContainingElement(controller.getOriginalGroups(), element);
+                sourceGroup = Controller.findGroupContainingElement(mainController.getOriginalGroups(), element);
 
                 movedElements.computeIfAbsent(sourceGroup.getId(), k -> new ArrayList<>()).add(element);
 
@@ -517,7 +513,7 @@ public class TreeViewController {
             }
 
         }
-        controller.getChangeTracker().addUndo(new MoveElement(((Group) targetGroupItem.getValue().getData()).getId(), movedElements));
+        featureViewController.getChangeTracker().addUndo(new MoveElement(((Group) targetGroupItem.getValue().getData()).getId(), movedElements));
         for (TreeItem<FeatureTreeNode> item: deletedItems) {
             handleDeleteAction(item);
         }

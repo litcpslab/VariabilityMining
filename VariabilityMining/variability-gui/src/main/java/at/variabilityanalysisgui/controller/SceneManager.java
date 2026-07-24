@@ -23,23 +23,24 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 
 public class SceneManager {
-	
+
 	private static FXMLLoader extractionLoader;
-	
+
 	private static FXMLLoader constraintsLoader;
-	
+
 	private static Parent extractionScene;
-	
+
 	private static Parent constraintsScene;
-	
+
 	static {
-		extractionLoader = new FXMLLoader(SceneManager.class.getResource("/MainViewExtended.fxml"));
+		extractionLoader = new FXMLLoader(SceneManager.class.getResource("/MainViewNew.fxml"));
 		constraintsLoader = new FXMLLoader(SceneManager.class.getResource("/ConstraintsView.fxml"));		
 		try {
 			extractionScene = extractionLoader.load();
 			constraintsScene = constraintsLoader.load();
 
 			Controller controller = extractionLoader.getController();
+			FeatureViewController featureViewController = controller.getFeatureViewController();
 			ConstraintsViewController constraintsController = constraintsLoader.getController();
 
 			KeyCombination undoCombination = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
@@ -49,10 +50,10 @@ public class SceneManager {
 				if (newScene != null) {
 					newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 						if (undoCombination.match(event)) {
-							controller.undo();
+							featureViewController.undo();
 							event.consume();
 						} else if (redoCombination.match(event)) {
-							controller.redo();
+							featureViewController.redo();
 							event.consume();
 						}
 					});
@@ -77,7 +78,7 @@ public class SceneManager {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static Parent getConstraintScene() {
 		return constraintsScene;
 	}
@@ -85,11 +86,11 @@ public class SceneManager {
 	public static Parent getExtractionScene() {
 		return extractionScene;
 	}
-	
+
 	public static FXMLLoader getConstraintsLoader() {
 		return constraintsLoader;
 	}
-	
+
 	public static FXMLLoader getExtractionLoader() {
 		return extractionLoader;
 	}

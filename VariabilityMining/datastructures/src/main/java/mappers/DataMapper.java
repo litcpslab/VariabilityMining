@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
@@ -32,6 +33,7 @@ import javafx.beans.property.StringProperty;
 import varflixModel.IVariability;
 import varflixModel.IVariabilityGroup;
 import varflixModel.IVariant;
+import varflixModel.IEC61499.IEC61499Variability;
 import varflixModel.IEC61499.JSON1499VariabilityGroup;
 
 public class DataMapper {
@@ -128,12 +130,14 @@ public class DataMapper {
 		mapper.getConfiguration().setFieldAccessLevel(AccessLevel.PRIVATE).setFieldMatchingEnabled(true);
 	}
 	
-	public <V extends IVariant, E extends IVariability> List<IVariabilityGroup<V, E>> mapGUIGroupTo1499VariabilityGroup(List<Group> groups, List<V> variants, List<E> elements){
+	public <V extends IVariant, E extends IVariability> List<IVariabilityGroup<V, E>> mapGUIGroupTo1499VariabilityGroup(List<Group> groups, List<V> variants, List<E> elements, Function<Element, E> elementFactory, Function<String, V> variantFactory){
 		List<IVariabilityGroup<V, E>> mappedGroups = new ArrayList<>();
+		
+		Set<V> usedVariants = new HashSet<>();
 		
 		configureMapper();
 		
-		Converter<List<Element>, List<E>> variabilityConverter = new Converter<List<Element>, List<E>>() {
+		/*Converter<List<Element>, List<E>> variabilityConverter = new Converter<List<Element>, List<E>>() {
 
 			@Override
 			public List<E> convert(MappingContext<List<Element>, List<E>> context) {
@@ -148,17 +152,42 @@ public class DataMapper {
 				
 				return mappedElements;
 			}
+		};*/
+		Converter<List<Element>, List<E>> variabilityConverter = new Converter<List<Element>, List<E>>() {
+
+			@Override
+			public List<E> convert(MappingContext<List<Element>, List<E>> context) {
+				List<Element> source = context.getSource();
+				
+				List<E> mappedElements = new ArrayList<>();
+				
+				for(Element element: source) {
+					E destination = elements.stream().filter(v -> v.getId() == element.getId()).findFirst().orElseGet(() -> {
+						E variability = elementFactory.apply(element);
+						elements.add(variability);
+						return variability;
+					});
+					mappedElements.add(destination);
+				}
+				
+				return mappedElements;
+			}
 		};
 		
-		Converter<List<String>, Set<V>> occurrenceMapper = new Converter<List<String>, Set<V>>() {
+		Converter<Set<String>, Set<V>> occurrenceMapper = new Converter<Set<String>, Set<V>>() {
 			
 			@Override
-			public Set<V> convert(MappingContext<List<String>, Set<V>> context) {
+			public Set<V> convert(MappingContext<Set<String>, Set<V>> context) {
 				Set<V> destination = new HashSet<>();
 				
 				for(String variant: context.getSource()) {
-					V dest = variants.stream().filter(v -> v.getName().equals(variant)).findFirst().get();
+					V dest = variants.stream().filter(v -> v.getName().equals(variant)).findFirst().orElseGet(() -> {
+						V newVariant = variantFactory.apply(variant);
+						variants.add(newVariant);
+						return newVariant;
+					});
 					destination.add(dest);
+					usedVariants.add(dest);
 				}
 				
 				return destination;
@@ -191,6 +220,8 @@ public class DataMapper {
 		for(Group group: groups) {
 			mappedGroups.add(mapper.map(group, token.getType()));
 		}
+		
+		variants.retainAll(usedVariants);
 		
 		return mappedGroups;
 	}

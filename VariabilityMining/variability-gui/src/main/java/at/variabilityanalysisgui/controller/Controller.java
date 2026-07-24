@@ -19,17 +19,13 @@
 package at.variabilityanalysisgui.controller;
 
 
-import at.variabilityanalysisgui.changeTracking.ChangeTracker;
 import at.variabilityanalysisgui.visualization.TreeGraph;
 import constraints.Constraint;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,16 +33,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-import at.variabilityanalysisgui.parser.InputParser;
-import at.variabilityanalysisgui.view.FeatureTreeNode;
-import guiModel.Difference;
 import guiModel.Element;
 import guiModel.ExtractionType;
 import guiModel.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Window;
 import variabilityMining.Feature;
 import variabilityMining.VarflixAPI;
 
@@ -56,71 +46,39 @@ public class Controller {
     public static final String OCCURRENCE_HEADER_JAVA = "Occurrence:";
     public static final String OCCURRENCE_HEADER_IEC = "Variants:";
     public static final String ELEMENTS_HEADER = "Elements:";
-    private TreeViewController treeViewController;
-    private FilterController filterController;
-    private DetailsController detailsController;
+   
+    @FXML private FeatureViewController featureViewController;
+    @FXML private ConstraintsViewController constraintsViewController;
 
-    //FilterController
-    @FXML private TextField searchTextField;
-    @FXML private Button filterButton;
-
-    // DetailsController
     @FXML private ScrollPane visualizationWindow;
-    @FXML private ListView<guiModel.Element> detailSubElementListView;
-    @FXML private ScrollPane detailScrollPane;
-    @FXML private HBox detailsNameHBox;
-    @FXML private Label detailLocationLabel;
-    @FXML private TextArea detailLocationTextArea;
-    @FXML private TextField detailGroupNameTextField;
-    @FXML private Button detailChangeNameButton;
-    @FXML private Label detailOccurrenceLabel;
-    @FXML private ListView<String> detailOccurrencesListView;
-    @FXML private Label detailElementLabel;
-    @FXML private TextArea detailElementData;
-    @FXML private Label detailSubElementLabel;
-    @FXML private Button detailCloseButton;
-    @FXML private Label detailNamingHistoryLabel;
-    @FXML private ListView<String> detailNamingHistoryListView;
-    @FXML private Button detailChangeBackButton;
+    @FXML private TabPane varflixTabPane;
+    @FXML private Tab constraintsTab;
 
-    //TreeViewController
-    @FXML public HBox hierarchyButtonHBox;
-    @FXML private TreeView<FeatureTreeNode> featureTreeView;
-    @FXML private HBox detailNamingHistoryHBox;
-
-    @FXML private Button undoButton;
-    @FXML private Button redoButton;
-
-    private final InputParser parser = new InputParser();
     private List<Group> originalGroups;
     private ExtractionType artifactType = ExtractionType.UNKNOWN;
     private VarflixAPI model = new VarflixAPI();
 
     public Map<ExtractionType, String> seperatorMap = Map.of(ExtractionType.JAVA, "/", ExtractionType.IEC61499, ";");
 
-    private ChangeTracker<Controller, TreeViewController> changeTracker;
-
     @FXML
     public void initialize() {
-        this.treeViewController = new TreeViewController(this, featureTreeView, hierarchyButtonHBox);
-        this.filterController = new FilterController(this, searchTextField, filterButton);
-        this.detailsController = new DetailsController(this, detailSubElementListView, detailScrollPane, detailsNameHBox,
-                detailLocationLabel, detailLocationTextArea, detailGroupNameTextField, detailChangeNameButton,
-                detailOccurrenceLabel, detailOccurrencesListView, detailElementLabel, detailElementData,
-                detailSubElementLabel, detailCloseButton, detailNamingHistoryLabel, detailNamingHistoryListView,
-                detailChangeBackButton, detailNamingHistoryHBox);
-
         originalGroups = model.computeInitialGroups();
         artifactType = ExtractionType.IEC61499;		//TODO Change dynamically based on artifacts used
-        treeViewController.initializeHierarchyButtons();
-        treeViewController.populateTreeView(filterController.getFilteredGroups(), null); // Populate with parsed data
-        detailsController.hideDetailsPane();
-        filterController.setupFilterListener();
-        changeTracker = new ChangeTracker<>(this, treeViewController);
-        undoButton.disableProperty().bind(changeTracker.canUndoProperty().not());
-        redoButton.disableProperty().bind(changeTracker.canRedoProperty().not());       
+        featureViewController.setMainController(this);
+        //constraintsViewController.setMainController(this);
+        featureViewController.init();
+        constraintsViewController.init();
+        constraintsViewController.setVisualizationWindow(visualizationWindow);
+        
+        constraintsTab.setOnSelectionChanged(event -> {
+        	if(constraintsTab.isSelected()) {
+        		constraintsViewController.setModel(model);
+        	} else {
+        		constraintsViewController.resetConstraintsViewButtons();
+        	}
+        });
+        
         redrawVisualization();
-
     }
     
     public void redrawVisualization(){
@@ -136,31 +94,16 @@ public class Controller {
         visualizationWindow.setFitToHeight(true);
     }
 
-    private void loadFile(File selectedFile) {
-		if (selectedFile != null) {
-            try {
-                originalGroups = parser.parse(selectedFile.getAbsolutePath());
-                artifactType = parser.getType();
-                treeViewController.populateTreeView(filterController.getFilteredGroups(), null); // Populate with parsed data
-                detailsController.hideDetailsPane();
-                filterController.setupFilterListener();
-            } catch (IOException e) {
-                showErrorDialog("Error Parsing File", "Could not read or parse the file:\n" + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-	}
-
-
     @FXML
     private void handleLoadAction() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Difference Report File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
         fileChooser.setInitialDirectory(new File("./"));
-        File selectedFile = fileChooser.showOpenDialog(getWindow());
+        File selectedFile = fileChooser.showOpenDialog(featureViewController.getWindow());
 
-        loadFile(selectedFile);
+        featureViewController.loadFile(selectedFile);
+        redrawVisualization();
     }
 
     @FXML
@@ -170,7 +113,7 @@ public class Controller {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
         fileChooser.setInitialFileName("saved_differences.txt");
         fileChooser.setInitialDirectory(new File("./"));
-        File file = fileChooser.showSaveDialog(getWindow());
+        File file = fileChooser.showSaveDialog(featureViewController.getWindow());
 
         if (file == null) {
             System.out.println("Saving cancelled by user.");
@@ -189,7 +132,7 @@ public class Controller {
 
                 // Occurrences
                 if (group.getOccurrences() != null && !group.getOccurrences().isEmpty()) {
-                    if (group.getElements().size() > 1 && this.parser.getType() == ExtractionType.JAVA) {
+                    if (group.getElements().size() > 1 && this.artifactType == ExtractionType.JAVA) {
                         writer.write(OCCURRENCE_HEADER_JAVA);
                     } else {
                         writer.write(OCCURRENCE_HEADER_IEC);
@@ -222,7 +165,7 @@ public class Controller {
 
 
         } catch (IOException e) {
-            showErrorDialog("Error Saving File", "Could not save the file:\n" + e.getMessage());
+            featureViewController.showErrorDialog("Error Saving File", "Could not save the file:\n" + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -230,26 +173,7 @@ public class Controller {
     @FXML
     private void handleExit() {
         Platform.exit();
-    }
-
-    // Main window
-    private Window getWindow() {
-        Node node = treeViewController.getFeatureTreeView().getScene().getRoot();
-        if (node != null) {
-            return node.getScene().getWindow();
-        }
-        return null;
-    }
-
-    // Error dialogs
-    private void showErrorDialog(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.initOwner(getWindow());
-        alert.showAndWait();
-    }
+    }   
 
     public static Group findGroupContainingElement(List<Group> groups, Element element) {
         if (groups == null) return null;
@@ -262,7 +186,7 @@ public class Controller {
     }
 
     public ExtractionType getParserType() {
-        return parser.getType();
+        return artifactType;
     }
     
     public void setOriginalGroups(List<Group> groups) {
@@ -273,27 +197,15 @@ public class Controller {
         return originalGroups;
     }
 
-    public void populateTreeView(List<Group> groups, List<Element> elements) {
-        treeViewController.populateTreeView(groups, elements);
-    }
-
-    public List<Group> getFilteredGroups() {
-        return filterController.getFilteredGroups();
-    }
-
-    public List<Element> getFilteredElements() {
-        return filterController.getFilteredElements();
-    }
-
-    public void showDetailsPane(Difference data, TreeItem<FeatureTreeNode> newValue) {
-        detailsController.showDetailsPane(data, newValue);
-    }
-    
     public ExtractionType getArtifactType() {
 		return artifactType;
 	}
     
-    public void changeScene(ActionEvent event) throws IOException {    	
+    public void setArtifactType(ExtractionType artifactType) {
+		this.artifactType = artifactType;
+	}
+    
+   /* public void changeScene(ActionEvent event) throws IOException {    	
     	model.computePCM(originalGroups.stream().filter(group -> !group.getElements().isEmpty()).toList());
 
     	ConstraintsViewController constraintController = SceneManager.getConstraintsLoader().getController();
@@ -301,7 +213,7 @@ public class Controller {
     	
     	Scene scene = ((Node)event.getSource()).getScene();
     	scene.setRoot((Parent)SceneManager.getConstraintScene());
-    }
+    }*/
 
     public Group findGroupById(int groupId) {
         return getOriginalGroups().stream()
@@ -309,19 +221,8 @@ public class Controller {
                 .findFirst()
                 .orElse(null);
     }
-
-    @FXML
-    public void undo() {
-        changeTracker.undo();
-    }
-
-    @FXML
-    public void redo() {
-        changeTracker.redo();
-    }
-
-    public ChangeTracker<Controller, TreeViewController> getChangeTracker() {
-        return changeTracker;
-    }
-
+    
+    public FeatureViewController getFeatureViewController() {
+		return featureViewController;
+	}
 }

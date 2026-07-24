@@ -17,7 +17,10 @@
 package at.variabilityanalysisgui;
 
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
@@ -31,12 +34,26 @@ public class MainApp extends Application {
 	
     @Override
     public void start(Stage primaryStage) throws IOException {
-        URL fxmlLocation = getClass().getResource("/MainViewExtended.fxml");
+        URL fxmlLocation = getClass().getResource("/MainViewNew.fxml");
         if (fxmlLocation == null) {
             System.err.println("Cannot find FXML file.");
             return;
         }
-        Scene scene = new Scene(SceneManager.getExtractionScene(), 900, 700);
+        
+        /*TabPane tabPane = new TabPane();
+        
+        Tab tab1 = new Tab("Feature View", SceneManager.getExtractionScene());
+        Tab tab2 = new Tab("Constraints View", SceneManager.getConstraintScene());
+        
+        tab1.setClosable(false);
+        tab2.setClosable(false);
+        
+        tabPane.getTabs().addAll(tab1, tab2);*/
+        FXMLLoader loader = new FXMLLoader(SceneManager.class.getResource("/MainViewNew.fxml"));
+        
+        Scene scene = new Scene(loader.load(), 900, 700);
+        
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         
         this.primaryStage = primaryStage;
         this.primaryStage.setTitle("Varflix");

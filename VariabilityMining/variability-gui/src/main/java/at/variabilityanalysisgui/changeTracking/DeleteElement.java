@@ -13,11 +13,12 @@
 package at.variabilityanalysisgui.changeTracking;
 
 import at.variabilityanalysisgui.controller.Controller;
+import at.variabilityanalysisgui.controller.FeatureViewController;
 import at.variabilityanalysisgui.controller.TreeViewController;
 import guiModel.Element;
 import guiModel.Group;
 
-public class DeleteElement implements ChangeModel<Controller, TreeViewController> {
+public class DeleteElement implements ChangeModel<FeatureViewController, TreeViewController> {
     private final Element element;
     private final int elemIndex;
     private final int groupId;
@@ -29,14 +30,14 @@ public class DeleteElement implements ChangeModel<Controller, TreeViewController
     }
 
     @Override
-    public void undo(Controller controller, TreeViewController treeViewController) {
+    public void undo(FeatureViewController controller, TreeViewController treeViewController) {
         Group group = controller.findGroupById(groupId);
         group.addElementAt(element, elemIndex);
         treeViewController.refreshGroup(group);
     }
 
     @Override
-    public void redo(Controller controller, TreeViewController treeViewController) {
+    public void redo(FeatureViewController controller, TreeViewController treeViewController) {
         Group group = controller.findGroupById(groupId);
         group.getElements().remove(element);
         treeViewController.refreshGroup(group);

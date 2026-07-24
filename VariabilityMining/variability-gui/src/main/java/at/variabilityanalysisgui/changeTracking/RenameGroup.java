@@ -14,11 +14,14 @@ package at.variabilityanalysisgui.changeTracking;
 
 import at.variabilityanalysisgui.controller.Controller;
 import at.variabilityanalysisgui.controller.DetailsController;
+import at.variabilityanalysisgui.controller.FeatureViewController;
 import at.variabilityanalysisgui.controller.TreeViewController;
+import at.variabilityanalysisgui.view.FeatureTreeNode;
 import guiModel.Group;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.TreeItem;
 
-public class RenameGroup implements ChangeModel<Controller, TreeViewController> {
+public class RenameGroup implements ChangeModel<FeatureViewController, TreeViewController> {
     private final Group group;
     private final String oldName;
     private final String newName;
@@ -32,17 +35,25 @@ public class RenameGroup implements ChangeModel<Controller, TreeViewController> 
     }
 
     @Override
-    public void undo(Controller controller, TreeViewController treeViewController) {
+    public void undo(FeatureViewController controller, TreeViewController treeViewController) {
         group.setName(new SimpleStringProperty(oldName));
-        treeViewController.populateTreeView(controller.getOriginalGroups(), null);
+        
+        TreeItem<FeatureTreeNode> currentDetailItem = detailsController.getCurrentDetailItem();
+        FeatureTreeNode currentTreeNode = currentDetailItem.getValue();
+        currentDetailItem.setValue(null);
+        currentDetailItem.setValue(currentTreeNode);
         detailsController.setDetailGroupNameTextField(oldName);
         group.removePreviousName(oldName);
     }
 
     @Override
-    public void redo(Controller controller, TreeViewController treeViewController) {
+    public void redo(FeatureViewController controller, TreeViewController treeViewController) {
         group.setName(new SimpleStringProperty(newName));
-        treeViewController.populateTreeView(controller.getOriginalGroups(), null);
+               
+        TreeItem<FeatureTreeNode> currentDetailItem = detailsController.getCurrentDetailItem();
+        FeatureTreeNode currentTreeNode = currentDetailItem.getValue();
+        currentDetailItem.setValue(null);
+        currentDetailItem.setValue(currentTreeNode);
         detailsController.setDetailGroupNameTextField(newName);
         group.addPreviousName(oldName);
     }

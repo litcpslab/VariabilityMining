@@ -22,7 +22,6 @@ import guiModel.Group;
 import iec61499Mining.DeltaModelGenerator;
 import iec61499Mining.IEC61499VariabilityExtractor;
 import mappers.DataMapper;
-import mappers.DataMapper1499;
 import varflixModel.IVariabilityGroup;
 import varflixModel.IEC61499.IEC61499Variability;
 import varflixModel.IEC61499.IEC61499Variant;
@@ -53,7 +52,7 @@ public class VarflixAPI {
 	
 	public void computePCM(List<Group> editedGroups) {
 		
-		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> updatedGroups = mapper.mapGUIGroupTo1499VariabilityGroup(editedGroups, extractor.getVariants(), extractor.getElements());	
+		List<IVariabilityGroup<IEC61499Variant, IEC61499Variability>> updatedGroups = mapper.mapGUIGroupTo1499VariabilityGroup(editedGroups, extractor.getVariants(), extractor.getElements(), ((element) -> new IEC61499Variability(element.getId())), ((variant) -> new IEC61499Variant(variant)));	
 		
 		DeltaModelGenerator.generateDeltas(updatedGroups.stream().map(e -> (JSON1499VariabilityGroup) e).toList(), "output/deltas/");
 		

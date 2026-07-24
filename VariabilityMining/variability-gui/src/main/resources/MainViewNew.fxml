@@ -26,10 +26,10 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -92,46 +92,20 @@
         <items>
           <AnchorPane minHeight="10.0" minWidth="10.0" prefHeight="160.0" prefWidth="400.0">
                <children>
-                      <VBox fx:id="featureWindow" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <children>
-                              <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10" style="-fx-padding: 10;">
-                                  <Button fx:id="filterButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Filter" HBox.hgrow="NEVER">
-                                      <tooltip>
-                                          <Tooltip maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Filter Options (Not Implemented Yet)" />
-                                      </tooltip>
-                                  </Button>
-                                  <TextField fx:id="searchTextField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="Search..." HBox.hgrow="ALWAYS" />
-                              </HBox>
-                              <TreeView fx:id="featureTreeView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="359.0" style="-fx-padding: 5;" VBox.vgrow="ALWAYS" />
-                              <HBox alignment="CENTER_LEFT" maxHeight="20.0" prefHeight="20.0" style="-fx-padding: 10;">
-                                  <padding>
-                                      <Insets left="10.0" />
-                                  </padding>
-                                  <children>
-                                      <HBox fx:id="hierarchyButtonHBox" maxHeight="20.0" prefHeight="20.0" />
-                                      <HBox alignment="CENTER_RIGHT" maxHeight="20.0" prefHeight="20.0">
-                                          <children>
-                                              <Button fx:id="constraintsViewButton" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#changeScene" text="Constraints View" />
-                                          </children>
-                                      </HBox>
-                                      <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
-                                          <children>
-                                              <Button fx:id="undoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#undo" text="Undo">
-                                                  <HBox.margin>
-                                                      <Insets left="5.0" />
-                                                  </HBox.margin>
-                                              </Button>
-                                              <Button fx:id="redoButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#redo" text="Redo">
-                                                  <HBox.margin>
-                                                      <Insets left="5.0" />
-                                                  </HBox.margin>
-                                              </Button>
-                                          </children>
-                                      </HBox>
-                                  </children>
-                              </HBox>
-                          </children>
-                      </VBox>
+                  <TabPane fx:id="varflixTabPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <tabs>
+                      <Tab closable="false" text="Feature View">
+                      	<content>
+                      		<fx:include fx:id="featureView" source="FeatureViewTab.fxml" />
+                      	</content>
+                      </Tab>
+                      <Tab fx:id="constraintsTab" closable="false" text="Constraints View">
+                      	<content>
+                      		<fx:include fx:id="constraintsView" source="ConstraintsViewTab.fxml" />
+                      	</content>
+                      </Tab>
+                    </tabs>
+                  </TabPane>
                </children>
             </AnchorPane>
           <AnchorPane minHeight="10.0" minWidth="10.0" prefHeight="160.0" prefWidth="400.0">

@@ -58,9 +58,6 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
         });
 
         setupDragAndDrop();
-        
-       
-        
     }
 
     @Override
@@ -80,7 +77,7 @@ public class FeatureTreeCell extends TreeCell<FeatureTreeNode> {
                 typeLabel.setStyle("-fx-text-fill: #0000FF;");
                 deleteButton.setVisible(false);
             } else if (item.getType() == FeatureTreeNode.DataType.GROUP) {
-                typeLabel.setText("G");
+                typeLabel.setText("F");
                 typeLabel.setStyle("-fx-text-fill: #A0A0A0;");
                 deleteButton.setVisible(true);
             }
