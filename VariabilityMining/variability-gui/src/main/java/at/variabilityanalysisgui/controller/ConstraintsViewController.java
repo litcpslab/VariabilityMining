@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import at.variabilityanalysisgui.changeTracking.*;
+import at.variabilityanalysisgui.view.FeatureTreeNode;
 import at.variabilityanalysisgui.visualization.TreeGraph;
 import org.controlsfx.control.CheckComboBox;
 
@@ -50,6 +51,7 @@ import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -153,6 +155,8 @@ public class ConstraintsViewController {
     	    }
     	});
     	
+    	groupTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    	
     	KeyCombination undoCombination = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
 		KeyCombination redoCombination = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
 		
@@ -165,6 +169,13 @@ public class ConstraintsViewController {
 					} else if (redoCombination.match(event)) {
 						redo();
 						event.consume();
+					} else if(KeyCode.DELETE.equals(event.getCode())) {
+						List<TreeItem<Constraint>> selectedItems = 
+								new ArrayList<>(groupTreeView.getSelectionModel().getSelectedItems().stream().filter(Objects::nonNull).collect(Collectors.toList()));
+						
+						for(TreeItem<Constraint> item: selectedItems) {
+							deleteConstraintItem(item.getValue(), item);
+						}
 					}
 				});
 			}
@@ -449,7 +460,8 @@ public class ConstraintsViewController {
 	public TreeItem<Constraint> addSimpleConstraintTreeItem(Constraint constraint) {
 		TreeItem<Constraint> addItem = new TreeItem<Constraint>(constraint);
 		Button button = new Button("X");
-		button.setOnAction(e -> {
+		button.setOnAction(e -> deleteConstraintItem(constraint, addItem));
+		/*{
 			ButtonType yesButton = new ButtonType("Yes");
 			ButtonType noButton = new ButtonType("No");
 			Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + addItem.getValue() + " be removed?", yesButton, noButton);
@@ -463,7 +475,7 @@ public class ConstraintsViewController {
 				unfilteredItems.remove(addItem);
 				changeTracker.addUndo(new DeleteConstraint(addItem, index, false));
 			}
-		});
+		});*/
 		addItem.setGraphic(button);
 
 		groupTreeView.getRoot().getChildren().add(addItem);
@@ -496,6 +508,54 @@ public class ConstraintsViewController {
 		typeCheckComboBox.getItems().clear();
 		typeCheckComboBox.getItems().addAll("Or Group", "Alternative");
 	}
+	
+	public void deleteConstraintItem(Constraint constraint, TreeItem<Constraint> constraintItem) {
+		if(constraint instanceof SimpleConstraint) {
+			ButtonType yesButton = new ButtonType("Yes");
+			ButtonType noButton = new ButtonType("No");
+			Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + constraintItem.getValue() + " be removed?", yesButton, noButton);
+			removeAlert.setHeaderText("Removal Confirmation");
+
+			Optional<ButtonType> result = removeAlert.showAndWait();
+			if(result.isPresent() && result.get() == yesButton) {
+				int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
+				groupTreeView.getRoot().getChildren().remove(constraintItem);
+				constraints.remove(constraintItem.getValue());
+				unfilteredItems.remove(constraintItem);
+				changeTracker.addUndo(new DeleteConstraint(constraintItem, index, false));
+			}
+		} else {
+			ButtonType yesButton = new ButtonType("Yes");
+			ButtonType noButton = new ButtonType("No");
+			Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + constraint + " be removed?", yesButton, noButton);
+			removeAlert.setHeaderText("Removal Confirmation");
+			
+			ButtonType buttonKeepConstraints = new ButtonType("Keep constraints");
+			
+			if(constraint instanceof Group) {
+				removeAlert.getButtonTypes().add(buttonKeepConstraints);
+			}
+			 
+			Optional<ButtonType> result = removeAlert.showAndWait();
+		    if(result.isPresent() && result.get() == yesButton) {
+				int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
+				groupTreeView.getRoot().getChildren().remove(constraintItem);
+		    	unfilteredItems.remove(constraintItem);
+		    	this.constraints.remove(constraint);
+				changeTracker.addUndo(new DeleteConstraint(constraintItem, index, constraint instanceof Group));
+		    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
+				List<Constraint> newConstraints = new LinkedList<>();
+				int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
+		    	groupTreeView.getRoot().getChildren().remove(constraintItem);
+		    	this.constraints.remove(constraint);
+		    	resolveGroupConstraint(constraint, newConstraints);
+		    	unfilteredItems.remove(constraintItem);
+				changeTracker.addUndo(new DeleteGroupConstraintSet(constraintItem, index, newConstraints));
+		    }
+		}
+		
+		updateConstraintModel();
+	}
 
 	/*
 	 * Loading all the elements that should be displayed initially in the window and the logic to show the info window
@@ -522,29 +582,39 @@ public class ConstraintsViewController {
 	}
 	
 	public void setModel(VarflixAPI model) {
-		//if(this.model == null) {
 		this.model = model;
 		initData();
-		//}
 	}
 
 	/*
 	 * Initializing the constraints derivation and setting up the window initially
 	 */
 	private void initData() {
-		constraints = model.performFCA();
-		features = model.getFeatures();
-		currentBase = model.getBaseFeature();
-		model.generateModel(currentBase, features, new ArrayList<>(constraints));
-		initializeTreeView(constraints.stream().filter(c -> c instanceof Group).collect(Collectors.toList()));	
+		List<Constraint> constraints = model.performFCA();
+		List<Feature> features = model.getFeatures();
+		Feature base = model.getBaseFeature();
+		constraints = model.generateModel(currentBase, features, new ArrayList<>(constraints));
+		if(this.constraints != null && this.features != null && currentBase != null) {
+			if(!(this.constraints.equals(constraints) && 
+					this.features.equals(features) && currentBase.equals(base))) {
+				this.constraints = constraints;
+				this.features = features;
+				currentBase = base;
+				updateConstraintModel();
+			} 
+		} else {
+			this.constraints = constraints;
+			this.features = features;
+			currentBase = base;
+		}
+		/*this.constraints = model.performFCA();
+		this.features = model.getFeatures();
+		currentBase = model.getBaseFeature();*/
+		
+		initializeTreeView(this.constraints.stream().filter(c -> c instanceof Group).collect(Collectors.toList()));	
 		setUpFilterMenu();
-		groupTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
-			if(newScene != null) {
-				Scene scene = groupTreeView.getScene();
-	        	groupTreeView.styleProperty().bind(Bindings.createStringBinding(() -> String.format("-fx-font-size: %.1fpx;", scene.getWidth()/80), scene.widthProperty()));
-			}	
-	    });
-        updateConstraintModel();
+		
+        //updateConstraintModel();
 	}
 	
 	/*
@@ -689,7 +759,8 @@ public class ConstraintsViewController {
 			Button button = new Button("X");
 			
 			TreeItem<Constraint> constraintItem = new TreeItem<>(constraint);
-			button.setOnAction(e -> {
+			button.setOnAction(e -> deleteConstraintItem(constraint, constraintItem));
+			/*{
 				ButtonType yesButton = new ButtonType("Yes");
 				ButtonType noButton = new ButtonType("No");
 				Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the constraint " + constraint + " be removed?", yesButton, noButton);
@@ -718,7 +789,7 @@ public class ConstraintsViewController {
 					changeTracker.addUndo(new DeleteGroupConstraintSet(constraintItem, index, newConstraints));
 			    }
 				updateConstraintModel();
-			});
+			});*/
 			constraintItem.setGraphic(button);
 			unfilteredItems.add(constraintItem);
 			root.getChildren().add(constraintItem);
@@ -803,6 +874,9 @@ public class ConstraintsViewController {
 
 	public void setVisualizationWindow(ScrollPane visualizationWindow) {
 		this.visualizationWindow = visualizationWindow;
-		
+	}
+	
+	public void resetSelection() {
+		groupTreeView.getSelectionModel().clearSelection();
 	}
 }

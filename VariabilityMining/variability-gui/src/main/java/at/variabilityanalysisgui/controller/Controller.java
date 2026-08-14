@@ -73,8 +73,10 @@ public class Controller {
         constraintsTab.setOnSelectionChanged(event -> {
         	if(constraintsTab.isSelected()) {
         		constraintsViewController.setModel(model);
+        		featureViewController.resetSelection();
         	} else {
         		constraintsViewController.resetConstraintsViewButtons();
+        		constraintsViewController.resetSelection();
         	}
         });
         

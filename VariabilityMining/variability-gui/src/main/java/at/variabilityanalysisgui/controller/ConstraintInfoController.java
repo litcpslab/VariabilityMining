@@ -123,7 +123,6 @@ public class ConstraintInfoController {
 		} else {
 			showConstraintInfo(constraint);
 		}
-		
 	}
 
 	/*
@@ -193,10 +192,14 @@ public class ConstraintInfoController {
 			 
 			 Optional<ButtonType> result = removeAlert.showAndWait();
 		     if(result.isPresent() && result.get() == ButtonType.YES) {
-		    	 ((Group) currentInfoItem.getValue()).removeFeature(feature);
+		    	 Group group = ((Group) currentInfoItem.getValue());
+		    	 group.removeFeature(feature);
 		    	 groupFeatureList.getItems().remove(feature);
 				 controller.getChangeTracker().addUndo(new DeleteConstraintChild(feature, (Group) currentInfoItem.getValue()));
-
+				 
+				 if(group.getFeatures().size() < 2) {
+					 controller.deleteConstraintItem(group, currentInfoItem);
+				 }
 		     }
 		 }
 	 

@@ -46,7 +46,7 @@ public class VariabilityModelGenerator {
 	public List<Constraint> generateVariabilityModel(Feature base, List<Feature> features, List<Constraint> constraints) {
 		
 		this.features = features;
-        List<Feature> removedFeatures =features.stream().filter(feature -> (feature.getName().startsWith("OR") || feature.getName().startsWith("ALT"))).toList();
+        List<Feature> removedFeatures = features.stream().filter(feature -> (feature.getName().startsWith("OR") || feature.getName().startsWith("ALT"))).toList();
 		this.features.removeAll(removedFeatures);
 		features.forEach(feature -> {
 			feature.setChildren(new ArrayList<>());
@@ -83,7 +83,7 @@ public class VariabilityModelGenerator {
 		List<SimpleConstraint> relevantConstraints = constraints.stream().filter(c -> c instanceof SimpleConstraint).map(c -> (SimpleConstraint) c)
 				.filter(f -> uncoveredFeatures.contains(f.getFeature1()) || uncoveredFeatures.contains(f.getFeature2())).toList();
 		
-		List<Constraint> addedConstraints = buildOtherRelations(uncoveredFeatures, relevantConstraints);
+		List<Constraint> addedConstraints = buildOtherRelations(uncoveredFeatures, relevantConstraints, constraints);
 		
 		constraints.addAll(addedConstraints);
 		
@@ -107,7 +107,7 @@ public class VariabilityModelGenerator {
 	/*
 	 * Check the remaining constraints and determine which are CTCs and which can directly be integrated in the variability model
 	 */
-	private List<Constraint> buildOtherRelations(List<Feature> uncoveredFeatures, List<SimpleConstraint> relevantConstraints) {
+	private List<Constraint> buildOtherRelations(List<Feature> uncoveredFeatures, List<SimpleConstraint> relevantConstraints, List<Constraint> constraints) {
 		
 		List<Constraint> addedConstraints = new ArrayList<>();
 		List<SimpleConstraint> relevantEquivalences = relevantConstraints.stream().filter(c -> c.getType().equals("Equivalence")).toList();
@@ -154,6 +154,7 @@ public class VariabilityModelGenerator {
 						altParent.addChild(other);
 						other.setParent(altParent);
 						coveredConstraints.add(mutex);
+						constraints.remove(mutex);
 						addedConstraints.add(new AlternativeGroup(altParent.getChildren(), altParent));
 						continue featureLoop;
 					}
@@ -218,7 +219,7 @@ public class VariabilityModelGenerator {
 			
 			childGroups.sort((g1, g2) -> g1.getFeatures().get(0).getName().compareTo(g2.getFeatures().get(0).getName()));
 			
-			if(childGroups.size() > 1) {
+			if(childGroups.size() > 1 || parent.equals(base)) {
 				for(Group group: childGroups) {
 					switch (group.getType()) {
 					case "Or Group":
