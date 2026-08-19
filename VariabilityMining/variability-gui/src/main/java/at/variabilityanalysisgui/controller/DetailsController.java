@@ -13,7 +13,7 @@
  	Contributors:
  	Alexander Stummer - Adapted name changing operations
     Kejda Domi- Added the visualization section
-   Sophie Öttl - Change Tracking
+   	Sophie Öttl - Change Tracking
 **/
 
 package at.variabilityanalysisgui.controller;
@@ -204,24 +204,33 @@ public class DetailsController {
 			currentDetailItem.setValue(currentTreeNode);
             mainController.redrawVisualization();
             setDetailGroupNameTextField(candidateName);
-		} else {
-			Alert errorAlert = new Alert(AlertType.ERROR, "Invalid name. Duplicate names are not allowed, as well as names starting with a number or containing whitespaces!", ButtonType.OK);
-			errorAlert.setHeaderText("Invalid Name Error");
-			
-			Optional<ButtonType> result = errorAlert.showAndWait();
-		}	
+		}        
    	}
 
     public void setDetailGroupNameTextField(String name) {
         detailGroupNameTextField.setText(name);
     }
-
+    
     private boolean isValidName(String candidateName) {
-		if(candidateName.isEmpty() || candidateName.contains(" ") || Character.isDigit(candidateName.charAt(0))) {
+    	Alert errorAlert = new Alert(AlertType.ERROR, "", ButtonType.OK);
+		errorAlert.setHeaderText("Invalid Name Error");
+
+		if(candidateName.isEmpty()) {
+			errorAlert.setContentText("The proposed name is empty!");
+		} else if(candidateName.contains(" ")) {
+			errorAlert.setContentText("The proposed name contains a whitespace. This is not allowed!");
+		} else if(Character.isDigit(candidateName.charAt(0))) {
+			errorAlert.setContentText("The proposed name starts with a number. This is not allowed!");
+		} else if(mainController.getOriginalGroups().stream().anyMatch(group -> group.getName().getValue().equals(candidateName))) {
+			errorAlert.setContentText("The proposed name already exists. Duplicate names are not allowed!");
+		}
+		
+		if(!errorAlert.getContentText().isEmpty()) {
+			errorAlert.showAndWait();
 			return false;
 		}
 		
-		return !mainController.getOriginalGroups().stream().anyMatch(group -> group.getName().getValue().equals(candidateName));
+		return true;
 	}
     
     public TreeItem<FeatureTreeNode> getCurrentDetailItem() {

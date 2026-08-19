@@ -12,13 +12,11 @@
 
 package at.variabilityanalysisgui.changeTracking;
 
-import at.variabilityanalysisgui.controller.Controller;
 import at.variabilityanalysisgui.controller.DetailsController;
 import at.variabilityanalysisgui.controller.FeatureViewController;
 import at.variabilityanalysisgui.controller.TreeViewController;
 import at.variabilityanalysisgui.view.FeatureTreeNode;
 import guiModel.Group;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.TreeItem;
 
 public class RenameGroup implements ChangeModel<FeatureViewController, TreeViewController> {
@@ -36,25 +34,37 @@ public class RenameGroup implements ChangeModel<FeatureViewController, TreeViewC
 
     @Override
     public void undo(FeatureViewController controller, TreeViewController treeViewController) {
-        group.setName(new SimpleStringProperty(oldName));
+    	group.getName().set(oldName);
         
         TreeItem<FeatureTreeNode> currentDetailItem = detailsController.getCurrentDetailItem();
-        FeatureTreeNode currentTreeNode = currentDetailItem.getValue();
-        currentDetailItem.setValue(null);
-        currentDetailItem.setValue(currentTreeNode);
-        detailsController.setDetailGroupNameTextField(oldName);
+        
+        if(currentDetailItem != null) {
+            FeatureTreeNode currentTreeNode = currentDetailItem.getValue();
+
+            currentDetailItem.setValue(null);
+            currentDetailItem.setValue(currentTreeNode);
+            detailsController.setDetailGroupNameTextField(oldName);
+        }
+    
         group.removePreviousName(oldName);
+        treeViewController.getFeatureTreeView().refresh();
     }
 
     @Override
     public void redo(FeatureViewController controller, TreeViewController treeViewController) {
-        group.setName(new SimpleStringProperty(newName));
+    	group.getName().set(newName);
                
         TreeItem<FeatureTreeNode> currentDetailItem = detailsController.getCurrentDetailItem();
-        FeatureTreeNode currentTreeNode = currentDetailItem.getValue();
-        currentDetailItem.setValue(null);
-        currentDetailItem.setValue(currentTreeNode);
-        detailsController.setDetailGroupNameTextField(newName);
+        
+        if(currentDetailItem != null) {
+            FeatureTreeNode currentTreeNode = currentDetailItem.getValue();
+
+            currentDetailItem.setValue(null);
+            currentDetailItem.setValue(currentTreeNode);
+            detailsController.setDetailGroupNameTextField(newName);
+        }
+        
         group.addPreviousName(oldName);
+        treeViewController.getFeatureTreeView().refresh();
     }
 }

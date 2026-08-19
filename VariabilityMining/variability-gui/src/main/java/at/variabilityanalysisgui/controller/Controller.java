@@ -33,6 +33,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+import org.graphstream.ui.view.View;
+import org.graphstream.ui.view.Viewer;
+
 import guiModel.Element;
 import guiModel.ExtractionType;
 import guiModel.Group;
@@ -57,6 +60,7 @@ public class Controller {
     private List<Group> originalGroups;
     private ExtractionType artifactType = ExtractionType.UNKNOWN;
     private VarflixAPI model = new VarflixAPI();
+    private TreeGraph featureGraph;
 
     public Map<ExtractionType, String> seperatorMap = Map.of(ExtractionType.JAVA, "/", ExtractionType.IEC61499, ";");
 
@@ -65,7 +69,6 @@ public class Controller {
         originalGroups = model.computeInitialGroups();
         artifactType = ExtractionType.IEC61499;		//TODO Change dynamically based on artifacts used
         featureViewController.setMainController(this);
-        //constraintsViewController.setMainController(this);
         featureViewController.init();
         constraintsViewController.init();
         constraintsViewController.setVisualizationWindow(visualizationWindow);
@@ -74,26 +77,37 @@ public class Controller {
         	if(constraintsTab.isSelected()) {
         		constraintsViewController.setModel(model);
         		featureViewController.resetSelection();
+        		
         	} else {
         		constraintsViewController.resetConstraintsViewButtons();
         		constraintsViewController.resetSelection();
         	}
         });
         
-        redrawVisualization();
-    }
-    
-    public void redrawVisualization(){
         model.computePCM(originalGroups);
         List<Constraint> constraints = model.performFCA();
         List<Feature> features = model.getFeatures();
         Feature currentBase = model.getBaseFeature();
         model.generateModel(currentBase, features, new ArrayList<>(constraints));
-        TreeGraph sampleTreeGraph = new TreeGraph(currentBase);
-        //visualizationWindow.setContent(null);
-        visualizationWindow.setContent((Node)sampleTreeGraph.getViewer());
-        visualizationWindow.setFitToWidth(true);
-        visualizationWindow.setFitToHeight(true);
+        
+        Platform.runLater(()->{
+        	featureGraph = new TreeGraph(currentBase);
+
+            visualizationWindow.setContent((Node)featureGraph.getViewer());
+            visualizationWindow.setFitToWidth(true);
+            visualizationWindow.setFitToHeight(true);
+        });
+        
+    }
+    
+    public void redrawVisualization(){
+    	model.computePCM(originalGroups);
+        List<Constraint> constraints = model.performFCA();
+        List<Feature> features = model.getFeatures();
+        Feature currentBase = model.getBaseFeature();
+        model.generateModel(currentBase, features, new ArrayList<>(constraints));
+        
+        featureGraph.updateGraph(currentBase);
     }
 
     @FXML
@@ -206,16 +220,6 @@ public class Controller {
     public void setArtifactType(ExtractionType artifactType) {
 		this.artifactType = artifactType;
 	}
-    
-   /* public void changeScene(ActionEvent event) throws IOException {    	
-    	model.computePCM(originalGroups.stream().filter(group -> !group.getElements().isEmpty()).toList());
-
-    	ConstraintsViewController constraintController = SceneManager.getConstraintsLoader().getController();
-    	constraintController.setModel(model);
-    	
-    	Scene scene = ((Node)event.getSource()).getScene();
-    	scene.setRoot((Parent)SceneManager.getConstraintScene());
-    }*/
 
     public Group findGroupById(int groupId) {
         return getOriginalGroups().stream()

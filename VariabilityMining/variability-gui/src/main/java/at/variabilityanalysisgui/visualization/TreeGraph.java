@@ -129,6 +129,20 @@ public class TreeGraph implements ViewerListener {
 
         return view;
     }
+    
+    public void updateGraph(Feature root) {
+    	/*Node rootNode = graph.getNode(root.getName());
+    	graph.removeNode(rootNode);*/
+    	this.root = root;
+    	graph.clear();
+    	sman = new SpriteManager(graph);
+        graph.setAttribute("ui.stylesheet", styleSheet());
+        graph.setAttribute("ui.quality");
+        graph.setAttribute("ui.antialias");
+    	buildModelRecursive(this.root);
+        applyLayout();
+        decorateGroupsRecursive(this.root);
+    }
 
     private double toDouble(Object o) {
         return o instanceof Double ? (Double) o : Double.parseDouble(o.toString());
