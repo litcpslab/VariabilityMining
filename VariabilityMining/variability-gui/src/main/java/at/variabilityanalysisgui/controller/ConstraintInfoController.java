@@ -35,6 +35,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import variabilityMining.Feature;
@@ -54,6 +55,8 @@ public class ConstraintInfoController {
 	private final HBox editButtonBox;
 	
 	private TreeItem<Constraint> currentInfoItem = null;
+
+	private int currentItemIndex;
 	
 	public ConstraintInfoController(ConstraintsViewController controller, ScrollPane infoScrollPane, Label groupInfoLabel, Label parentFeatureLabel, Text infoText, 
 			ListView<Feature> groupFeatureList, Button removeFeatureButton, Label editLabel, ComboBox<Feature> featureComboBox, HBox editButtonBox, Button infoCloseButton) {
@@ -106,6 +109,7 @@ public class ConstraintInfoController {
 	public void showInfoPane(Constraint constraint, TreeItem<Constraint> infoItem) {
 		featureComboBox.getItems().clear();
 		currentInfoItem = infoItem;
+		currentItemIndex = controller.getGroupTreeView().getRoot().getChildren().indexOf(currentInfoItem);
 		
 		featureComboBox.setValue(null);
 		
@@ -181,23 +185,28 @@ public class ConstraintInfoController {
 	  */
 	 public void removeGroupFeature() {
 		 Feature feature = groupFeatureList.getSelectionModel().getSelectedItem();
+		 TreeView<Constraint> groupTreeView = controller.getGroupTreeView();
 		 
 		 if(feature == null) {
 			 Alert errorAlert = new Alert(AlertType.ERROR, "Please select a feature above to remove", ButtonType.OK);
 			 errorAlert.setHeaderText("Removal Error");
 			 errorAlert.show();
 		 } else {
-			 Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the feature " + feature.getName() + " be removed from the group?", ButtonType.YES, ButtonType.NO);
+			 ButtonType yesButton = new ButtonType("Yes");
+			 ButtonType noButton = new ButtonType("No");
+			 Alert removeAlert = new Alert(AlertType.CONFIRMATION, "Should the feature " + feature.getName() + " be removed from the group?", yesButton, noButton);
 			 removeAlert.setHeaderText("Removal Confirmation");
 			 
 			 Optional<ButtonType> result = removeAlert.showAndWait();
-		     if(result.isPresent() && result.get() == ButtonType.YES) {
+		     if(result.isPresent() && result.get() == yesButton) {
 		    	 Group group = ((Group) currentInfoItem.getValue());
 		    	 group.removeFeature(feature);
 		    	 groupFeatureList.getItems().remove(feature);
 				 controller.getChangeTracker().addUndo(new DeleteConstraintChild(feature, (Group) currentInfoItem.getValue()));
+				 currentInfoItem = groupTreeView.getRoot().getChildren().get(currentItemIndex);
 				 
 				 if(group.getFeatures().size() < 2) {
+					 groupTreeView.refresh();
 					 controller.deleteConstraintItem(group, currentInfoItem);
 				 }
 		     }

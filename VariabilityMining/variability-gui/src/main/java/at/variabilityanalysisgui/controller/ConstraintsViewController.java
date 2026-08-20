@@ -19,10 +19,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import at.variabilityanalysisgui.changeTracking.*;
-import at.variabilityanalysisgui.view.FeatureTreeNode;
 import at.variabilityanalysisgui.visualization.TreeGraph;
 import org.controlsfx.control.CheckComboBox;
-import org.graphstream.ui.view.Viewer;
 
 import constraints.AlternativeGroup;
 import constraints.Constraint;
@@ -121,7 +119,7 @@ public class ConstraintsViewController {
 
 	private ChangeTracker<ConstraintsViewController, ConstraintInfoController> changeTracker;
 
-	private ScrollPane visualizationWindow;
+	private Controller mainController;
 
     public void init() {
     	this.infoController = new ConstraintInfoController(this, infoScrollPane, groupInfoLabel, parentFeatureLabel, infoText, groupFeatureListView, removeFeatureButton, editLabel, featureComboBox, editButtonBox, infoCloseButton);
@@ -511,6 +509,7 @@ public class ConstraintsViewController {
 				constraints.remove(constraintItem.getValue());
 				unfilteredItems.remove(constraintItem);
 				changeTracker.addUndo(new DeleteConstraint(constraintItem, index, false));
+				updateConstraintModel();
 			}
 		} else {
 			ButtonType yesButton = new ButtonType("Yes");
@@ -531,6 +530,7 @@ public class ConstraintsViewController {
 		    	unfilteredItems.remove(constraintItem);
 		    	this.constraints.remove(constraint);
 				changeTracker.addUndo(new DeleteConstraint(constraintItem, index, constraint instanceof Group));
+				updateConstraintModel();
 		    } else if(result.isPresent() && result.get() == buttonKeepConstraints) {
 				List<Constraint> newConstraints = new LinkedList<>();
 				int index = groupTreeView.getRoot().getChildren().indexOf(constraintItem);
@@ -539,10 +539,9 @@ public class ConstraintsViewController {
 		    	resolveGroupConstraint(constraint, newConstraints);
 		    	unfilteredItems.remove(constraintItem);
 				changeTracker.addUndo(new DeleteGroupConstraintSet(constraintItem, index, newConstraints));
+				updateConstraintModel();
 		    }
 		}
-		
-		updateConstraintModel();
 	}
 
 	/*
@@ -587,21 +586,19 @@ public class ConstraintsViewController {
 					this.features.equals(features) && currentBase.equals(base))) {
 				this.constraints = constraints;
 				this.features = features;
-				currentBase = base;
-							        
-			    featureGraph = new TreeGraph(currentBase);
-			        	
-			    visualizationWindow.setContent((Node) featureGraph.getViewer());
-			            
-			    visualizationWindow.setFitToWidth(true);
-			    visualizationWindow.setFitToHeight(true);
-			    
+				currentBase = base;	
 			} 
 		} else {
 			this.constraints = constraints;
 			this.features = features;
 			currentBase = base;
 		}
+	
+		if(featureGraph == null) {
+			featureGraph = mainController.getFeatureGraph();
+		}
+		
+		featureGraph.updateGraph(base);
 		
 		initializeTreeView(this.constraints.stream().filter(c -> c instanceof Group).collect(Collectors.toList()));	
 		setUpFilterMenu();
@@ -832,12 +829,12 @@ public class ConstraintsViewController {
 	public ChangeTracker<ConstraintsViewController, ConstraintInfoController> getChangeTracker() {
 		return changeTracker;
 	}
-
-	public void setVisualizationWindow(ScrollPane visualizationWindow) {
-		this.visualizationWindow = visualizationWindow;
-	}
 	
 	public void resetSelection() {
 		groupTreeView.getSelectionModel().clearSelection();
+	}
+
+	public void setMainController(Controller controller) {
+		this.mainController = controller;		
 	}
 }

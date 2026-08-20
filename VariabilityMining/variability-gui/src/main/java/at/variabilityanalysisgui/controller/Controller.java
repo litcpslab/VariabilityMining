@@ -71,7 +71,7 @@ public class Controller {
         featureViewController.setMainController(this);
         featureViewController.init();
         constraintsViewController.init();
-        constraintsViewController.setVisualizationWindow(visualizationWindow);
+        constraintsViewController.setMainController(this);
         
         constraintsTab.setOnSelectionChanged(event -> {
         	if(constraintsTab.isSelected()) {
@@ -231,4 +231,8 @@ public class Controller {
     public FeatureViewController getFeatureViewController() {
 		return featureViewController;
 	}
+    
+    public TreeGraph getFeatureGraph() {
+    	return featureGraph;
+    }
 }
