@@ -23,7 +23,6 @@ import at.variabilityanalysisgui.visualization.TreeGraph;
 import constraints.Constraint;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 import javafx.application.Platform;
 
@@ -32,9 +31,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-
-import org.graphstream.ui.view.View;
-import org.graphstream.ui.view.Viewer;
 
 import guiModel.Element;
 import guiModel.ExtractionType;
@@ -77,7 +73,7 @@ public class Controller {
         	if(constraintsTab.isSelected()) {
         		constraintsViewController.setModel(model);
         		featureViewController.resetSelection();
-        		
+        		constraintsViewController.isGroupView(true);
         	} else {
         		constraintsViewController.resetConstraintsViewButtons();
         		constraintsViewController.resetSelection();
@@ -88,7 +84,7 @@ public class Controller {
         List<Constraint> constraints = model.performFCA();
         List<Feature> features = model.getFeatures();
         Feature currentBase = model.getBaseFeature();
-        model.generateModel(currentBase, features, new ArrayList<>(constraints));
+        model.generateModel(currentBase, features, new ArrayList<>(constraints), true);
         
         Platform.runLater(()->{
         	featureGraph = new TreeGraph(currentBase);
@@ -105,7 +101,7 @@ public class Controller {
         List<Constraint> constraints = model.performFCA();
         List<Feature> features = model.getFeatures();
         Feature currentBase = model.getBaseFeature();
-        model.generateModel(currentBase, features, new ArrayList<>(constraints));
+        model.generateModel(currentBase, features, new ArrayList<>(constraints), true);
         
         featureGraph.updateGraph(currentBase);
     }

@@ -22,6 +22,7 @@ import UVL.UVLGenerator;
 import constraints.AlternativeGroup;
 import constraints.Constraint;
 import constraints.Group;
+import constraints.Implication;
 import constraints.SimpleConstraint;
 
 public class VariabilityModelGenerator {
@@ -43,7 +44,7 @@ public class VariabilityModelGenerator {
 	 * Method to generate a variability model given the base/root feature, a list of all features and a list of all the constraints.
 	 * The result is written to a uvl file
 	 */
-	public List<Constraint> generateVariabilityModel(Feature base, List<Feature> features, List<Constraint> constraints) {
+	public List<Constraint> generateVariabilityModel(Feature base, List<Feature> features, List<Constraint> constraints, boolean enableOtherRelations) {
 		
 		this.features = features;
         List<Feature> removedFeatures = features.stream().filter(feature -> (feature.getName().startsWith("OR") || feature.getName().startsWith("ALT"))).toList();
@@ -79,13 +80,20 @@ public class VariabilityModelGenerator {
 		buildGroups(base, groupConstraints);	
 		
 		List<Feature> uncoveredFeatures = features.stream().filter(f -> f.getParent() == null && !f.equals(root)).toList();
-			
+		
 		List<SimpleConstraint> relevantConstraints = constraints.stream().filter(c -> c instanceof SimpleConstraint).map(c -> (SimpleConstraint) c)
 				.filter(f -> uncoveredFeatures.contains(f.getFeature1()) || uncoveredFeatures.contains(f.getFeature2())).toList();
 		
-		List<Constraint> addedConstraints = buildOtherRelations(uncoveredFeatures, relevantConstraints, constraints);
-		
-		constraints.addAll(addedConstraints);
+		if(enableOtherRelations) {
+			
+			List<Constraint> addedConstraints = buildOtherRelations(uncoveredFeatures, relevantConstraints, constraints);
+			
+			constraints.addAll(addedConstraints);
+		} else {
+			for(Feature feature: uncoveredFeatures) {
+				findParentChildRelations(relevantConstraints, feature);
+			}
+		}
 		
 		positionUncoveredFeatures(uncoveredFeatures.stream().filter(f -> f.getParent() == null).toList());
 			
@@ -93,7 +101,8 @@ public class VariabilityModelGenerator {
 			
 		UVLGenerator.createUVLModel(root, ctcs);
 		
-		return constraints;
+		return constraints.stream().filter(c -> (!(c instanceof Implication && ((Implication)c).getFeature2().equals(root)))).collect(Collectors.toList());
+
 	}
 
 	private void positionUncoveredFeatures(List<Feature> uncoveredFeatures) {
@@ -155,30 +164,35 @@ public class VariabilityModelGenerator {
 						other.setParent(altParent);
 						coveredConstraints.add(mutex);
 						constraints.remove(mutex);
-						addedConstraints.add(new AlternativeGroup(altParent.getChildren(), altParent));
+						addedConstraints.add(new AlternativeGroup(altParent.getChildren(), root));
 						continue featureLoop;
 					}
 				}
 				
 			}
 			
-			List<SimpleConstraint> relevantImplications = relevantConstraints.stream().filter(c -> c.getType().equals("Implication"))
-					.filter(c -> c.getFeature1().getName().equals(feature.getName()) || c.getFeature2().getName().equals(feature.getName())).toList();
-			
-			for(SimpleConstraint implication: relevantImplications) {
-				if(implication.getFeature1().getName().equals(feature.getName())) {
-					Feature other = features.stream().filter(f -> f.getName().equals(implication.getFeature2().getName())).findFirst().get();
-					
-					if(feature.getParent() == null && !other.isAlternativeParent() && !other.isOrParent()) {
-						other.addChild(feature);
-						feature.setParent(other);
-						coveredConstraints.add(implication);
-						continue featureLoop;
-					}
+			findParentChildRelations(relevantConstraints, feature);
+		}
+		return addedConstraints;
+	}
+
+
+	private void findParentChildRelations(List<SimpleConstraint> relevantConstraints, Feature feature) {
+		List<SimpleConstraint> relevantImplications = relevantConstraints.stream().filter(c -> c.getType().equals("Implication"))
+				.filter(c -> c.getFeature1().getName().equals(feature.getName()) || c.getFeature2().getName().equals(feature.getName())).toList();
+		
+		for(SimpleConstraint implication: relevantImplications) {
+			if(implication.getFeature1().getName().equals(feature.getName())) {
+				Feature other = features.stream().filter(f -> f.getName().equals(implication.getFeature2().getName())).findFirst().get();
+				
+				if(feature.getParent() == null && !other.isAlternativeParent() && !other.isOrParent()) {
+					other.addChild(feature);
+					feature.setParent(other);
+					coveredConstraints.add(implication);
+					return;
 				}
 			}
 		}
-		return addedConstraints;
 	}
 
 	/*

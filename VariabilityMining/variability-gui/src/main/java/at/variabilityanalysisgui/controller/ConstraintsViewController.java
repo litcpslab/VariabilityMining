@@ -38,6 +38,8 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -60,6 +62,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -146,7 +149,7 @@ public class ConstraintsViewController {
 
     	    				@Override
     	    				public void handle(WindowEvent event) {
-    	    					model.generateModel(currentBase, features, new ArrayList<>(constraints));
+    	    					model.generateModel(currentBase, features, new ArrayList<>(constraints), true);
     	    				}
     	        			
     	        		});
@@ -301,7 +304,7 @@ public class ConstraintsViewController {
 	}
 
 	public void updateConstraintModel(){
-        constraints = model.generateModel(currentBase, features, constraints);
+        constraints = model.generateModel(currentBase, features, constraints, false);
         
         featureGraph.updateGraph(currentBase);
         
@@ -359,7 +362,7 @@ public class ConstraintsViewController {
 	public void handleGenerateAction() {
 		List<Constraint> constraintsList = new ArrayList<>();
 		constraintsList.addAll(constraints);
-		model.generateModel(currentBase, features, constraintsList);
+		model.generateModel(currentBase, features, constraintsList, false);
 		Alert confirmationAlert = new Alert(AlertType.CONFIRMATION, "The model was successfully generated in the file model.uvl!", ButtonType.FINISH);
 		confirmationAlert.setHeaderText("Generation Confirmation");
 		 
@@ -400,20 +403,25 @@ public class ConstraintsViewController {
         popupStage.initModality(Modality.NONE); 
         popupStage.setAlwaysOnTop(true); 
         popupStage.setTitle("Add a constraint!");
+        popupStage.setResizable(false);
 		
 		ComboBox<String> constraintTypeComboBox = new ComboBox<>(FXCollections.observableArrayList("Implication", "Equivalence", "Mutual Exclusion"));
-		
 		constraintTypeComboBox.setPromptText("Select constraint type");
+		constraintTypeComboBox.setMaxWidth(Double.MAX_VALUE);
 		
 		List<Feature> selectableFeatures = features.stream().filter(f -> !(f.getName().startsWith("ALT") || f.getName().startsWith("OR"))).toList();
 		
 		ComboBox<Feature> leftFeatureComboBox = new ComboBox<>(FXCollections.observableArrayList(selectableFeatures));
 		leftFeatureComboBox.setPromptText("Select left feature");
+		leftFeatureComboBox.setMaxWidth(Double.MAX_VALUE);
 		
 		ComboBox<Feature> rightFeatureComboBox = new ComboBox<>(FXCollections.observableArrayList(selectableFeatures));
 		rightFeatureComboBox.setPromptText("Select right feature");
+		rightFeatureComboBox.setMaxWidth(Double.MAX_VALUE);
 		
 		Button addButton = new Button("Add");
+		addButton.setDefaultButton(true);
+		addButton.setMaxWidth(Double.MAX_VALUE);
 
 		EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
 
@@ -451,9 +459,24 @@ public class ConstraintsViewController {
 		
 		addButton.setOnAction(event);
 		
-		VBox layout = new VBox(10, constraintTypeComboBox, leftFeatureComboBox, rightFeatureComboBox, addButton);
-
-		popupStage.setScene(new Scene(layout, 250, 200));
+		//VBox layout = new VBox(10, constraintTypeComboBox, leftFeatureComboBox, rightFeatureComboBox, addButton);
+		VBox layout = new VBox(12);
+		layout.setPadding(new Insets(20));
+		layout.setAlignment(Pos.TOP_CENTER);
+		layout.getChildren().addAll(new Label("Constraint Type"), constraintTypeComboBox, 
+				new Label("Left Feature"), leftFeatureComboBox, 
+				new Label("Right Feature"), rightFeatureComboBox);
+		
+		HBox buttonBar = new HBox(10, addButton);
+		buttonBar.setAlignment(Pos.CENTER_RIGHT);
+		HBox.setHgrow(addButton, Priority.ALWAYS);
+		layout.getChildren().add(buttonBar);
+		
+		Scene scene = new Scene(layout);
+		scene.getStylesheets().add(getClass().getResource("/popup.css").toExternalForm());
+		popupStage.setScene(scene);
+		popupStage.sizeToScene();
+		popupStage.setMinWidth(280);
 	    popupStage.show();
 	}
 
@@ -580,7 +603,7 @@ public class ConstraintsViewController {
 		List<Constraint> constraints = model.performFCA();
 		List<Feature> features = model.getFeatures();
 		Feature base = model.getBaseFeature();
-		constraints = model.generateModel(currentBase, features, new ArrayList<>(constraints));
+		constraints = model.generateModel(currentBase, features, new ArrayList<>(constraints), true);
 		if(this.constraints != null && this.features != null && currentBase != null) {
 			if(!(this.constraints.equals(constraints) && 
 					this.features.equals(features) && currentBase.equals(base))) {
@@ -782,7 +805,13 @@ public class ConstraintsViewController {
 				newConstraints.add(new Implication(f, orGroup.getParent()));
 			}
 		}
-		constraints.addAll(newConstraints);
+		
+		newConstraints.stream().forEach((c) -> {
+			if(!constraints.contains(c)) {
+				constraints.add(c);
+			}
+		});
+		newConstraints.retainAll(constraints);
 	}
 	
 	/*
@@ -836,5 +865,9 @@ public class ConstraintsViewController {
 
 	public void setMainController(Controller controller) {
 		this.mainController = controller;		
+	}
+
+	public void isGroupView(boolean groupView) {
+		isGroupView = groupView;		
 	}
 }

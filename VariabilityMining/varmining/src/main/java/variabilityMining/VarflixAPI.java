@@ -75,8 +75,8 @@ public class VarflixAPI {
 		return analysis.getBaseFeature();
 	}
 	
-	public List<Constraint> generateModel(Feature base, List<Feature> features, List<Constraint> constraints) {
-		List<Constraint> updatedConstraints = generator.generateVariabilityModel(base, features, constraints);
+	public List<Constraint> generateModel(Feature base, List<Feature> features, List<Constraint> constraints, boolean enableOtherRelations) {
+		List<Constraint> updatedConstraints = generator.generateVariabilityModel(base, features, constraints, enableOtherRelations);
 		DeltaModelGenerator.generateDeltaConfigFile(features, constraints, "output/deltas/");
 		return updatedConstraints;
 	}
