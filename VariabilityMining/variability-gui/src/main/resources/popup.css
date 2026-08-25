@@ -1,0 +1,29 @@
+.root {
+    -fx-background-color: #f7f8fa;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #444;
+}
+
+.combo-box {
+    -fx-background-radius: 4;
+}
+
+.button {
+    -fx-background-radius: 4;
+    -fx-padding: 6 16 6 16;
+}
+
+.button:default {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+}
+
+.button:cancel-button {
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #333;
+}
