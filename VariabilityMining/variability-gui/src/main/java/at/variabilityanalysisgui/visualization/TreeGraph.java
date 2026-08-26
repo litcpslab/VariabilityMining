@@ -9,7 +9,6 @@
  * Contributors:
  *  Kejda Domi- Added the feature model visualization
  ********************************************************************************/
-
 package at.variabilityanalysisgui.visualization;
 
 import javafx.application.Platform;
@@ -34,11 +33,19 @@ public class TreeGraph implements ViewerListener {
 
     private static final int MAX_LABEL_LEN = 9;
 
+    // maximum distance a node can be dragged from its origin in graph units
+    private static final double MAX_DRAG_RADIUS_GU = 40.0;
+
     private Feature root;
     private Graph graph;
     private SpriteManager sman;
     private FxDefaultView view;
     private Tooltip hoverTooltip;
+
+    // Track active drag state
+    private String draggedNodeId = null;
+    private double initialNodeX;
+    private double initialNodeY;
 
     public TreeGraph(Feature root) {
         this.root = root;
@@ -85,8 +92,74 @@ public class TreeGraph implements ViewerListener {
                             "-fx-padding: 4px 8px;"
             );
 
+            //  MOUSE PRESS: Detect and pick target node
+            view.setOnMousePressed(event -> {
+                double clickRadiusPx = 25.0;
+
+                for (Node n : graph) {
+                    if (!n.hasAttribute("xyz")) continue;
+                    Object[] xyz = (Object[]) n.getAttribute("xyz");
+                    double nx = toDouble(xyz[0]);
+                    double ny = toDouble(xyz[1]);
+
+                    org.graphstream.ui.geom.Point3 nodePx =
+                            view.getCamera().transformGuToPx(nx, ny, 0);
+
+                    double dx = nodePx.x - event.getX();
+                    double dy = nodePx.y - event.getY();
+
+                    if (Math.sqrt(dx * dx + dy * dy) < clickRadiusPx) {
+                        draggedNodeId = n.getId();
+
+                        // retrieve original  position
+                        if (n.hasAttribute("origX") && n.hasAttribute("origY")) {
+                            initialNodeX = toDouble(n.getAttribute("origX"));
+                            initialNodeY = toDouble(n.getAttribute("origY"));
+                        } else {
+                            initialNodeX = nx;
+                            initialNodeY = ny;
+                        }
+                        break;
+                    }
+                }
+            });
+
+            // MOUSE DRAG: Constrain node movement within allowed radius
+            view.setOnMouseDragged(event -> {
+                if (draggedNodeId == null) return;
+
+                Node n = graph.getNode(draggedNodeId);
+                if (n == null) return;
+
+                // Convert pixel cursor coordinates to graph units
+                org.graphstream.ui.geom.Point3 targetGu =
+                        view.getCamera().transformPxToGu(event.getX(), event.getY());
+
+                double dx = targetGu.x - initialNodeX;
+                double dy = targetGu.y - initialNodeY;
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                double newX = targetGu.x;
+                double newY = targetGu.y;
+
+                // clamp vector to maximum radius if threshold exceeded
+                if (distance > MAX_DRAG_RADIUS_GU) {
+                    double angle = Math.atan2(dy, dx);
+                    newX = initialNodeX + MAX_DRAG_RADIUS_GU * Math.cos(angle);
+                    newY = initialNodeY + MAX_DRAG_RADIUS_GU * Math.sin(angle);
+                }
+
+                // smooth update on GS rendering loop
+                n.setAttribute("xyz", newX, newY, 0);
+            });
+
+            //  MOUSE RELEASE: Reset dragging target
+            view.setOnMouseReleased(event -> {
+                draggedNodeId = null;
+            });
+
+            // MOUSE MOVED: Tooltip hover detection
             view.setOnMouseMoved(event -> {
-                org.graphstream.ui.geom.Point3 screenPos;
                 String hoveredId = null;
                 double threshold = 20.0;
 
@@ -96,7 +169,6 @@ public class TreeGraph implements ViewerListener {
                     double nx = toDouble(xyz[0]);
                     double ny = toDouble(xyz[1]);
 
-                    // convert node graph units to screen pixels
                     org.graphstream.ui.geom.Point3 nodePx =
                             view.getCamera().transformGuToPx(nx, ny, 0);
 
@@ -203,6 +275,15 @@ public class TreeGraph implements ViewerListener {
     private void applyLayout() {
         TreeLayout layout = new TreeLayout(50.0, 200.0);
         layout.apply(graph, root);
+
+        // store initial original pos for each node
+        for (Node n : graph) {
+            if (n.hasAttribute("xyz")) {
+                Object[] xyz = (Object[]) n.getAttribute("xyz");
+                n.setAttribute("origX", toDouble(xyz[0]));
+                n.setAttribute("origY", toDouble(xyz[1]));
+            }
+        }
     }
 
     private void addOptional(String edgeId) {
@@ -234,9 +315,7 @@ public class TreeGraph implements ViewerListener {
         for (Feature child : children) {
             Node n = graph.getNode(child.getName());
             if (n != null && n.hasAttribute("xyz")) {
-                double x = ((Object[]) n.getAttribute("xyz"))[0] instanceof Double ?
-                        (Double) ((Object[]) n.getAttribute("xyz"))[0] :
-                        Double.parseDouble(((Object[]) n.getAttribute("xyz"))[0].toString());
+                double x = toDouble(((Object[]) n.getAttribute("xyz"))[0]);
                 minX = Math.min(minX, x);
                 maxX = Math.max(maxX, x);
                 found = true;
@@ -266,10 +345,13 @@ public class TreeGraph implements ViewerListener {
 
     private String styleSheet() {
         return """
+        graph{
+            padding: 40px, 40px;
+        }
         node {
             shape: box;
             size-mode: fit;
-            padding: 4px, 6px;
+            padding: 2px, 4px;
             fill-color: #bc99fe;
             stroke-mode: plain;
             stroke-color: #333;
