@@ -12,7 +12,17 @@
 package at.variabilityanalysisgui.visualization;
 
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
@@ -102,6 +112,7 @@ public class TreeGraph implements ViewerListener {
                     double nx = toDouble(xyz[0]);
                     double ny = toDouble(xyz[1]);
 
+                    //convert the nodes position from graph unit into pixel coordinates so the node and mouse click are comparable
                     org.graphstream.ui.geom.Point3 nodePx =
                             view.getCamera().transformGuToPx(nx, ny, 0);
 
@@ -131,7 +142,7 @@ public class TreeGraph implements ViewerListener {
                 Node n = graph.getNode(draggedNodeId);
                 if (n == null) return;
 
-                // Convert pixel cursor coordinates to graph units
+                // Convert pixel cursor coordinates to graph units to compare it with the node
                 org.graphstream.ui.geom.Point3 targetGu =
                         view.getCamera().transformPxToGu(event.getX(), event.getY());
 
@@ -197,9 +208,77 @@ public class TreeGraph implements ViewerListener {
             });
 
             view.setOnMouseExited(event -> hoverTooltip.hide());
+
+
+            VBox legend = createLegend();
+            legend.setLayoutX(15);
+            legend.setLayoutY(15);
+
+            view.widthProperty().addListener((obs, oldVal, newVal) -> {
+                legend.setLayoutX(newVal.doubleValue() - legend.getBoundsInLocal().getWidth() - 20);
+            });
+
+            view.getChildren().add(legend);
         });
 
         return view;
+    }
+
+    private VBox createLegend() {
+        VBox legend = new VBox(8);
+        legend.setMaxSize(VBox.USE_PREF_SIZE, VBox.USE_PREF_SIZE);
+        legend.setPadding(new Insets(10, 14, 10, 14));
+        legend.setStyle(
+                "-fx-background-color: rgba(255, 255, 255, 0.96);" +
+                        "-fx-border-color: #b0b0b0;" +
+                        "-fx-border-radius: 6px;" +
+                        "-fx-background-radius: 6px;" +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 6, 0, 0, 2);"
+        );
+
+        Label title = new Label("Legend");
+        title.setMinWidth(Region.USE_PREF_SIZE);
+        title.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #111111; -fx-opacity: 1.0;");
+
+
+        Circle mandatoryIcon = new Circle(5, Color.BLACK);
+        mandatoryIcon.setStroke(Color.BLACK);
+        HBox mandatoryRow = createLegendRow(mandatoryIcon, "Mandatory Feature");
+
+        Circle optionalIcon = new Circle(5, Color.WHITE);
+        optionalIcon.setStroke(Color.BLACK);
+        optionalIcon.setStrokeWidth(1.5);
+        HBox optionalRow = createLegendRow(optionalIcon, "Optional Feature");
+
+        Polygon orIcon = new Polygon(0.0, 9.0, 5.0, 0.0, 10.0, 9.0);
+        orIcon.setFill(Color.BLACK);
+        orIcon.setStroke(Color.BLACK);
+        HBox orRow = createLegendRow(orIcon, "OR Group");
+
+        Polygon xorIcon = new Polygon(0.0, 9.0, 5.0, 0.0, 10.0, 9.0);
+        xorIcon.setFill(Color.WHITE);
+        xorIcon.setStroke(Color.BLACK);
+        xorIcon.setStrokeWidth(1.5);
+        HBox xorRow = createLegendRow(xorIcon, "XOR Group");
+
+        legend.getChildren().addAll(title, mandatoryRow, optionalRow, orRow, xorRow);
+        return legend;
+    }
+
+    private HBox createLegendRow(javafx.scene.Node icon, String text) {
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER_LEFT);
+
+        StackPane iconBox = new StackPane(icon);
+        iconBox.setPrefSize(16, 16);
+        iconBox.setAlignment(Pos.CENTER);
+
+        Label label = new Label(text);
+        label.setMinWidth(Region.USE_PREF_SIZE);
+        label.setStyle("-fx-font-size: 11px; -fx-font-weight: normal; -fx-text-fill: #222222; -fx-opacity: 1.0;");
+
+        row.getChildren().addAll(iconBox, label);
+        return row;
     }
     
     public void updateGraph(Feature root) {
@@ -337,7 +416,7 @@ public class TreeGraph implements ViewerListener {
         s.setAttribute("ui.style", "shape: triangle; fill-color: " + fill +
                 "; stroke-mode: plain; stroke-color: black; stroke-width: 2px; z-index: 2; " +
                 "size: " + width + "px, 35px;");
-        s.setPosition(0, -22, 0);
+        s.setPosition(0, -20, 0);
         return s;
     }
 
@@ -346,7 +425,7 @@ public class TreeGraph implements ViewerListener {
     private String styleSheet() {
         return """
         graph{
-            padding: 40px, 40px;
+            padding: 50px, 50px;
         }
         node {
             shape: box;
