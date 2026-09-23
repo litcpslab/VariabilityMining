@@ -61,6 +61,18 @@ public class TreeGraph implements ViewerListener {
         this.root = root;
     }
 
+    public interface FeatureSelectionListener {
+        void onFeatureSelected(String featureId);
+    }
+
+    private FeatureSelectionListener selectionListener;
+    private double pressX, pressY;
+    private static final double CLICK_THRESHOLD_PX = 5.0;
+
+    public void setSelectionListener(FeatureSelectionListener listener) {
+        this.selectionListener = listener;
+    }
+
     public View getViewer() {
         setupGraph();
         buildModelRecursive(root);
@@ -121,6 +133,8 @@ public class TreeGraph implements ViewerListener {
 
                     if (Math.sqrt(dx * dx + dy * dy) < clickRadiusPx) {
                         draggedNodeId = n.getId();
+                        pressX = event.getX();
+                        pressY = event.getY();
 
                         // retrieve original  position
                         if (n.hasAttribute("origX") && n.hasAttribute("origY")) {
@@ -166,6 +180,17 @@ public class TreeGraph implements ViewerListener {
 
             //  MOUSE RELEASE: Reset dragging target
             view.setOnMouseReleased(event -> {
+                if (draggedNodeId != null) {
+                    double dx = event.getX() - pressX;
+                    double dy = event.getY() - pressY;
+                    if (Math.sqrt(dx * dx + dy * dy) < CLICK_THRESHOLD_PX) {
+                        String clickedId = draggedNodeId;
+                        highlightNode(clickedId);
+                        if (selectionListener != null) {
+                            selectionListener.onFeatureSelected(clickedId);
+                        }
+                    }
+                }
                 draggedNodeId = null;
             });
 
@@ -222,6 +247,21 @@ public class TreeGraph implements ViewerListener {
         });
 
         return view;
+    }
+    private String currentlyHighlighted = null;
+
+    public void highlightNode(String featureId) {
+        Platform.runLater(() -> {
+            if (currentlyHighlighted != null) {
+                Node prev = graph.getNode(currentlyHighlighted);
+                if (prev != null) prev.removeAttribute("ui.class");
+            }
+            Node n = graph.getNode(featureId);
+            if (n != null) {
+                n.setAttribute("ui.class", "highlighted");
+                currentlyHighlighted = featureId;
+            }
+        });
     }
 
     private VBox createLegend() {
@@ -440,6 +480,11 @@ public class TreeGraph implements ViewerListener {
             text-offset: 2px, 3px;
             z-index: 3;
         }
+        node.highlighted {
+            fill-color: #7ec8ff;
+            stroke-color: #005ea6;
+            stroke-width: 1px;
+            }
         edge {
             size: 1.5px;
             fill-color: #555;

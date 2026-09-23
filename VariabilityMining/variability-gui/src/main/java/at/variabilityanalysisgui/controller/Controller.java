@@ -92,6 +92,10 @@ public class Controller {
             visualizationWindow.setContent((Node)featureGraph.getViewer());
             visualizationWindow.setFitToWidth(true);
             visualizationWindow.setFitToHeight(true);
+
+            TreeViewController treeViewController = featureViewController.getTreeViewController();
+            featureGraph.setSelectionListener(featureId -> treeViewController.selectAndScrollTo(featureId));
+            treeViewController.setOnListSelectionChanged(featureId -> featureGraph.highlightNode(featureId));
         });
         
     }

@@ -70,6 +70,10 @@ public class FeatureViewController {
     private final InputParser parser = new InputParser();
 	    
     private ChangeTracker<FeatureViewController, TreeViewController> changeTracker;
+
+    public TreeViewController getTreeViewController() {
+        return treeViewController;
+    }
 	
 	public void init() {
 		this.treeViewController = new TreeViewController(mainController, this, featureTreeView, hierarchyButtonHBox);
@@ -165,7 +169,6 @@ public class FeatureViewController {
         return null;
     }
 
-    
     public Group findGroupById(int groupId) {
     	return mainController.findGroupById(groupId);
     }

@@ -58,6 +58,16 @@ public class TreeViewController {
 
     private List<TreeItem<FeatureTreeNode>> draggedItems = new ArrayList<>();
 
+    // feedback-loop guard: true while its automatically selected due to a graph click
+    private boolean isSelectingFromGraph = false;
+
+    private java.util.function.Consumer<String> onListSelectionChanged;
+
+    public void setOnListSelectionChanged(java.util.function.Consumer<String> listener) {
+        this.onListSelectionChanged = listener;
+    }
+
+
     public TreeViewController(Controller mainController, FeatureViewController featureViewController, TreeView<FeatureTreeNode> featureTreeView, HBox hierarchyButtonHBox) {
         this.featureTreeView = featureTreeView;
         this.mainController = mainController;
@@ -81,10 +91,45 @@ public class TreeViewController {
             if (newValue != null && newValue.getValue() != null) {
                 FeatureTreeNode node = newValue.getValue();
                 featureViewController.showDetailsPane(node.getData(), newValue);
+                if (!isSelectingFromGraph && onListSelectionChanged != null) {
+                    onListSelectionChanged.accept(node.getTechnicalName());
+                }
             }
         });
         
         featureTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    }
+
+    public void selectAndScrollTo(String featureId) {
+        TreeItem<FeatureTreeNode> item = findTreeItemByFeatureName(rootNode, featureId);
+        if (item == null) return;
+
+        // expand every parent so the item has a valid row index
+        TreeItem<FeatureTreeNode> parent = item.getParent();
+        while (parent != null && parent != rootNode) {
+            parent.setExpanded(true);
+            parent = parent.getParent();
+        }
+
+        isSelectingFromGraph = true;
+        featureTreeView.getSelectionModel().clearSelection();
+        featureTreeView.getSelectionModel().select(item);
+        int row = featureTreeView.getRow(item);
+        if (row >= 0) {
+            featureTreeView.scrollTo(row);
+        }
+        isSelectingFromGraph = false;
+    }
+
+    private TreeItem<FeatureTreeNode> findTreeItemByFeatureName(TreeItem<FeatureTreeNode> node, String featureId) {
+        for (TreeItem<FeatureTreeNode> child : node.getChildren()) {
+            if (featureId.equals(child.getValue().getTechnicalName())) {
+                return child;
+            }
+            TreeItem<FeatureTreeNode> found = findTreeItemByFeatureName(child, featureId);
+            if (found != null) return found;
+        }
+        return null;
     }
 
     public void populateTreeView(List<Group> groups, List<Element> visibleElements) {
