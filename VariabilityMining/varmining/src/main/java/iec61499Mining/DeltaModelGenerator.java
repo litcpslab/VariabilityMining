@@ -30,7 +30,7 @@ import variabilityMining.Feature;
 
 public class DeltaModelGenerator {
 	
-	public static void generateDeltas(List<JSON1499VariabilityGroup> groupings, String outputPath) {		
+	public static void generateDeltas(List<JSON1499VariabilityGroup> groupings, String outputPath) {
 		for(JSON1499VariabilityGroup group: groupings) {
 			String deltaName = "D" + group.getAttributeName();
 			Path directoryPath = Paths.get(outputPath);

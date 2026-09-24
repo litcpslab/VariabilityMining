@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import at.variabilityanalysisgui.changeTracking.*;
 import at.variabilityanalysisgui.visualization.TreeGraph;
+import javafx.util.StringConverter;
 import org.controlsfx.control.CheckComboBox;
 
 import constraints.AlternativeGroup;
@@ -69,6 +70,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.controlsfx.control.SearchableComboBox;
 import variabilityMining.ConstraintFileIO;
 import variabilityMining.Feature;
 import variabilityMining.JSONConstraints;
@@ -96,7 +98,7 @@ public class ConstraintsViewController {
     @FXML private TextField detailGroupNameTextField;
     @FXML private Button removeFeatureButton;
     @FXML private Label editLabel;
-    @FXML private ComboBox<Feature> featureComboBox;
+    @FXML private SearchableComboBox<Feature> featureComboBox;
     @FXML private HBox editButtonBox;
     @FXML private Button infoCloseButton;
     @FXML private TreeView<Constraint> groupTreeView;
@@ -189,7 +191,7 @@ public class ConstraintsViewController {
 	 * Method to load the constraints from a file and display items in the GUI 
 	 */
 	@FXML
-    private void handleLoadAction() {
+    public void handleLoadAction() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Constraints file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
@@ -215,7 +217,7 @@ public class ConstraintsViewController {
 	 * Method to save the current status of the constraints to a .json file
 	 */
 	@FXML
-    private void handleSaveAction() {
+    public void handleSaveAction() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Constraints to file");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
@@ -243,10 +245,9 @@ public class ConstraintsViewController {
 			return;
 		}
 		
-		if(constraint instanceof Group) {
-			Group group = (Group) constraint;
-			
-			List<Group> groups = constraints.stream().filter(c -> c instanceof Group).map(c -> ((Group) c)).toList();
+		if(constraint instanceof Group group) {
+
+            List<Group> groups = constraints.stream().filter(c -> c instanceof Group).map(c -> ((Group) c)).toList();
 			
 			for(Group g: groups) {
 				if(g != group && g.getFeatures().contains(addFeature)) {
@@ -442,7 +443,7 @@ public class ConstraintsViewController {
 					}
 
 					if (constraint != null) {
-						if (constraints.add(constraint)) {
+						if (!constraintIsPresent(constraint)) {
 							TreeItem<Constraint> addItem = addSimpleConstraintTreeItem(constraint);
 							changeTracker.addUndo(new AddSimpleConstraint(addItem, groupTreeView.getRoot().getChildren().indexOf(addItem)));
 						}
@@ -478,6 +479,24 @@ public class ConstraintsViewController {
 		popupStage.sizeToScene();
 		popupStage.setMinWidth(280);
 	    popupStage.show();
+	}
+
+	private boolean constraintIsPresent(SimpleConstraint constraint) {
+
+		for(Constraint c: constraints){
+			if(c instanceof SimpleConstraint compareConstraint){
+                if((compareConstraint.getFeature1().equals(constraint.getFeature1()) && compareConstraint.getFeature2().equals(constraint.getFeature2())) ||
+						(compareConstraint.getFeature1().equals(constraint.getFeature2()) && compareConstraint.getFeature2().equals(constraint.getFeature1()))){
+					if(compareConstraint.getType().equals("Implication") && constraint.getType().equals("Equivalence")){
+						return false;
+					} else {
+						return true;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 
 	public TreeItem<Constraint> addSimpleConstraintTreeItem(Constraint constraint) {

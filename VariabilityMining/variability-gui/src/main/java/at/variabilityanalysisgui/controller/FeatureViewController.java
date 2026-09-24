@@ -96,8 +96,8 @@ public class FeatureViewController {
         
         KeyCombination undoCombination = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
 		KeyCombination redoCombination = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
-		
-		featureTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
+
+        featureTreeView.sceneProperty().addListener((obs, oldScene, newScene) -> {
 			if(newScene != null) {
 				newScene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 					if(undoCombination.match(event)) {

@@ -75,8 +75,8 @@
             <menus>
                 <Menu text="File">
                     <items>
-                        <MenuItem onAction="#handleLoadAction" text="Load" />
-                        <MenuItem onAction="#handleSaveAction" text="Save" />
+                        <MenuItem fx:id="loadItem" onAction="#handleLoadAction" text="Load" />
+                        <MenuItem fx:id="saveItem" onAction="#handleSaveAction" text="Save" />
                         <SeparatorMenuItem />
                         <MenuItem onAction="#handleExit" text="Exit" />
                     </items>

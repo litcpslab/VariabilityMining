@@ -28,6 +28,7 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.graphstream.ui.fx_viewer.FxDefaultView;
 import org.graphstream.ui.fx_viewer.FxViewer;
+import org.graphstream.ui.fx_viewer.util.FxMouseManager;
 import org.graphstream.ui.javafx.FxGraphRenderer;
 import org.graphstream.ui.spriteManager.Sprite;
 import org.graphstream.ui.spriteManager.SpriteManager;
@@ -35,8 +36,10 @@ import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerListener;
 import org.graphstream.ui.view.ViewerPipe;
+import org.graphstream.ui.view.util.InteractiveElement;
 import variabilityMining.Feature;
 
+import java.util.EnumSet;
 import java.util.List;
 
 public class TreeGraph implements ViewerListener {
@@ -81,6 +84,7 @@ public class TreeGraph implements ViewerListener {
 
         FxViewer viewer = new FxViewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
         view = (FxDefaultView) viewer.addView("view", new FxGraphRenderer());
+        view.setMouseManager(new FxMouseManager(EnumSet.of(InteractiveElement.NODE)));
 
         viewer.disableAutoLayout();
 
@@ -236,7 +240,7 @@ public class TreeGraph implements ViewerListener {
 
 
             VBox legend = createLegend();
-            legend.setLayoutX(15);
+            legend.setLayoutX(300);
             legend.setLayoutY(15);
 
             view.widthProperty().addListener((obs, oldVal, newVal) -> {

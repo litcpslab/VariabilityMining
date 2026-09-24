@@ -26,36 +26,36 @@
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-base</artifactId>
-      <version>17.0.6</version>
+      <version>24.0.1</version>
       <classifier>win</classifier>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-graphics</artifactId>
-      <version>17.0.6</version>
+      <version>24.0.1</version>
       <classifier>win</classifier>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
-      <version>17.0.6</version>
+      <version>24.0.1</version>
       <classifier>win</classifier>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-fxml</artifactId>
-      <version>17.0.6</version>
+      <version>24.0.1</version>
       <classifier>win</classifier>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
-      <version>17.0.1</version>
+      <version>24.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-fxml</artifactId>
-      <version>17.0.1</version>
+      <version>24.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.controlsfx</groupId>

@@ -13,6 +13,8 @@
 
 package at.variabilityanalysisgui.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import at.variabilityanalysisgui.changeTracking.DeleteConstraintChild;
@@ -38,6 +40,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
+import org.controlsfx.control.SearchableComboBox;
 import variabilityMining.Feature;
 
 public class ConstraintInfoController {
@@ -51,7 +54,7 @@ public class ConstraintInfoController {
 	private final ListView<Feature> groupFeatureList;
 	private final Button removeFeatureButton;
 	private final Label editLabel;
-	private final ComboBox<Feature> featureComboBox;
+	private final SearchableComboBox<Feature> featureComboBox;
 	private final HBox editButtonBox;
 	
 	private TreeItem<Constraint> currentInfoItem = null;
@@ -59,7 +62,7 @@ public class ConstraintInfoController {
 	private int currentItemIndex;
 	
 	public ConstraintInfoController(ConstraintsViewController controller, ScrollPane infoScrollPane, Label groupInfoLabel, Label parentFeatureLabel, Text infoText, 
-			ListView<Feature> groupFeatureList, Button removeFeatureButton, Label editLabel, ComboBox<Feature> featureComboBox, HBox editButtonBox, Button infoCloseButton) {
+			ListView<Feature> groupFeatureList, Button removeFeatureButton, Label editLabel, SearchableComboBox<Feature> featureComboBox, HBox editButtonBox, Button infoCloseButton) {
 		this.controller = controller;
 		this.infoScrollPane = infoScrollPane;
 		this.groupInfoLabel = groupInfoLabel;
@@ -107,20 +110,25 @@ public class ConstraintInfoController {
 	 * Showing the info window when it is hidden
 	 */
 	public void showInfoPane(Constraint constraint, TreeItem<Constraint> infoItem) {
-		featureComboBox.getItems().clear();
+
 		currentInfoItem = infoItem;
 		currentItemIndex = controller.getGroupTreeView().getRoot().getChildren().indexOf(currentInfoItem);
-		
-		featureComboBox.setValue(null);
+
+		List<Feature> newSelection = new ArrayList<>();
 		
 		if(constraint instanceof Group group) {
 			for(Feature feature: controller.getFeatures()) {
 				 if(!group.getFeatures().contains(feature) && !group.getParent().equals(feature) && !(feature.getName().startsWith("ALT") || feature.getName().startsWith("OR"))) {
-					 featureComboBox.getItems().add(feature);
+					 newSelection.add(feature);
+
 				 }
 			 }
 			
 		}
+
+		featureComboBox.getSelectionModel().clearSelection();
+		featureComboBox.setValue(null);
+		featureComboBox.getItems().setAll(newSelection);
 		 
 		if(constraint instanceof Group group) {
 			showGroupInfo(group);
@@ -204,6 +212,7 @@ public class ConstraintInfoController {
 		    	 groupFeatureList.getItems().remove(feature);
 				 controller.getChangeTracker().addUndo(new DeleteConstraintChild(feature, (Group) currentInfoItem.getValue()));
 				 currentInfoItem = groupTreeView.getRoot().getChildren().get(currentItemIndex);
+				 featureComboBox.getItems().add(feature);
 				 
 				 if(group.getFeatures().size() < 2) {
 					 groupTreeView.refresh();

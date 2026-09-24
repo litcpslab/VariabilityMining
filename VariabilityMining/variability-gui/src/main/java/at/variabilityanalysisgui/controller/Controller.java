@@ -53,6 +53,9 @@ public class Controller {
     @FXML private TabPane varflixTabPane;
     @FXML private Tab constraintsTab;
 
+    @FXML private MenuItem loadItem;
+    @FXML private MenuItem saveItem;
+
     private List<Group> originalGroups;
     private ExtractionType artifactType = ExtractionType.UNKNOWN;
     private VarflixAPI model = new VarflixAPI();
@@ -74,9 +77,13 @@ public class Controller {
         		constraintsViewController.setModel(model);
         		featureViewController.resetSelection();
         		constraintsViewController.isGroupView(true);
+                loadItem.setOnAction(e -> constraintsViewController.handleLoadAction());
+                saveItem.setOnAction(e -> constraintsViewController.handleSaveAction());
         	} else {
         		constraintsViewController.resetConstraintsViewButtons();
         		constraintsViewController.resetSelection();
+                loadItem.setOnAction(e -> handleLoadAction());
+                saveItem.setOnAction(e -> handleSaveAction());
         	}
         });
         
